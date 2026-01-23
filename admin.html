@@ -2699,14 +2699,14 @@
 
                     const updateResult = await window.retinboxCloudFunctions.updateUser(updateDetails);
 
-                    if (updateResult.success) {
+                    if (updateResult.user) {
                         // 关闭模态框并重置表单
                         document.getElementById('add-user-modal').classList.add('hidden');
                         document.getElementById('add-user-form').reset();
 
                         // 重新加载用户数据
                         await refreshUsersCache();
-                        loadUsersData();
+                        await loadUsersData();
 
                         alert('用户添加成功');
                     } else if (updateResult.errorCode === 3000) {
