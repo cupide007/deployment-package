@@ -39,11 +39,17 @@ try {
         $input = file_get_contents('php://input');
         $data = json_decode($input, true);
         $transactions = $data['transactions'] ?? null;
-        
+        if ($transactions === null && isset($_POST['transactions'])) {
+            $transactions = $_POST['transactions'];
+        }
+        if (is_string($transactions)) {
+            $decodedTransactions = json_decode($transactions, true);
+            if (json_last_error() === JSON_ERROR_NONE) {
+                $transactions = $decodedTransactions;
+            }
+        }
         if (!is_array($transactions)) {
-            http_response_code(400);
-            echo json_encode(['error' => '交易数据格式错误'], JSON_UNESCAPED_UNICODE);
-            exit;
+            $transactions = $transactions === null ? [] : [$transactions];
         }
         
         $existingIdsData = $db->get("transactions_{$session['userId']}");

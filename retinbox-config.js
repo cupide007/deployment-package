@@ -232,7 +232,14 @@ class RetinboxCloudFunctions {
   }
 
   async saveTransactions(transactions) {
-    return this.request('bank/saveTransactions.php', 'POST', { transactions });
+    let payload = transactions;
+    if (payload === undefined || payload === null || payload === 'undefined') {
+      payload = [];
+    }
+    if (Array.isArray(payload) === false) {
+      payload = [payload];
+    }
+    return this.request('bank/saveTransactions.php', 'POST', { transactions: payload });
   }
 
   // 银行相关云函数（补充银行卡片管理）
@@ -241,7 +248,14 @@ class RetinboxCloudFunctions {
   }
 
   async saveBankCards(cards) {
-    return this.request('bank/saveCards.php', 'POST', { cards });
+    let payload = cards;
+    if (payload === undefined || payload === null || payload === 'undefined') {
+      payload = [];
+    }
+    if (Array.isArray(payload) === false) {
+      payload = [payload];
+    }
+    return this.request('bank/saveCards.php', 'POST', { cards: payload });
   }
 
   // 图书馆相关云函数
