@@ -36,11 +36,14 @@ try {
         $input = file_get_contents('php://input');
         $data = json_decode($input, true);
         $cards = $data['cards'] ?? null;
-        
+        if (is_string($cards)) {
+            $decodedCards = json_decode($cards, true);
+            if (json_last_error() === JSON_ERROR_NONE) {
+                $cards = $decodedCards;
+            }
+        }
         if (!is_array($cards)) {
-            http_response_code(400);
-            echo json_encode(['error' => '卡片数据格式错误'], JSON_UNESCAPED_UNICODE);
-            exit;
+            $cards = $cards === null ? [] : [$cards];
         }
         
         $db->set("bank_cards_{$session['userId']}", json_encode($cards));
