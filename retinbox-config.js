@@ -633,7 +633,7 @@ class UserDataManager {
       return result.transactions;
     } catch (error) {
       console.error('获取交易记录失败:', error);
-      return [];
+      return null;
     }
   }
 
@@ -653,7 +653,7 @@ class UserDataManager {
       return result.cards;
     } catch (error) {
       console.error('获取银行卡片失败:', error);
-      return [];
+      return null;
     }
   }
 
@@ -700,7 +700,7 @@ class UserDataManager {
       return result.documents;
     } catch (error) {
       console.error('获取文档失败:', error);
-      return [];
+      return null;
     }
   }
 
@@ -720,7 +720,7 @@ class UserDataManager {
       return result.templates;
     } catch (error) {
       console.error('获取权限模板失败:', error);
-      return [];
+      return null;
     }
   }
 
@@ -739,7 +739,7 @@ class UserDataManager {
       return result.permissions;
     } catch (error) {
       console.error('获取管理员权限失败:', error);
-      return [];
+      return null;
     }
   }
 
@@ -758,7 +758,7 @@ class UserDataManager {
       return result.logs;
     } catch (error) {
       console.error('获取管理员日志失败:', error);
-      return [];
+      return null;
     }
   }
 
@@ -778,7 +778,7 @@ class UserDataManager {
       return result.logs;
     } catch (error) {
       console.error('获取系统日志失败:', error);
-      return [];
+      return null;
     }
   }
 
@@ -876,19 +876,19 @@ window.safeGetData = async function(dataType, defaultValue = []) {
     if (window.userDataManager) {
       switch(dataType) {
         case 'bankCards':
-          return await window.userDataManager.getBankCards();
+          return await window.userDataManager.getBankCards() ?? defaultValue;
         case 'documents':
-          return await window.userDataManager.getDocuments();
+          return await window.userDataManager.getDocuments() ?? defaultValue;
         case 'transactions':
-          return await window.userDataManager.getTransactions();
+          return await window.userDataManager.getTransactions() ?? defaultValue;
         case 'permissionTemplates':
-          return await window.userDataManager.getPermissionTemplates();
+          return await window.userDataManager.getPermissionTemplates() ?? defaultValue;
         case 'adminPermissions':
-          return await window.userDataManager.getAdminPermissions();
+          return await window.userDataManager.getAdminPermissions() ?? defaultValue;
         case 'adminLogs':
-          return await window.userDataManager.getAdminLogs();
+          return await window.userDataManager.getAdminLogs() ?? defaultValue;
         case 'systemLogs':
-          return await window.userDataManager.getSystemLogs();
+          return await window.userDataManager.getSystemLogs() ?? defaultValue;
         default:
           console.warn(`未知的数据类型: ${dataType}`);
           return defaultValue;
@@ -1003,8 +1003,9 @@ function fetchRemoteStorageKey(key) {
       default:
         data = null;
     }
-    if (data !== undefined && !remoteStorageDirty.has(key)) {
+    if (data !== undefined && data !== null && !remoteStorageDirty.has(key)) {
       remoteStorageCache.set(key, data);
+      originalLocalStorageSetItem(key, JSON.stringify(data ?? []));
     }
   })();
   remoteStorageLoads.set(key, loader);
@@ -1013,21 +1014,28 @@ function fetchRemoteStorageKey(key) {
 
 function saveRemoteStorageKey(key, data) {
   if (!window.userDataManager) return;
+  let payload = data;
+  if (payload === undefined || payload === null || payload === 'undefined') {
+    payload = [];
+  }
+  if (Array.isArray(payload) === false) {
+    payload = [payload];
+  }
   switch (key) {
     case 'bankCards':
-      return window.userDataManager.saveBankCards(data);
+      return window.userDataManager.saveBankCards(payload);
     case 'documents':
-      return window.userDataManager.saveDocuments(data);
+      return window.userDataManager.saveDocuments(payload);
     case 'transactions':
-      return window.userDataManager.saveTransactions(data);
+      return window.userDataManager.saveTransactions(payload);
     case 'permissionTemplates':
-      return window.userDataManager.savePermissionTemplates(data);
+      return window.userDataManager.savePermissionTemplates(payload);
     case 'adminPermissions':
-      return window.userDataManager.saveAdminPermissions(data);
+      return window.userDataManager.saveAdminPermissions(payload);
     case 'adminLogs':
-      return window.userDataManager.saveAdminLogs(data);
+      return window.userDataManager.saveAdminLogs(payload);
     case 'systemLogs':
-      return window.userDataManager.saveSystemLogs(data);
+      return window.userDataManager.saveSystemLogs(payload);
     default:
       break;
   }
@@ -1036,6 +1044,16 @@ function saveRemoteStorageKey(key, data) {
 localStorage.getItem = function(key) {
   if (remoteStorageKeys.has(key)) {
     if (!remoteStorageCache.has(key)) {
+      const existing = originalLocalStorageGetItem(key);
+      if (existing) {
+        try {
+          remoteStorageCache.set(key, JSON.parse(existing));
+        } catch (error) {
+          remoteStorageCache.set(key, []);
+        }
+        fetchRemoteStorageKey(key);
+        return existing;
+      }
       remoteStorageCache.set(key, []);
       fetchRemoteStorageKey(key);
       return JSON.stringify([]);
@@ -1055,8 +1073,12 @@ localStorage.setItem = function(key, value) {
     } catch (error) {
       parsedValue = value;
     }
+    if (parsedValue === undefined || parsedValue === null || parsedValue === 'undefined') {
+      parsedValue = [];
+    }
     remoteStorageDirty.add(key);
     remoteStorageCache.set(key, parsedValue);
+    originalLocalStorageSetItem(key, JSON.stringify(parsedValue));
     const savePromise = saveRemoteStorageKey(key, parsedValue);
     if (savePromise && typeof savePromise.then === 'function') {
       savePromise.then(() => {
@@ -1071,6 +1093,7 @@ localStorage.setItem = function(key, value) {
 localStorage.removeItem = function(key) {
   if (remoteStorageKeys.has(key)) {
     remoteStorageCache.delete(key);
+    originalLocalStorageRemoveItem(key);
     remoteStorageDirty.add(key);
     const savePromise = saveRemoteStorageKey(key, []);
     if (savePromise && typeof savePromise.then === 'function') {

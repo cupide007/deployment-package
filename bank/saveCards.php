@@ -37,7 +37,7 @@ try {
         $data = json_decode($input, true);
         $cards = $data['cards'] ?? null;
         
-        if (!$cards || !is_array($cards)) {
+        if (!is_array($cards)) {
             http_response_code(400);
             echo json_encode(['error' => '卡片数据格式错误'], JSON_UNESCAPED_UNICODE);
             exit;
