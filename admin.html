@@ -491,15 +491,22 @@
                                 <input type="text" id="document-search" class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" placeholder="搜索文献...">
                                 <i class="fa fa-search absolute left-3 top-3 text-gray-400"></i>
                             </div>
-                            <select id="document-category-filter" class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
-                                <option value="all">所有分类</option>
-                                <option value="法律">法律</option>
-                                <option value="历史">历史</option>
-                                <option value="经济">经济</option>
-                                <option value="文化">文化</option>
-                                <option value="科技">科技</option>
-                                <option value="其他">其他</option>
-                            </select>
+                            <div class="flex items-center space-x-3">
+                                <select id="document-category-filter" class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+                                    <option value="all">所有分类</option>
+                                    <option value="法律">法律</option>
+                                    <option value="历史">历史</option>
+                                    <option value="经济">经济</option>
+                                    <option value="文化">文化</option>
+                                    <option value="科技">科技</option>
+                                    <option value="其他">其他</option>
+                                </select>
+                                <select id="document-status-filter" class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+                                    <option value="all">全部状态</option>
+                                    <option value="approved">已审核</option>
+                                    <option value="pending">待审核</option>
+                                </select>
+                            </div>
                         </div>
 
                         <div id="documents-list" class="space-y-4">
@@ -1638,6 +1645,16 @@
             documentCategoryFilter.addEventListener('change', filterDocuments);
         }
 
+        const documentStatusFilter = document.getElementById('document-status-filter');
+        if (documentStatusFilter) {
+            documentStatusFilter.addEventListener('change', filterDocuments);
+        }
+
+        const documentFileInput = document.getElementById('document-file');
+        if (documentFileInput) {
+            documentFileInput.addEventListener('change', handleDocumentFilePreview);
+        }
+
         const permissionSearchInput = document.getElementById('permission-search');
         if (permissionSearchInput) {
             permissionSearchInput.addEventListener('input', filterPermissions);
@@ -2254,37 +2271,56 @@
         }
     }
 
-    // 加载图书馆数据
-    async function loadLibraryData() {
-        const documents = JSON.parse(localStorage.getItem('documents')) || [];
-        const users = await getUsers();
+    const libraryState = {
+        page: 1,
+        perPage: 5,
+        search: '',
+        category: 'all',
+        status: 'all'
+    };
 
+    let currentLibraryDetailId = null;
+
+    async function loadLibraryData() {
+        const users = await getUsers();
+        renderLibraryDocuments(users);
+    }
+
+    function renderLibraryDocuments(users) {
+        const documents = JSON.parse(localStorage.getItem('documents')) || [];
         const documentsList = document.getElementById('documents-list');
+        const filteredDocuments = getFilteredLibraryDocuments(documents);
+        const paginatedDocuments = getPaginatedLibraryDocuments(filteredDocuments);
+
         documentsList.innerHTML = '';
 
-        documents.forEach(doc => {
+        paginatedDocuments.forEach(doc => {
             const uploader = users.find(u => u.id === doc.uploaderId);
             const docItem = document.createElement('div');
+            const status = doc.approved ? '已审核' : '待审核';
+            const statusClass = doc.approved ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800';
             docItem.className = 'bg-gray-50 rounded-lg p-4 hover:shadow-md transition-shadow duration-200';
             docItem.innerHTML = `
                     <div class="flex justify-between items-start">
                         <div>
-                            <h4 class="text-lg font-bold text-primary mb-2">${doc.title}</h4>
+                            <div class="flex flex-wrap items-center gap-2 mb-2">
+                                <h4 class="text-lg font-bold text-primary">${doc.title}</h4>
+                                <span class="px-2 py-1 rounded-full text-xs font-medium ${statusClass}">${status}</span>
+                            </div>
                             <p class="text-gray-600 mb-2">作者：${doc.author}</p>
                             <p class="text-gray-500 text-sm mb-2">分类：<span class="px-2 py-1 bg-primary bg-opacity-10 text-primary rounded-full text-xs">${doc.category}</span></p>
-                            <p class="text-gray-700 mb-4">${doc.description}</p>
+                            <p class="text-gray-700 mb-4 line-clamp-3">${doc.description}</p>
                         </div>
                         <div class="text-right">
                             <p class="text-sm text-gray-500">上传者：${uploader ? uploader.username : '未知'}</p>
                             <p class="text-sm text-gray-500">上传时间：${formatDate(doc.uploadDate)}</p>
                         </div>
                     </div>
-                    <div class="mt-4 flex justify-between items-center pt-4 border-t border-gray-200">
-                        <div>
-                            <span class="text-sm text-gray-500">状态：</span>
-                            <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">已审核</span>
-                        </div>
-                        <div class="flex space-x-2">
+                    <div class="mt-4 flex flex-wrap justify-between items-center gap-3 pt-4 border-t border-gray-200">
+                        <div class="flex flex-wrap gap-2">
+                            <button class="text-primary hover:text-accent view-document-btn" data-id="${doc.id}">
+                                <i class="fa fa-eye"></i> 查看详情
+                            </button>
                             <button class="text-accent hover:text-primary edit-document-btn" data-id="${doc.id}">
                                 <i class="fa fa-pencil"></i> 编辑
                             </button>
@@ -2292,19 +2328,262 @@
                                 <i class="fa fa-trash"></i> 删除
                             </button>
                         </div>
+                        <button class="text-sm px-3 py-1 rounded-full border ${doc.approved ? 'border-green-300 text-green-700 hover:bg-green-50' : 'border-yellow-300 text-yellow-700 hover:bg-yellow-50'} toggle-approval-btn" data-id="${doc.id}">
+                            ${doc.approved ? '撤销审核' : '通过审核'}
+                        </button>
                     </div>
                 `;
             documentsList.appendChild(docItem);
         });
 
-        // 绑定编辑和删除按钮事件
-        document.querySelectorAll('.edit-document-btn').forEach(btn => {
+        renderLibraryPagination(filteredDocuments.length);
+
+        documentsList.querySelectorAll('.view-document-btn').forEach(btn => {
+            btn.addEventListener('click', () => showDocumentDetail(btn.dataset.id));
+        });
+
+        documentsList.querySelectorAll('.edit-document-btn').forEach(btn => {
             btn.addEventListener('click', handleEditDocumentClick);
         });
 
-        document.querySelectorAll('.delete-document-btn').forEach(btn => {
+        documentsList.querySelectorAll('.delete-document-btn').forEach(btn => {
             btn.addEventListener('click', handleDeleteDocumentClick);
         });
+
+        documentsList.querySelectorAll('.toggle-approval-btn').forEach(btn => {
+            btn.addEventListener('click', () => toggleDocumentApproval(btn.dataset.id));
+        });
+    }
+
+    function getFilteredLibraryDocuments(documents) {
+        const searchTerm = libraryState.search;
+        return documents.filter(doc => {
+            const matchesSearch = !searchTerm || doc.title.toLowerCase().includes(searchTerm) || doc.author.toLowerCase().includes(searchTerm) || doc.description.toLowerCase().includes(searchTerm);
+            const matchesCategory = libraryState.category === 'all' || doc.category === libraryState.category;
+            const matchesStatus = libraryState.status === 'all' || (libraryState.status === 'approved' && doc.approved) || (libraryState.status === 'pending' && !doc.approved);
+            return matchesSearch && matchesCategory && matchesStatus;
+        }).sort((a, b) => new Date(b.uploadDate) - new Date(a.uploadDate));
+    }
+
+    function getPaginatedLibraryDocuments(documents) {
+        const startIndex = (libraryState.page - 1) * libraryState.perPage;
+        return documents.slice(startIndex, startIndex + libraryState.perPage);
+    }
+
+    function renderLibraryPagination(totalRecords) {
+        const paginationContainer = document.getElementById('documents-pagination');
+        const totalPages = Math.max(1, Math.ceil(totalRecords / libraryState.perPage));
+
+        if (libraryState.page > totalPages) {
+            libraryState.page = totalPages;
+        }
+
+        paginationContainer.innerHTML = '';
+
+        const prevButton = document.createElement('button');
+        prevButton.className = 'px-3 py-1 border border-gray-300 rounded-md text-gray-600 hover:bg-gray-50 disabled:opacity-50';
+        prevButton.textContent = '上一页';
+        prevButton.disabled = libraryState.page === 1;
+        prevButton.addEventListener('click', () => {
+            if (libraryState.page > 1) {
+                libraryState.page -= 1;
+                loadLibraryData();
+            }
+        });
+
+        paginationContainer.appendChild(prevButton);
+
+        for (let i = 1; i <= totalPages; i += 1) {
+            const pageButton = document.createElement('button');
+            pageButton.className = `px-3 py-1 border rounded-md ${i === libraryState.page ? 'bg-primary text-white border-primary' : 'border-gray-300 text-gray-600 hover:bg-gray-50'}`;
+            pageButton.textContent = i;
+            pageButton.addEventListener('click', () => {
+                libraryState.page = i;
+                loadLibraryData();
+            });
+            paginationContainer.appendChild(pageButton);
+        }
+
+        const nextButton = document.createElement('button');
+        nextButton.className = 'px-3 py-1 border border-gray-300 rounded-md text-gray-600 hover:bg-gray-50 disabled:opacity-50';
+        nextButton.textContent = '下一页';
+        nextButton.disabled = libraryState.page === totalPages;
+        nextButton.addEventListener('click', () => {
+            if (libraryState.page < totalPages) {
+                libraryState.page += 1;
+                loadLibraryData();
+            }
+        });
+
+        paginationContainer.appendChild(nextButton);
+    }
+
+    function showDocumentDetail(docId) {
+        const documents = JSON.parse(localStorage.getItem('documents')) || [];
+        const doc = documents.find(d => d.id === docId);
+
+        if (!doc) {
+            return;
+        }
+
+        currentLibraryDetailId = docId;
+        const status = doc.approved ? '已审核' : '待审核';
+        const statusClass = doc.approved ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800';
+        const detailContent = document.getElementById('document-detail-content');
+
+        detailContent.innerHTML = `
+            <div class="space-y-3">
+                <div class="flex flex-wrap items-center gap-2">
+                    <span class="text-lg font-semibold text-primary">${doc.title}</span>
+                    <span class="px-2 py-1 rounded-full text-xs font-medium ${statusClass}">${status}</span>
+                </div>
+                <p class="text-gray-700"><span class="font-medium">作者：</span>${doc.author}</p>
+                <p class="text-gray-700"><span class="font-medium">分类：</span>${doc.category}</p>
+                <p class="text-gray-700"><span class="font-medium">上传者：</span>${doc.uploaderName || '未知'}</p>
+                <p class="text-gray-700"><span class="font-medium">上传时间：</span>${formatDate(doc.uploadDate)}</p>
+                <div class="text-gray-700">
+                    <span class="font-medium">摘要：</span>
+                    <div class="mt-2 rounded-md bg-gray-50 p-3">${doc.description}</div>
+                </div>
+            </div>
+            <div class="mt-4 flex flex-wrap gap-2">
+                <button id="detail-view-document" class="bg-secondary text-primary px-4 py-2 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium">在线阅读</button>
+                <button id="detail-download-document" class="bg-primary text-white px-4 py-2 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium">下载文献</button>
+                <button id="detail-approve-document" class="px-4 py-2 rounded-md border ${doc.approved ? 'border-green-300 text-green-700 hover:bg-green-50' : 'border-yellow-300 text-yellow-700 hover:bg-yellow-50'}">${doc.approved ? '撤销审核' : '通过审核'}</button>
+            </div>
+        `;
+
+        document.getElementById('document-detail-panel').classList.remove('hidden');
+        document.getElementById('document-upload-panel').classList.add('hidden');
+
+        const editBtn = document.getElementById('edit-document-btn');
+        const deleteBtn = document.getElementById('delete-document-btn');
+
+        editBtn.dataset.id = docId;
+        deleteBtn.dataset.id = docId;
+        deleteBtn.dataset.name = doc.title;
+
+        editBtn.onclick = () => openDocumentEditor(docId);
+        deleteBtn.onclick = () => handleDeleteDocumentClick.call(deleteBtn);
+
+        const viewBtn = document.getElementById('detail-view-document');
+        const downloadBtn = document.getElementById('detail-download-document');
+        const approveBtn = document.getElementById('detail-approve-document');
+
+        viewBtn.addEventListener('click', () => openDocumentInNewWindow(doc));
+        downloadBtn.addEventListener('click', () => downloadDocumentFile(doc));
+        approveBtn.addEventListener('click', () => toggleDocumentApproval(docId));
+    }
+
+    function toggleDocumentApproval(docId) {
+        const documents = JSON.parse(localStorage.getItem('documents')) || [];
+        const docIndex = documents.findIndex(d => d.id === docId);
+        if (docIndex === -1) {
+            return;
+        }
+        documents[docIndex].approved = !documents[docIndex].approved;
+        localStorage.setItem('documents', JSON.stringify(documents));
+        loadLibraryData();
+        if (currentLibraryDetailId === docId) {
+            showDocumentDetail(docId);
+        }
+    }
+
+    function openDocumentInNewWindow(doc) {
+        if (!doc.fileUrl || doc.fileUrl === '#') {
+            alert('该文献暂不提供在线阅读');
+            return;
+        }
+
+        const extension = getDocumentFileExtension(doc.fileUrl);
+        const newWindow = window.open('', '_blank');
+        if (!newWindow) {
+            alert('无法打开新窗口，请检查浏览器设置');
+            return;
+        }
+
+        if (extension === '.txt' || extension === '.md') {
+            newWindow.document.write(`
+                <html>
+                <head>
+                    <title>${doc.title}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; padding: 20px; margin: 0; background-color: #f5f5f5; }
+                        .container { max-width: 860px; margin: 0 auto; background-color: white; padding: 20px; border-radius: 8px; }
+                        pre { white-space: pre-wrap; word-break: break-word; }
+                    </style>
+                </head>
+                <body>
+                    <div class="container">
+                        <h1>${doc.title}</h1>
+                        <p><strong>作者：</strong>${doc.author}</p>
+                        <p><strong>分类：</strong>${doc.category}</p>
+                        <hr>
+                        <pre>${doc.fileUrl}</pre>
+                    </div>
+                </body>
+                </html>
+            `);
+        } else {
+            newWindow.document.write(`
+                <html>
+                <head>
+                    <title>${doc.title}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; padding: 20px; margin: 0; background-color: #f5f5f5; }
+                        .container { max-width: 1000px; margin: 0 auto; background-color: white; padding: 20px; border-radius: 8px; }
+                        iframe { width: 100%; height: 720px; border: 1px solid #ddd; border-radius: 4px; }
+                    </style>
+                </head>
+                <body>
+                    <div class="container">
+                        <h1>${doc.title}</h1>
+                        <p><strong>作者：</strong>${doc.author}</p>
+                        <p><strong>分类：</strong>${doc.category}</p>
+                        <hr>
+                        <iframe src="${doc.fileUrl}" title="${doc.title}"></iframe>
+                    </div>
+                </body>
+                </html>
+            `);
+        }
+        newWindow.document.close();
+    }
+
+    function downloadDocumentFile(doc) {
+        if (!doc.fileUrl || doc.fileUrl === '#') {
+            alert('该文献暂不提供下载');
+            return;
+        }
+        const link = document.createElement('a');
+        link.href = doc.fileUrl;
+        link.download = `${doc.title}${getDocumentFileExtension(doc.fileUrl)}`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    function getDocumentFileExtension(fileUrl) {
+        if (!fileUrl) return '.pdf';
+        if (fileUrl.startsWith('data:')) {
+            const match = fileUrl.match(/^data:([^;]+);/);
+            if (match) {
+                const mimeType = match[1];
+                const mimeToExt = {
+                    'text/plain': '.txt',
+                    'text/markdown': '.md',
+                    'application/pdf': '.pdf',
+                    'application/msword': '.doc',
+                    'application/vnd.openxmlformats-officedocument.wordprocessingml.document': '.docx',
+                    'application/vnd.ms-excel': '.xls',
+                    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': '.xlsx'
+                };
+                return mimeToExt[mimeType] || '.pdf';
+            }
+            return '.pdf';
+        }
+        const match = fileUrl.match(/\.([^.]+)$/);
+        return match ? `.${match[1]}` : '.pdf';
     }
 
     // 加载权限数据
@@ -2651,8 +2930,13 @@
 
         localStorage.setItem('documents', JSON.stringify(filteredDocuments));
 
-        // 重新加载文献数据
         loadLibraryData();
+
+        if (currentLibraryDetailId === docId) {
+            currentLibraryDetailId = null;
+            document.getElementById('document-detail-panel').classList.add('hidden');
+            document.getElementById('document-upload-panel').classList.remove('hidden');
+        }
 
         alert('文献删除成功');
     }
@@ -2967,8 +3251,10 @@
                     localStorage.setItem('documents', JSON.stringify(documents));
                     alert('文献更新成功');
 
-                    // 重新加载文献数据
                     loadLibraryData();
+                    if (currentLibraryDetailId === docId) {
+                        showDocumentDetail(docId);
+                    }
                 }
             } else {
                 // 添加新文献
@@ -3004,64 +3290,110 @@
     // 处理编辑文献点击
     function handleEditDocumentClick() {
         const docId = this.dataset.id;
+        openDocumentEditor(docId);
+    }
+
+    function openDocumentEditor(docId) {
         const documents = JSON.parse(localStorage.getItem('documents')) || [];
         const doc = documents.find(d => d.id === docId);
 
-        if (doc) {
-            document.getElementById('document-id').value = doc.id;
-            document.getElementById('document-title').value = doc.title;
-            document.getElementById('document-author').value = doc.author;
-            document.getElementById('document-category').value = doc.category;
-            document.getElementById('document-description').value = doc.description;
-
-            // 保存原始fileUrl到隐藏字段，以便在编辑时使用
-            let originalFileUrlField = document.getElementById('original-file-url');
-            if (!originalFileUrlField) {
-                originalFileUrlField = document.createElement('input');
-                originalFileUrlField.type = 'hidden';
-                originalFileUrlField.id = 'original-file-url';
-                document.getElementById('document-upload-form').appendChild(originalFileUrlField);
-            }
-            originalFileUrlField.value = doc.fileUrl || '#';
-
-            // 显示现有文献的预览
-            const filePreviewContainer = document.getElementById('file-preview-container');
-            const filePreview = document.getElementById('file-preview');
-
-            if (doc.fileUrl && doc.fileUrl !== '#') {
-                filePreviewContainer.classList.remove('hidden');
-
-                // 根据文件类型显示不同的预览
-                if (doc.fileUrl.startsWith('data:text/')) {
-                    // 文本文件预览
-                    // 从Base64 URL中提取文本内容
-                    const textContent = doc.fileUrl;
-                    filePreview.innerHTML = `<pre class="whitespace-pre-wrap">${textContent}</pre>`;
-                } else if (doc.fileUrl.includes('pdf')) {
-                    // PDF文件预览
-                    filePreview.innerHTML = '<div class="text-center py-8"><i class="fa fa-file-pdf-o text-4xl text-red-500"></i><p class="mt-2">PDF文件 - 保存后可在线阅读和下载</p></div>';
-                } else if (doc.fileUrl.includes('excel') || doc.fileUrl.includes('spreadsheetml')) {
-                    // Excel文件预览
-                    filePreview.innerHTML = '<div class="text-center py-8"><i class="fa fa-file-excel-o text-4xl text-green-500"></i><p class="mt-2">Excel文件 - 保存后可下载</p></div>';
-                } else if (doc.fileUrl.includes('word') || doc.fileUrl.includes('wordprocessingml')) {
-                    // Word文件预览
-                    filePreview.innerHTML = '<div class="text-center py-8"><i class="fa fa-file-word-o text-4xl text-blue-500"></i><p class="mt-2">Word文件 - 保存后可下载</p></div>';
-                } else {
-                    // 其他文件类型
-                    filePreview.innerHTML = '<div class="text-center py-8"><i class="fa fa-file-o text-4xl text-gray-500"></i><p class="mt-2">文件已存在 - 保存后可下载</p></div>';
-                }
-            } else {
-                filePreviewContainer.classList.add('hidden');
-                filePreview.innerHTML = '';
-            }
-
-            // 切换到编辑模式
-            document.getElementById('upload-panel-title').textContent = '编辑文献';
-            document.getElementById('submit-document-btn').textContent = '保存';
-            document.getElementById('cancel-edit-btn').classList.remove('hidden');
-            document.getElementById('document-detail-panel').classList.add('hidden');
-            document.getElementById('document-upload-panel').classList.remove('hidden');
+        if (!doc) {
+            return;
         }
+
+        document.getElementById('document-id').value = doc.id;
+        document.getElementById('document-title').value = doc.title;
+        document.getElementById('document-author').value = doc.author;
+        document.getElementById('document-category').value = doc.category;
+        document.getElementById('document-description').value = doc.description;
+
+        let originalFileUrlField = document.getElementById('original-file-url');
+        if (!originalFileUrlField) {
+            originalFileUrlField = document.createElement('input');
+            originalFileUrlField.type = 'hidden';
+            originalFileUrlField.id = 'original-file-url';
+            document.getElementById('document-upload-form').appendChild(originalFileUrlField);
+        }
+        originalFileUrlField.value = doc.fileUrl || '#';
+
+        const filePreviewContainer = document.getElementById('file-preview-container');
+        const filePreview = document.getElementById('file-preview');
+
+        if (doc.fileUrl && doc.fileUrl !== '#') {
+            filePreviewContainer.classList.remove('hidden');
+            updateFilePreviewContent(doc.fileUrl);
+        } else {
+            filePreviewContainer.classList.add('hidden');
+            filePreview.innerHTML = '';
+        }
+
+        document.getElementById('upload-panel-title').textContent = '编辑文献';
+        document.getElementById('submit-document-btn').textContent = '保存';
+        document.getElementById('cancel-edit-btn').classList.remove('hidden');
+        document.getElementById('document-detail-panel').classList.add('hidden');
+        document.getElementById('document-upload-panel').classList.remove('hidden');
+    }
+
+    function handleDocumentFilePreview() {
+        const fileInput = document.getElementById('document-file');
+        const filePreviewContainer = document.getElementById('file-preview-container');
+        const filePreview = document.getElementById('file-preview');
+        const file = fileInput.files[0];
+
+        if (!file) {
+            filePreviewContainer.classList.add('hidden');
+            filePreview.innerHTML = '';
+            return;
+        }
+
+        filePreviewContainer.classList.remove('hidden');
+
+        if (file.type.startsWith('text/')) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                filePreview.innerHTML = `<pre class="whitespace-pre-wrap">${e.target.result}</pre>`;
+            };
+            reader.readAsText(file);
+            return;
+        }
+
+        if (file.type.includes('pdf')) {
+            filePreview.innerHTML = '<div class="text-center py-8"><i class="fa fa-file-pdf-o text-4xl text-red-500"></i><p class="mt-2">PDF文件 - 保存后可在线阅读和下载</p></div>';
+            return;
+        }
+
+        if (file.type.includes('excel') || file.type.includes('spreadsheetml')) {
+            filePreview.innerHTML = '<div class="text-center py-8"><i class="fa fa-file-excel-o text-4xl text-green-500"></i><p class="mt-2">Excel文件 - 保存后可下载</p></div>';
+            return;
+        }
+
+        if (file.type.includes('word') || file.type.includes('wordprocessingml')) {
+            filePreview.innerHTML = '<div class="text-center py-8"><i class="fa fa-file-word-o text-4xl text-blue-500"></i><p class="mt-2">Word文件 - 保存后可下载</p></div>';
+            return;
+        }
+
+        filePreview.innerHTML = '<div class="text-center py-8"><i class="fa fa-file-o text-4xl text-gray-500"></i><p class="mt-2">文件已选择 - 保存后可下载</p></div>';
+    }
+
+    function updateFilePreviewContent(fileUrl) {
+        const filePreview = document.getElementById('file-preview');
+        if (fileUrl.startsWith('data:text/')) {
+            filePreview.innerHTML = `<pre class="whitespace-pre-wrap">${fileUrl}</pre>`;
+            return;
+        }
+        if (fileUrl.includes('pdf')) {
+            filePreview.innerHTML = '<div class="text-center py-8"><i class="fa fa-file-pdf-o text-4xl text-red-500"></i><p class="mt-2">PDF文件 - 保存后可在线阅读和下载</p></div>';
+            return;
+        }
+        if (fileUrl.includes('excel') || fileUrl.includes('spreadsheetml')) {
+            filePreview.innerHTML = '<div class="text-center py-8"><i class="fa fa-file-excel-o text-4xl text-green-500"></i><p class="mt-2">Excel文件 - 保存后可下载</p></div>';
+            return;
+        }
+        if (fileUrl.includes('word') || fileUrl.includes('wordprocessingml')) {
+            filePreview.innerHTML = '<div class="text-center py-8"><i class="fa fa-file-word-o text-4xl text-blue-500"></i><p class="mt-2">Word文件 - 保存后可下载</p></div>';
+            return;
+        }
+        filePreview.innerHTML = '<div class="text-center py-8"><i class="fa fa-file-o text-4xl text-gray-500"></i><p class="mt-2">文件已存在 - 保存后可下载</p></div>';
     }
 
     // 处理角色变更
@@ -3402,23 +3734,14 @@
     function filterDocuments() {
         const searchTerm = document.getElementById('document-search').value.toLowerCase();
         const categoryFilter = document.getElementById('document-category-filter').value;
-        const items = document.querySelectorAll('#documents-list > div');
+        const statusFilter = document.getElementById('document-status-filter').value;
 
-        items.forEach(item => {
-            const title = item.querySelector('h4').textContent.toLowerCase();
-            const author = item.querySelector('p:nth-child(2)').textContent.toLowerCase();
-            const category = item.querySelector('.bg-primary.bg-opacity-10').textContent.trim();
-            const description = item.querySelector('p:nth-child(4)').textContent.toLowerCase();
+        libraryState.search = searchTerm;
+        libraryState.category = categoryFilter;
+        libraryState.status = statusFilter;
+        libraryState.page = 1;
 
-            const matchesSearch = title.includes(searchTerm) || author.includes(searchTerm) || description.includes(searchTerm);
-            const matchesCategory = categoryFilter === 'all' || category === categoryFilter;
-
-            if (matchesSearch && matchesCategory) {
-                item.style.display = '';
-            } else {
-                item.style.display = 'none';
-            }
-        });
+        loadLibraryData();
     }
 
     // 筛选权限
