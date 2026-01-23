@@ -1000,6 +1000,30 @@
                         const match = fileUrl.match(/\.([^.]+)$/);
                         return match ? '.' + match[1] : '.pdf';
                     }
+
+                    function getDataUrlTextContent(fileUrl) {
+                        if (!fileUrl || !fileUrl.startsWith('data:')) {
+                            return fileUrl || '';
+                        }
+                        const commaIndex = fileUrl.indexOf(',');
+                        if (commaIndex === -1) {
+                            return '';
+                        }
+                        const meta = fileUrl.slice(0, commaIndex);
+                        const payload = fileUrl.slice(commaIndex + 1);
+                        if (meta.includes(';base64')) {
+                            try {
+                                return decodeURIComponent(escape(window.atob(payload)));
+                            } catch (error) {
+                                return window.atob(payload);
+                            }
+                        }
+                        try {
+                            return decodeURIComponent(payload);
+                        } catch (error) {
+                            return payload;
+                        }
+                    }
                     
                     downloadBtn.onclick = function() {
                         if (doc.fileUrl && doc.fileUrl !== '#') {
@@ -1029,8 +1053,7 @@
                         
                         // 如果是文本文件，直接显示内容
                         if (extension === '.txt' || extension === '.md') {
-                            // 从Base64 URL中提取文本内容
-                            const textContent = doc.fileUrl;
+                            const textContent = getDataUrlTextContent(doc.fileUrl);
                             
                             const newWindow = window.open('', '_blank');
                             if (newWindow) {
