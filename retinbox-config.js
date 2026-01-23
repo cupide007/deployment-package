@@ -4,15 +4,22 @@
 // 云函数基础URL
 const CLOUD_FUNCTIONS_BASE_URL = '/'; // 使用相对路径，确保从任何页面调用都能正确访问云函数
 
+const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
 // 云函数调用封装
 class RetinboxCloudFunctions {
   constructor() {
     this.baseUrl = CLOUD_FUNCTIONS_BASE_URL;
+    this.inflightRequests = new Map();
   }
 
   // 通用请求方法
   async request(endpoint, method = 'GET', data = null) {
-    try {
+    const inflightKey = method === 'GET' ? `${method}:${endpoint}` : null;
+    if (inflightKey && this.inflightRequests.has(inflightKey)) {
+      return this.inflightRequests.get(inflightKey);
+    }
+    const execute = async (attempt = 0) => {
       const options = {
         method,
         headers: {
@@ -34,6 +41,10 @@ class RetinboxCloudFunctions {
       
       // 先检查响应状态
       if (!response.ok) {
+        if (response.status === 429 && attempt < 2) {
+          await delay(500 * (attempt + 1));
+          return execute(attempt + 1);
+        }
         // 尝试解析错误响应
         let errorMessage = `请求失败 (${response.status})`;
         try {
@@ -64,10 +75,19 @@ class RetinboxCloudFunctions {
           throw new Error(`无法解析响应为JSON: ${jsonError.message}。响应内容: ${responseText.substring(0, 100)}...`);
         }
       }
-    } catch (error) {
+    };
+    const requestPromise = execute().catch((error) => {
       console.error(`云函数请求失败 [${method} ${endpoint}]:`, error);
       throw error;
+    }).finally(() => {
+      if (inflightKey) {
+        this.inflightRequests.delete(inflightKey);
+      }
+    });
+    if (inflightKey) {
+      this.inflightRequests.set(inflightKey, requestPromise);
     }
+    return requestPromise;
   }
 
   // 初始化相关云函数
