@@ -76,6 +76,13 @@ async function handleGetUser() {
         id: user.id,
         username: user.username,
         email: user.email,
+        qq: user.qq,
+        gender: user.gender,
+        race: user.race,
+        age: user.age,
+        residence: user.residence,
+        bio: user.bio,
+        avatar: user.avatar,
         role: user.role,
         createdAt: user.createdAt,
         lastLogin: user.lastLogin

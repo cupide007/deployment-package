@@ -688,13 +688,50 @@
 
     <!-- JavaScript -->
     <script>
-        // 页面加载完成后执行
         document.addEventListener('DOMContentLoaded', function() {
-            // 检查用户是否已登录
+            let cachedUserData = null;
+
+            async function callCloudFunction(name, ...args) {
+                if (window.safeCallCloudFunction) {
+                    return window.safeCallCloudFunction(name, ...args);
+                }
+                if (window.retinboxCloudFunctions && typeof window.retinboxCloudFunctions[name] === 'function') {
+                    return window.retinboxCloudFunctions[name](...args);
+                }
+                throw new Error('云函数未初始化');
+            }
+
+            async function getCurrentUser() {
+                try {
+                    const currentUser = await window.checkLoginStatusSafely();
+                    if (currentUser) {
+                        return currentUser;
+                    }
+                } catch (error) {
+                    console.warn('获取登录状态失败:', error);
+                }
+                const localUser = sessionStorage.getItem('currentUser');
+                return localUser ? JSON.parse(localUser) : null;
+            }
+
+            async function getUserProfile() {
+                const currentUser = await getCurrentUser();
+                if (!currentUser || !currentUser.id) {
+                    return null;
+                }
+                try {
+                    const result = await callCloudFunction('getUser', currentUser.id);
+                    if (result && result.user) {
+                        cachedUserData = { ...currentUser, ...result.user };
+                        return cachedUserData;
+                    }
+                } catch (error) {
+                    console.warn('获取用户资料失败:', error);
+                }
+                return cachedUserData || currentUser;
+            }
+
             checkLoginStatus();
-            
-            // 初始化用户数据
-            loadUserData();
             
             // 移动端菜单切换
             const mobileMenuBtn = document.getElementById('mobile-menu-btn');
@@ -708,10 +745,7 @@
             const logoutBtn = document.getElementById('logout-btn');
             
             logoutBtn.addEventListener('click', function() {
-                // 清除登录状态
                 sessionStorage.removeItem('currentUser');
-                
-                // 跳转到首页
                 window.location.href = 'index.html';
             });
             
@@ -815,7 +849,7 @@
                 
                 if (avatarInput.files && avatarInput.files[0]) {
                     try {
-                        const user = firebaseAuth.currentUser;
+                        const user = await getCurrentUser();
                         
                         if (user) {
                             const file = avatarInput.files[0];
@@ -844,10 +878,8 @@
                             passportAvatarImg.classList.remove('hidden');
                             
                             // 保存头像URL到模拟Firestore
-                            await firebaseFirestore.collection('users').doc(user.uid).update({
-                                avatar: avatarURL,
-                                updatedAt: new Date().toISOString()
-                            });
+                            await callCloudFunction('updateUser', { avatar: avatarURL });
+                            cachedUserData = { ...(cachedUserData || {}), avatar: avatarURL };
                             
                             // 关闭模态框
                             changeAvatarModal.classList.add('hidden');
@@ -878,12 +910,10 @@
                 const bio = document.getElementById('bio').value;
                 
                 try {
-                    // 更新Firebase中的用户信息
-                    const user = firebaseAuth.currentUser;
+                    const user = await getCurrentUser();
                     
                     if (user) {
-                        // 更新Firestore中的用户信息
-                        await firebaseFirestore.collection('users').doc(user.uid).update({
+                        await callCloudFunction('updateUser', {
                             username,
                             email,
                             qq,
@@ -891,23 +921,34 @@
                             race,
                             age,
                             residence,
-                            bio,
-                            updatedAt: new Date().toISOString()
+                            bio
                         });
                         
-                        // 更新当前用户信息
-                        const currentUser = JSON.parse(sessionStorage.getItem('currentUser'));
-                        currentUser.username = username;
-                        sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
+                        cachedUserData = {
+                            ...(cachedUserData || {}),
+                            id: user.id,
+                            username,
+                            email,
+                            qq,
+                            gender,
+                            race,
+                            age,
+                            residence,
+                            bio
+                        };
                         
-                        // 更新欢迎信息
+                        const currentUser = JSON.parse(sessionStorage.getItem('currentUser'));
+                        if (currentUser) {
+                            currentUser.username = username;
+                            currentUser.email = email;
+                            sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
+                        }
+                        
                         document.getElementById('current-username').textContent = username;
                         
-                        // 更新身份证和护照信息
                         await updateIdCard();
                         await updatePassport();
                         
-                        // 显示成功消息
                         showSuccessModal('个人信息更新成功', '您的个人信息已成功更新。');
                     }
                 } catch (error) {
@@ -933,20 +974,20 @@
                 }
                 
                 try {
-                    const user = firebaseAuth.currentUser;
+                    const user = await getCurrentUser();
                     
                     if (user) {
                         // 从云端获取用户数据
                         const usersResult = await window.retinboxCloudFunctions.getUsers();
                         const users = usersResult.users || [];
-                        const userIndex = users.findIndex(u => u.id === user.uid);
+                        const userIndex = users.findIndex(u => u.id === user.id);
                         
                         if (userIndex !== -1) {
                             // 检查当前密码是否正确
                             if (users[userIndex].password === currentPassword) {
                                 // 通过云函数更新密码
                                 const updateResult = await window.retinboxCloudFunctions.updateUser({
-                                    id: user.uid,
+                                    id: user.id,
                                     password: newPassword
                                 });
                                 
@@ -988,21 +1029,18 @@
                 const notificationFrequency = document.getElementById('notification-frequency').value;
                 
                 try {
-                    // 更新通知设置
-                    const user = firebaseAuth.currentUser;
+                    const user = await getCurrentUser();
                     
                     if (user) {
-                        await firebaseFirestore.collection('users').doc(user.uid).update({
+                        await callCloudFunction('updateUserSettings', {
                             notifications: {
                                 email: emailNotifications,
                                 system: systemNotifications,
-                                activity: activityNotifications,
-                                frequency: notificationFrequency
+                                activity: activityNotifications
                             },
-                            updatedAt: new Date().toISOString()
+                            notificationFrequency: notificationFrequency
                         });
                         
-                        // 显示成功消息
                         showSuccessModal('通知设置更新成功', '您的通知设置已成功更新。');
                     }
                 } catch (error) {
@@ -1130,10 +1168,7 @@
             
             // 初始化页面
             function initPage() {
-                // 加载用户数据
                 loadUserData();
-                
-                // 更新身份证和护照信息
                 updateIdCard();
                 updatePassport();
             }
@@ -1141,23 +1176,18 @@
             // 检查用户是否已登录
             async function checkLoginStatus() {
                 try {
-                    // 使用安全的登录状态检查函数
                     const currentUser = await window.checkLoginStatusSafely();
                     
                     if (!currentUser) {
-                        // 未登录，跳转到首页
                         window.location.href = 'index.html';
                     } else {
-                        // 已登录，更新欢迎信息
                         document.getElementById('welcome-user').classList.remove('hidden');
                         document.getElementById('current-username').textContent = currentUser.username;
                         
-                        // 初始化页面内容
                         initPage();
                     }
                 } catch (error) {
                     console.error('检查登录状态失败:', error);
-                    // 发生严重错误，重定向到首页
                     window.location.href = 'index.html';
                 }
             }
@@ -1165,61 +1195,57 @@
             // 加载用户数据
             async function loadUserData() {
                 try {
-                    // 获取当前登录用户
-                    const user = firebaseAuth.currentUser;
+                    const userData = await getUserProfile();
                     
-                    if (user) {
-                        // 从Firestore获取用户详细信息
-                        const userDoc = await firebaseFirestore.collection('users').doc(user.uid).get();
+                    if (userData) {
+                        document.getElementById('username').value = userData.username || '';
+                        document.getElementById('email').value = userData.email || '';
+                        document.getElementById('qq').value = userData.qq || '';
+                        document.getElementById('gender').value = userData.gender || '';
+                        document.getElementById('race').value = userData.race || '';
+                        document.getElementById('age').value = userData.age || '';
+                        document.getElementById('residence').value = userData.residence || '';
+                        document.getElementById('bio').value = userData.bio || '';
                         
-                        if (userDoc.exists) {
-                            const userData = userDoc.data();
-                            
-                            // 填充个人信息表单
-                            document.getElementById('username').value = userData.username || '';
-                            document.getElementById('email').value = userData.email || '';
-                            document.getElementById('qq').value = userData.qq || '';
-                            document.getElementById('gender').value = userData.gender || '';
-                            document.getElementById('race').value = userData.race || '';
-                            document.getElementById('age').value = userData.age || '';
-                            document.getElementById('residence').value = userData.residence || '';
-                            document.getElementById('bio').value = userData.bio || '';
-                            
-                            // 填充通知设置表单
-                            if (userData.notifications) {
-                                document.getElementById('email-notifications').checked = userData.notifications.email !== false;
-                                document.getElementById('system-notifications').checked = userData.notifications.system !== false;
-                                document.getElementById('activity-notifications').checked = userData.notifications.activity || false;
-                                document.getElementById('notification-frequency').value = userData.notifications.frequency || 'immediately';
+                        try {
+                            const settingsResult = await callCloudFunction('getUserSettings');
+                            const settings = settingsResult ? settingsResult.settings : null;
+                            if (settings) {
+                                const notifications = settings.notifications || {};
+                                document.getElementById('email-notifications').checked = notifications.email !== false;
+                                document.getElementById('system-notifications').checked = notifications.system !== false;
+                                document.getElementById('activity-notifications').checked = notifications.activity || false;
+                                document.getElementById('notification-frequency').value = settings.notificationFrequency || 'immediately';
                             }
+                        } catch (error) {
+                            console.warn('加载通知设置失败:', error);
+                        }
+                        
+                        if (userData.avatar) {
+                            const userAvatarIcon = document.getElementById('user-avatar-icon');
+                            const userAvatarImg = document.getElementById('user-avatar-img');
+                            const previewAvatarIcon = document.getElementById('preview-avatar-icon');
+                            const previewAvatarImg = document.getElementById('preview-avatar-img');
+                            const idAvatarIcon = document.getElementById('id-avatar-icon');
+                            const idAvatarImg = document.getElementById('id-avatar-img');
+                            const passportAvatarIcon = document.getElementById('passport-avatar-icon');
+                            const passportAvatarImg = document.getElementById('passport-avatar-img');
                             
-                            // 更新头像
-                            if (userData.avatar) {
-                                const userAvatarIcon = document.getElementById('user-avatar-icon');
-                                const userAvatarImg = document.getElementById('user-avatar-img');
-                                const previewAvatarIcon = document.getElementById('preview-avatar-icon');
-                                const previewAvatarImg = document.getElementById('preview-avatar-img');
-                                const idAvatarIcon = document.getElementById('id-avatar-icon');
-                                const idAvatarImg = document.getElementById('id-avatar-img');
-                                const passportAvatarIcon = document.getElementById('passport-avatar-icon');
-                                const passportAvatarImg = document.getElementById('passport-avatar-img');
-                                
-                                userAvatarIcon.classList.add('hidden');
-                                userAvatarImg.src = userData.avatar;
-                                userAvatarImg.classList.remove('hidden');
-                                
-                                previewAvatarIcon.classList.add('hidden');
-                                previewAvatarImg.src = userData.avatar;
-                                previewAvatarImg.classList.remove('hidden');
-                                
-                                idAvatarIcon.classList.add('hidden');
-                                idAvatarImg.src = userData.avatar;
-                                idAvatarImg.classList.remove('hidden');
-                                
-                                passportAvatarIcon.classList.add('hidden');
-                                passportAvatarImg.src = userData.avatar;
-                                passportAvatarImg.classList.remove('hidden');
-                            }
+                            userAvatarIcon.classList.add('hidden');
+                            userAvatarImg.src = userData.avatar;
+                            userAvatarImg.classList.remove('hidden');
+                            
+                            previewAvatarIcon.classList.add('hidden');
+                            previewAvatarImg.src = userData.avatar;
+                            previewAvatarImg.classList.remove('hidden');
+                            
+                            idAvatarIcon.classList.add('hidden');
+                            idAvatarImg.src = userData.avatar;
+                            idAvatarImg.classList.remove('hidden');
+                            
+                            passportAvatarIcon.classList.add('hidden');
+                            passportAvatarImg.src = userData.avatar;
+                            passportAvatarImg.classList.remove('hidden');
                         }
                     }
                 } catch (error) {
@@ -1231,23 +1257,17 @@
             // 更新身份证信息
             async function updateIdCard() {
                 try {
-                    const user = firebaseAuth.currentUser;
+                    const userData = await getUserProfile();
                     
-                    if (user) {
-                        const userDoc = await firebaseFirestore.collection('users').doc(user.uid).get();
+                    if (userData) {
+                        document.getElementById('id-name').textContent = userData.username || '未知';
+                        document.getElementById('id-gender').textContent = userData.gender || '未知';
+                        document.getElementById('id-race').textContent = userData.race || '未知';
+                        document.getElementById('id-age').textContent = userData.age || '未知';
+                        document.getElementById('id-residence').textContent = userData.residence || '未知';
                         
-                        if (userDoc.exists) {
-                            const userData = userDoc.data();
-                            document.getElementById('id-name').textContent = userData.username || '未知';
-                            document.getElementById('id-gender').textContent = userData.gender || '未知';
-                            document.getElementById('id-race').textContent = userData.race || '未知';
-                            document.getElementById('id-age').textContent = userData.age || '未知';
-                            document.getElementById('id-residence').textContent = userData.residence || '未知';
-                            
-                            // 生成身份证号
-                            const idNumber = generateIdNumber(userData);
-                            document.getElementById('id-number').textContent = idNumber;
-                        }
+                        const idNumber = generateIdNumber(userData);
+                        document.getElementById('id-number').textContent = idNumber;
                     }
                 } catch (error) {
                     console.error('更新身份证信息失败:', error);
@@ -1257,34 +1277,24 @@
             // 更新护照信息
             async function updatePassport() {
                 try {
-                    const user = firebaseAuth.currentUser;
+                    const userData = await getUserProfile();
                     
-                    if (user) {
-                        const userDoc = await firebaseFirestore.collection('users').doc(user.uid).get();
+                    if (userData) {
+                        document.getElementById('passport-full-name').textContent = userData.username || '未知';
+                        document.getElementById('passport-gender').textContent = userData.gender ? userData.gender.charAt(0).toUpperCase() : 'U';
                         
-                        if (userDoc.exists) {
-                            const userData = userDoc.data();
-                            // 直接使用完整用户名作为姓名
-                            document.getElementById('passport-full-name').textContent = userData.username || '未知';
-                            document.getElementById('passport-gender').textContent = userData.gender ? userData.gender.charAt(0).toUpperCase() : 'U';
-                            
-                            // 生成出生日期（使用注册日期）
-                            const dob = userData.createdAt ? new Date(userData.createdAt) : new Date();
-                            document.getElementById('passport-dob').textContent = `${dob.getFullYear()}-${String(dob.getMonth() + 1).padStart(2, '0')}-${String(dob.getDate()).padStart(2, '0')}`;
-                            
-                            // 生成护照号
-                            const passportNumber = generatePassportNumber(userData);
-                            document.getElementById('passport-number').textContent = passportNumber;
-                            
-                            // 生成有效期（注册日期+10年）
-                            const expiry = userData.createdAt ? new Date(userData.createdAt) : new Date();
-                            expiry.setFullYear(expiry.getFullYear() + 10);
-                            document.getElementById('passport-expiry').textContent = `${expiry.getFullYear()}-${String(expiry.getMonth() + 1).padStart(2, '0')}-${String(expiry.getDate()).padStart(2, '0')}`;
-                            
-                            // 生成机读码
-                            const mrz = generateMRZ(userData, passportNumber, dob, expiry);
-                            document.getElementById('passport-mrz').textContent = mrz;
-                        }
+                        const dob = userData.createdAt ? new Date(userData.createdAt) : new Date();
+                        document.getElementById('passport-dob').textContent = `${dob.getFullYear()}-${String(dob.getMonth() + 1).padStart(2, '0')}-${String(dob.getDate()).padStart(2, '0')}`;
+                        
+                        const passportNumber = generatePassportNumber(userData);
+                        document.getElementById('passport-number').textContent = passportNumber;
+                        
+                        const expiry = userData.createdAt ? new Date(userData.createdAt) : new Date();
+                        expiry.setFullYear(expiry.getFullYear() + 10);
+                        document.getElementById('passport-expiry').textContent = `${expiry.getFullYear()}-${String(expiry.getMonth() + 1).padStart(2, '0')}-${String(expiry.getDate()).padStart(2, '0')}`;
+                        
+                        const mrz = generateMRZ(userData, passportNumber, dob, expiry);
+                        document.getElementById('passport-mrz').textContent = mrz;
                     }
                 } catch (error) {
                     console.error('更新护照信息失败:', error);

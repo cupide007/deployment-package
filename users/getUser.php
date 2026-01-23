@@ -98,6 +98,13 @@ try {
                 'id' => $user['id'],
                 'username' => $user['username'],
                 'email' => $user['email'] ?? null,
+                'qq' => $user['qq'] ?? null,
+                'gender' => $user['gender'] ?? null,
+                'race' => $user['race'] ?? null,
+                'age' => $user['age'] ?? null,
+                'residence' => $user['residence'] ?? null,
+                'bio' => $user['bio'] ?? null,
+                'avatar' => $user['avatar'] ?? null,
                 'role' => $user['role'] ?? 'user',
                 'createdAt' => $user['createdAt'] ?? null,
                 'lastLogin' => $user['lastLogin'] ?? null
