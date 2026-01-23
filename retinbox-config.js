@@ -1014,21 +1014,28 @@ function fetchRemoteStorageKey(key) {
 
 function saveRemoteStorageKey(key, data) {
   if (!window.userDataManager) return;
+  let payload = data;
+  if (payload === undefined || payload === null || payload === 'undefined') {
+    payload = [];
+  }
+  if (Array.isArray(payload) === false) {
+    payload = [payload];
+  }
   switch (key) {
     case 'bankCards':
-      return window.userDataManager.saveBankCards(data);
+      return window.userDataManager.saveBankCards(payload);
     case 'documents':
-      return window.userDataManager.saveDocuments(data);
+      return window.userDataManager.saveDocuments(payload);
     case 'transactions':
-      return window.userDataManager.saveTransactions(data);
+      return window.userDataManager.saveTransactions(payload);
     case 'permissionTemplates':
-      return window.userDataManager.savePermissionTemplates(data);
+      return window.userDataManager.savePermissionTemplates(payload);
     case 'adminPermissions':
-      return window.userDataManager.saveAdminPermissions(data);
+      return window.userDataManager.saveAdminPermissions(payload);
     case 'adminLogs':
-      return window.userDataManager.saveAdminLogs(data);
+      return window.userDataManager.saveAdminLogs(payload);
     case 'systemLogs':
-      return window.userDataManager.saveSystemLogs(data);
+      return window.userDataManager.saveSystemLogs(payload);
     default:
       break;
   }
@@ -1065,6 +1072,9 @@ localStorage.setItem = function(key, value) {
       parsedValue = JSON.parse(value);
     } catch (error) {
       parsedValue = value;
+    }
+    if (parsedValue === undefined || parsedValue === null || parsedValue === 'undefined') {
+      parsedValue = [];
     }
     remoteStorageDirty.add(key);
     remoteStorageCache.set(key, parsedValue);
