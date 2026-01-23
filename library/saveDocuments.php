@@ -36,11 +36,17 @@ try {
         $input = file_get_contents('php://input');
         $data = json_decode($input, true);
         $documents = $data['documents'] ?? null;
-        
-        if (!$documents || !is_array($documents)) {
-            http_response_code(400);
-            echo json_encode(['error' => '文档数据格式错误'], JSON_UNESCAPED_UNICODE);
-            exit;
+        if ($documents === null && isset($_POST['documents'])) {
+            $documents = $_POST['documents'];
+        }
+        if (is_string($documents)) {
+            $decodedDocuments = json_decode($documents, true);
+            if (json_last_error() === JSON_ERROR_NONE) {
+                $documents = $decodedDocuments;
+            }
+        }
+        if (!is_array($documents)) {
+            $documents = $documents === null ? [] : [$documents];
         }
         
         $db->set("documents_{$session['userId']}", json_encode($documents));
