@@ -1287,7 +1287,10 @@
                 filteredCards.forEach(card => {
                     const option = document.createElement('option');
                     option.value = card.id;
-                    option.textContent = `${formatCardNumber(card.cardNumber)} - ${card.cardType === 'debit' ? `余额: ¥${card.balance.toFixed(2)}` : `可用额度: ¥${(card.creditLimit - Math.abs(card.balance)).toFixed(2)}/${card.creditLimit}`}`;
+                    const cardDetail = card.cardType === 'debit'
+                        ? `余额: ¥${card.balance.toFixed(2)}`
+                        : `可用额度: ¥${(card.creditLimit - Math.abs(card.balance)).toFixed(2)}/${card.creditLimit}`;
+                    option.textContent = `${formatCardNumber(card.cardNumber)} - ${cardDetail}`;
                     cardSelect.appendChild(option);
                 });
             }
