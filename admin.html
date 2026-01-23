@@ -1908,7 +1908,7 @@
             // 从缓存获取用户列表（会自动刷新）
             const users = await getUsers();
 
-            const accounts = JSON.parse(localStorage.getItem('bankAccounts')) || [];
+            const accounts = await window.safeGetData('bankCards', []);
             const documents = JSON.parse(localStorage.getItem('documents')) || [];
 
             // 更新统计数据
@@ -2112,8 +2112,8 @@
             // 刷新用户缓存并获取最新数据
             const users = await refreshUsersCache();
 
-            const bankCards = JSON.parse(localStorage.getItem('bankCards')) || [];
-            const transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+            const bankCards = await window.safeGetData('bankCards', []);
+            const transactions = await window.safeGetData('transactions', []);
 
             // 更新银行统计
             document.getElementById('bank-total-accounts').textContent = bankCards.length;
