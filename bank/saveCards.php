@@ -36,6 +36,9 @@ try {
         $input = file_get_contents('php://input');
         $data = json_decode($input, true);
         $cards = $data['cards'] ?? null;
+        if ($cards === null && isset($_POST['cards'])) {
+            $cards = $_POST['cards'];
+        }
         if (is_string($cards)) {
             $decodedCards = json_decode($cards, true);
             if (json_last_error() === JSON_ERROR_NONE) {

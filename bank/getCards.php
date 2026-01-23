@@ -56,6 +56,15 @@ try {
         
         if ($cardsData) {
             $cards = json_decode($cardsData, true);
+            if (is_string($cards)) {
+                $decodedCards = json_decode($cards, true);
+                if (json_last_error() === JSON_ERROR_NONE) {
+                    $cards = $decodedCards;
+                }
+            }
+            if (!is_array($cards)) {
+                $cards = $cards === null ? [] : [$cards];
+            }
             http_response_code(200);
             echo json_encode(['cards' => $cards], JSON_UNESCAPED_UNICODE);
         } else {

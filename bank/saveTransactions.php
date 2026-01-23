@@ -39,6 +39,9 @@ try {
         $input = file_get_contents('php://input');
         $data = json_decode($input, true);
         $transactions = $data['transactions'] ?? null;
+        if ($transactions === null && isset($_POST['transactions'])) {
+            $transactions = $_POST['transactions'];
+        }
         if (is_string($transactions)) {
             $decodedTransactions = json_decode($transactions, true);
             if (json_last_error() === JSON_ERROR_NONE) {
