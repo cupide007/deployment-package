@@ -1195,12 +1195,15 @@
     // 全局用户数据缓存
     let globalUsersCache = [];
 
+    let userGrowthChartInstance = null;
+    let documentCategoryChartInstance = null;
+
     // 从云函数API加载用户数据到缓存
     async function refreshUsersCache() {
         try {
             const result = await window.retinboxCloudFunctions.getUsers();
             globalUsersCache = result.users || [];
-            console.log('用户数据缓存已更新:', globalUsersCache.length, '个用户');
+            
             return globalUsersCache;
         } catch (error) {
             console.error('刷新用户缓存失败:', error);
@@ -1937,21 +1940,16 @@
             console.warn('Chart.js未加载，正在等待...');
 
             // 等待Chart.js加载，最多等待10秒
-            for (let i = 0; i < 20; i++) { // 最多尝试20次
-                await new Promise(resolve => setTimeout(resolve, 500)); // 等待500毫秒
+            for (let i = 0; i < 20; i++) {
+                await new Promise(resolve => setTimeout(resolve, 500));
                 if (typeof Chart !== 'undefined') {
-                    console.log('Chart.js已加载');
+                    
                     break;
                 }
             }
 
-            // 如果仍然未加载，则显示错误
             if (typeof Chart === 'undefined') {
                 console.error('Chart.js加载失败，无法生成图表');
-                document.getElementById('userGrowthChart')?.parentElement?.insertAdjacentHTML('beforeend',
-                    '<div class="text-center text-red-500 py-10">图表库加载失败，请检查网络连接</div>');
-                document.getElementById('documentCategoryChart')?.parentElement?.insertAdjacentHTML('beforeend',
-                    '<div class="text-center text-red-500 py-10">图表库加载失败，请检查网络连接</div>');
                 return;
             }
         }
@@ -1966,7 +1964,6 @@
                 return;
             }
 
-            // 获取上下文前检查元素是否已准备好
             const userGrowthCtx = userGrowthCanvas.getContext('2d');
             const documentCategoryCtx = documentCategoryCanvas.getContext('2d');
 
@@ -1975,8 +1972,14 @@
                 return;
             }
 
-            // 用户增长趋势图
-            const userGrowthChart = new Chart(userGrowthCtx, {
+            if (userGrowthChartInstance) {
+                userGrowthChartInstance.destroy();
+            }
+            if (documentCategoryChartInstance) {
+                documentCategoryChartInstance.destroy();
+            }
+
+            userGrowthChartInstance = new Chart(userGrowthCtx, {
                 type: 'line',
                 data: {
                     labels: ['1月', '2月', '3月', '4月', '5月', '6月'],
@@ -2000,8 +2003,7 @@
                 }
             });
 
-            // 文献分类统计图
-            const documentCategoryChart = new Chart(documentCategoryCtx, {
+            documentCategoryChartInstance = new Chart(documentCategoryCtx, {
                 type: 'doughnut',
                 data: {
                     labels: ['法律', '历史', '经济', '文化', '科技', '其他'],
@@ -2025,14 +2027,13 @@
             });
         } catch (error) {
             console.error('生成图表失败:', error);
-
-            // 显示错误信息到界面上
             const errorMsg = `<div class="text-center text-red-500 py-10">图表生成失败: ${error.message}</div>`;
-            document.getElementById('userGrowthChart')?.parentElement?.insertAdjacentHTML('beforeend', errorMsg);
-            document.getElementById('documentCategoryChart')?.parentElement?.insertAdjacentHTML('beforeend', errorMsg);
+            // 注意：这里需要检查 parentElement 是否存在，避免二次报错
+            if(document.getElementById('userGrowthChart')?.parentElement) {
+                console.error('UI Error Display:', error.message);
+            }
         }
     }
-
     // 加载用户数据
     async function loadUsersData() {
         const tableBody = document.getElementById('users-table-body');
@@ -2041,7 +2042,7 @@
             // 刷新用户缓存并获取最新数据
             const users = await refreshUsersCache();
 
-            console.log('加载用户数据:', users);
+            
 
             tableBody.innerHTML = '';
 

@@ -15,7 +15,7 @@ async function createAdminAccount() {
         const user = JSON.parse(userData);
         if (user.username === 'admin' || user.email === 'admin@antister.com') {
           adminExists = true;
-          console.log('管理员账号已存在');
+          
           break;
         }
       }
@@ -100,7 +100,7 @@ async function initDefaultData() {
     if (!users) {
       // 初始化用户列表 - 写操作是同步的，不需要await
       db.set('users', JSON.stringify([]));
-      console.log('初始化默认数据完成');
+      
     }
     
     // 创建管理员账号

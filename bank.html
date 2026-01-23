@@ -1130,7 +1130,7 @@
                 }
                 
                 const suggestions = await searchRecipients(searchTerm);
-                console.log('搜索结果:', suggestions);
+
                 displayRecipientSuggestions(suggestions);
             });
             
@@ -1156,24 +1156,24 @@
                 
                 const currentUserId = getCurrentUserId();
                 
-                console.log('搜索条件:', searchTerm);
-                console.log('所有卡片:', allCards);
-                console.log('所有用户:', users);
-                console.log('当前用户ID:', currentUserId);
+
+
+
+
                 
                 const results = [];
                 
                 allCards.forEach(card => {
                     // 跳过当前用户的卡片
                     if (card.userId === currentUserId) {
-                        console.log('跳过当前用户的卡片:', card);
+
                         return;
                     }
                     
                     const user = users.find(u => u.id === card.userId);
                     const holderName = user ? user.username : '未知用户';
                     
-                    console.log('检查卡片:', card.cardNumber, '持有人:', holderName, '匹配:', card.cardNumber.includes(searchTerm) || holderName.toLowerCase().includes(searchTerm));
+
                     
                     // 搜索卡号或姓名（现在支持所有类型的卡片）
                     if (card.cardNumber.includes(searchTerm) || holderName.toLowerCase().includes(searchTerm)) {
@@ -1184,7 +1184,7 @@
                     }
                 });
                 
-                console.log('最终搜索结果:', results);
+
                 return results;
             }
             
@@ -1229,8 +1229,8 @@
             
             // 填充收款人账户选项
             function populateRecipientAccounts(cards) {
-                console.log('填充收款账户，卡片数量:', cards.length);
-                console.log('卡片详情:', cards);
+
+
                 
                 toAccount.innerHTML = '<option value="">请选择收款账户</option>';
                 
@@ -1326,25 +1326,25 @@
                         // 信用卡余额为正数表示欠款，可用额度 = 信用额度 - 欠款
                         const availableCredit = creditLimit - Math.abs(currentBalance);
                         
-                        console.log('信用卡信息:', fromCard);
-                        console.log('creditLimit:', creditLimit);
-                        console.log('currentBalance:', currentBalance);
-                        console.log('availableCredit:', availableCredit);
+
+
+
+
                         
                         // 信用卡转账收取1%手续费
                         transferFee = amount * 0.01;
                         const totalAmount = amount + transferFee;
                         
-                        console.log('转账金额:', amount);
-                        console.log('手续费:', transferFee);
-                        console.log('总金额:', totalAmount);
+
+
+
                         
                         if (availableCredit < totalAmount) {
                             canTransfer = false;
                             errorMessage = '信用卡可用额度不足';
-                            console.log('可用额度不足，拒绝转账');
+
                         } else {
-                            console.log('可用额度充足，允许转账');
+
                         }
                     } else {
                         // 借记卡转账：检查余额

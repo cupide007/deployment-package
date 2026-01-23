@@ -385,7 +385,7 @@ class UserDataManager {
         console.warn('验证服务器session失败:', verifyError.message);
         // 验证失败但有本地状态，继续使用本地状态
         if (this.currentUser) {
-          console.log('使用本地缓存的用户信息');
+          
           this.notifyAuthListeners();
         } else {
           // 既无法验证也没有本地状态
@@ -426,7 +426,7 @@ class UserDataManager {
   setupRealTimeListeners() {
     // Retinbox KV数据库不支持实时监听，这里使用定期轮询模拟
     // 实际项目中可以根据需要调整轮询频率或使用其他方式实现
-    // console.log('设置实时数据监听器（模拟实现）'); // 注释掉日志输出以避免干扰用户
+    // 
   }
   
   // 注册

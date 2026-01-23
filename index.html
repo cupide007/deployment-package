@@ -622,11 +622,11 @@
                 try {
                     // 使用Retinbox云函数注册用户
                     const registerResult = await window.userDataManager.register(email, password, username);
-                    console.log('注册成功:', registerResult);
+
                     
                     // 注册成功后自动登录以创建session
                     const loginResult = await window.userDataManager.login(email, password);
-                    console.log('自动登录成功:', loginResult);
+
                     
                     // 保存登录状态到sessionStorage
                     sessionStorage.setItem('currentUser', JSON.stringify({
