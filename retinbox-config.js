@@ -211,6 +211,10 @@ class RetinboxCloudFunctions {
     return this.request('bank/addTransaction.php', 'POST', { amount, type, description });
   }
 
+  async saveTransactions(transactions) {
+    return this.request('bank/saveTransactions.php', 'POST', { transactions });
+  }
+
   // 银行相关云函数（补充银行卡片管理）
   async getBankCards() {
     return this.request('bank/getCards.php');
@@ -612,6 +616,13 @@ class UserDataManager {
       return [];
     }
   }
+
+  async saveTransactions(transactions) {
+    if (!this.currentUser) throw new Error('用户未登录');
+    
+    const result = await this.cloudFunctions.saveTransactions(transactions);
+    return result;
+  }
   
   // 银行相关方法（补充银行卡片管理）
   async getBankCards() {
@@ -900,9 +911,7 @@ window.safeSaveData = async function(dataType, data) {
         case 'systemLogs':
           return await window.userDataManager.saveSystemLogs(data);
         case 'transactions':
-          // 注意：交易数据通常通过专门的云函数处理
-          console.warn('交易数据应通过专门的云函数处理');
-          return { error: '交易数据需通过专门的云函数处理' };
+          return await window.userDataManager.saveTransactions(data);
         default:
           console.warn(`未知的数据类型: ${dataType}`);
           return { error: '未知的数据类型' };
@@ -924,4 +933,132 @@ window.safeSaveData = async function(dataType, data) {
       throw saveError;
     }
   }
+};
+
+const remoteStorageKeys = new Set([
+  'bankCards',
+  'documents',
+  'transactions',
+  'permissionTemplates',
+  'adminPermissions',
+  'adminLogs',
+  'systemLogs'
+]);
+const remoteStorageCache = new Map();
+const remoteStorageLoads = new Map();
+const remoteStorageDirty = new Set();
+const originalLocalStorageGetItem = localStorage.getItem.bind(localStorage);
+const originalLocalStorageSetItem = localStorage.setItem.bind(localStorage);
+const originalLocalStorageRemoveItem = localStorage.removeItem.bind(localStorage);
+
+function fetchRemoteStorageKey(key) {
+  if (remoteStorageLoads.has(key)) {
+    return remoteStorageLoads.get(key);
+  }
+  const loader = (async () => {
+    if (!window.userDataManager) return;
+    let data;
+    switch (key) {
+      case 'bankCards':
+        data = await window.userDataManager.getBankCards();
+        break;
+      case 'documents':
+        data = await window.userDataManager.getDocuments();
+        break;
+      case 'transactions':
+        data = await window.userDataManager.getTransactions();
+        break;
+      case 'permissionTemplates':
+        data = await window.userDataManager.getPermissionTemplates();
+        break;
+      case 'adminPermissions':
+        data = await window.userDataManager.getAdminPermissions();
+        break;
+      case 'adminLogs':
+        data = await window.userDataManager.getAdminLogs();
+        break;
+      case 'systemLogs':
+        data = await window.userDataManager.getSystemLogs();
+        break;
+      default:
+        data = null;
+    }
+    if (data !== undefined && !remoteStorageDirty.has(key)) {
+      remoteStorageCache.set(key, data);
+    }
+  })();
+  remoteStorageLoads.set(key, loader);
+  return loader;
+}
+
+function saveRemoteStorageKey(key, data) {
+  if (!window.userDataManager) return;
+  switch (key) {
+    case 'bankCards':
+      return window.userDataManager.saveBankCards(data);
+    case 'documents':
+      return window.userDataManager.saveDocuments(data);
+    case 'transactions':
+      return window.userDataManager.saveTransactions(data);
+    case 'permissionTemplates':
+      return window.userDataManager.savePermissionTemplates(data);
+    case 'adminPermissions':
+      return window.userDataManager.saveAdminPermissions(data);
+    case 'adminLogs':
+      return window.userDataManager.saveAdminLogs(data);
+    case 'systemLogs':
+      return window.userDataManager.saveSystemLogs(data);
+    default:
+      break;
+  }
+}
+
+localStorage.getItem = function(key) {
+  if (remoteStorageKeys.has(key)) {
+    if (!remoteStorageCache.has(key)) {
+      remoteStorageCache.set(key, []);
+      fetchRemoteStorageKey(key);
+      return JSON.stringify([]);
+    }
+    const value = remoteStorageCache.get(key);
+    if (value === undefined || value === null) return null;
+    return JSON.stringify(value);
+  }
+  return originalLocalStorageGetItem(key);
+};
+
+localStorage.setItem = function(key, value) {
+  if (remoteStorageKeys.has(key)) {
+    let parsedValue = value;
+    try {
+      parsedValue = JSON.parse(value);
+    } catch (error) {
+      parsedValue = value;
+    }
+    remoteStorageDirty.add(key);
+    remoteStorageCache.set(key, parsedValue);
+    const savePromise = saveRemoteStorageKey(key, parsedValue);
+    if (savePromise && typeof savePromise.then === 'function') {
+      savePromise.then(() => {
+        remoteStorageDirty.delete(key);
+      }).catch(() => {});
+    }
+    return;
+  }
+  return originalLocalStorageSetItem(key, value);
+};
+
+localStorage.removeItem = function(key) {
+  if (remoteStorageKeys.has(key)) {
+    remoteStorageCache.delete(key);
+    remoteStorageDirty.add(key);
+    const savePromise = saveRemoteStorageKey(key, []);
+    if (savePromise && typeof savePromise.then === 'function') {
+      savePromise.then(() => {
+        remoteStorageDirty.delete(key);
+      }).catch(() => {});
+    }
+    return;
+  }
+  return originalLocalStorageRemoveItem(key);
 };
