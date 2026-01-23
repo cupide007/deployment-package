@@ -65,11 +65,14 @@ try {
         $rawInput = file_get_contents('php://input');
         $updateData = json_decode($rawInput, true);
         
-        // 验证更新数据
-        if (!$updateData) {
+        if ($rawInput !== '' && $updateData === null) {
             http_response_code(400);
             echo json_encode(['error' => '请提供要更新的数据'], JSON_UNESCAPED_UNICODE);
             exit;
+        }
+        
+        if ($updateData === null) {
+            $updateData = [];
         }
         
         // 获取当前用户数据
