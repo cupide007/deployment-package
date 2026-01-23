@@ -5,88 +5,125 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>安提斯特虚拟国 - 管理员后台</title>
     <link rel="icon" href="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f4bb.png">
-    <!-- Tailwind CSS v3 -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="tailwind.css">
     <!-- Font Awesome -->
     <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
     <!-- Retinbox 配置 -->
     <script src="retinbox-config.js"></script>
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- 统一的 Tailwind 配置 -->
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#0A2463', // 深蓝色
-                        secondary: '#E6AF2E', // 金色
-                        accent: '#3E92CC', // 天蓝色
-                        light: '#FFFAFF', // 白色
-                        dark: '#1E1B18', // 深灰色
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'system-ui', 'sans-serif'],
-                        serif: ['Georgia', 'serif'],
-                    },
-                    animation: {
-                        'float': 'float 3s ease-in-out infinite',
-                        'fade-in': 'fadeIn 1s ease-in-out',
-                        'slide-up': 'slideUp 0.5s ease-out',
-                        'slide-down': 'slideDown 0.5s ease-out',
-                        'slide-left': 'slideLeft 0.5s ease-out',
-                        'slide-right': 'slideRight 0.5s ease-out',
-                    },
-                    keyframes: {
-                        float: {
-                            '0%, 100%': { transform: 'translateY(0)' },
-                            '50%': { transform: 'translateY(-10px)' },
-                        },
-                        fadeIn: {
-                            '0%': { opacity: '0' },
-                            '100%': { opacity: '1' },
-                        },
-                        slideUp: {
-                            '0%': { transform: 'translateY(20px)', opacity: '0' },
-                            '100%': { transform: 'translateY(0)', opacity: '1' },
-                        },
-                        slideDown: {
-                            '0%': { transform: 'translateY(-20px)', opacity: '0' },
-                            '100%': { transform: 'translateY(0)', opacity: '1' },
-                        },
-                        slideLeft: {
-                            '0%': { transform: 'translateX(20px)', opacity: '0' },
-                            '100%': { transform: 'translateX(0)', opacity: '1' },
-                        },
-                        slideRight: {
-                            '0%': { transform: 'translateX(-20px)', opacity: '0' },
-                            '100%': { transform: 'translateX(0)', opacity: '1' },
-                        },
-                    },
-                }
-            }
+    <style>
+        .bg-primary {
+            --tw-bg-opacity: 1;
+            background-color: rgb(10 36 99 / var(--tw-bg-opacity));
         }
-    </script>
-    <style type="text/tailwindcss">
-        @layer utilities {
-            .text-shadow {
-                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-            }
-            .text-shadow-sm {
-                text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
-            }
-            .bg-gradient-primary {
-                background: linear-gradient(135deg, theme('colors.primary'), theme('colors.accent'));
-            }
-            .border-gradient {
-                border-image: linear-gradient(to right, theme('colors.secondary'), theme('colors.accent')) 1;
-            }
-            .glass-effect {
-                background: rgba(255, 250, 255, 0.1);
-                backdrop-filter: blur(10px);
-                -webkit-backdrop-filter: blur(10px);
-                border: 1px solid rgba(255, 250, 255, 0.2);
-            }
+        .bg-secondary {
+            --tw-bg-opacity: 1;
+            background-color: rgb(230 175 46 / var(--tw-bg-opacity));
+        }
+        .bg-accent {
+            --tw-bg-opacity: 1;
+            background-color: rgb(62 146 204 / var(--tw-bg-opacity));
+        }
+        .bg-light {
+            --tw-bg-opacity: 1;
+            background-color: rgb(255 250 255 / var(--tw-bg-opacity));
+        }
+        .bg-dark {
+            --tw-bg-opacity: 1;
+            background-color: rgb(30 27 24 / var(--tw-bg-opacity));
+        }
+        .text-primary {
+            --tw-text-opacity: 1;
+            color: rgb(10 36 99 / var(--tw-text-opacity));
+        }
+        .text-secondary {
+            --tw-text-opacity: 1;
+            color: rgb(230 175 46 / var(--tw-text-opacity));
+        }
+        .text-accent {
+            --tw-text-opacity: 1;
+            color: rgb(62 146 204 / var(--tw-text-opacity));
+        }
+        .text-light {
+            --tw-text-opacity: 1;
+            color: rgb(255 250 255 / var(--tw-text-opacity));
+        }
+        .text-dark {
+            --tw-text-opacity: 1;
+            color: rgb(30 27 24 / var(--tw-text-opacity));
+        }
+        .border-primary {
+            --tw-border-opacity: 1;
+            border-color: rgb(10 36 99 / var(--tw-border-opacity));
+        }
+        .hover\:text-primary:hover {
+            --tw-text-opacity: 1;
+            color: rgb(10 36 99 / var(--tw-text-opacity));
+        }
+        .hover\:text-secondary:hover {
+            --tw-text-opacity: 1;
+            color: rgb(230 175 46 / var(--tw-text-opacity));
+        }
+        .text-shadow {
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        .text-shadow-sm {
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        }
+        .bg-gradient-primary {
+            background: linear-gradient(135deg, #0A2463, #3E92CC);
+        }
+        .border-gradient {
+            border-image: linear-gradient(to right, #E6AF2E, #3E92CC) 1;
+        }
+        .glass-effect {
+            background: rgba(255, 250, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 250, 255, 0.2);
+        }
+        .animate-fade-in {
+            animation: fadeIn 1s ease-in-out;
+        }
+        .animate-float {
+            animation: float 3s ease-in-out infinite;
+        }
+        .animate-slide-up {
+            animation: slideUp 0.5s ease-out;
+        }
+        .animate-slide-down {
+            animation: slideDown 0.5s ease-out;
+        }
+        .animate-slide-left {
+            animation: slideLeft 0.5s ease-out;
+        }
+        .animate-slide-right {
+            animation: slideRight 0.5s ease-out;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        @keyframes fadeIn {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+        @keyframes slideUp {
+            0% { transform: translateY(20px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes slideDown {
+            0% { transform: translateY(-20px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes slideLeft {
+            0% { transform: translateX(20px); opacity: 0; }
+            100% { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes slideRight {
+            0% { transform: translateX(-20px); opacity: 0; }
+            100% { transform: translateX(0); opacity: 1; }
         }
     </style>
 </head>
@@ -1913,7 +1950,9 @@
             }
         }
 
-        // 生成图表
+        let userGrowthChartInstance = null;
+        let documentCategoryChartInstance = null;
+
         async function generateCharts() {
             // 等待Chart.js加载完成
             if (typeof Chart === 'undefined') {
@@ -1958,8 +1997,17 @@
                     return;
                 }
                 
-                // 用户增长趋势图
-                const userGrowthChart = new Chart(userGrowthCtx, {
+                if (userGrowthChartInstance) {
+                    userGrowthChartInstance.destroy();
+                    userGrowthChartInstance = null;
+                }
+
+                if (documentCategoryChartInstance) {
+                    documentCategoryChartInstance.destroy();
+                    documentCategoryChartInstance = null;
+                }
+
+                userGrowthChartInstance = new Chart(userGrowthCtx, {
                     type: 'line',
                     data: {
                         labels: ['1月', '2月', '3月', '4月', '5月', '6月'],
@@ -1984,7 +2032,7 @@
                 });
 
                 // 文献分类统计图
-                const documentCategoryChart = new Chart(documentCategoryCtx, {
+                documentCategoryChartInstance = new Chart(documentCategoryCtx, {
                     type: 'doughnut',
                     data: {
                         labels: ['法律', '历史', '经济', '文化', '科技', '其他'],
