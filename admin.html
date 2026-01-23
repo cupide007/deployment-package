@@ -2813,7 +2813,7 @@
                 role: role
             });
 
-            if (updateResult.success) {
+            if (updateResult.user) {
                 // 关闭模态框并重置表单
                 document.getElementById('edit-user-modal').classList.add('hidden');
                 document.getElementById('edit-user-form').reset();
@@ -2829,7 +2829,7 @@
 
                 // 刷新用户缓存并重新加载用户数据
                 await refreshUsersCache();
-                loadUsersData();
+                await loadUsersData();
 
                 alert('用户信息更新成功');
             } else {
