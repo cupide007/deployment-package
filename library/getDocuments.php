@@ -33,16 +33,54 @@ try {
             exit;
         }
         
-        $documentsData = $db->get("documents_{$session['userId']}");
-        
-        if ($documentsData) {
-            $documents = json_decode($documentsData, true);
-            http_response_code(200);
-            echo json_encode(['documents' => $documents], JSON_UNESCAPED_UNICODE);
-        } else {
-            http_response_code(200);
-            echo json_encode(['documents' => []], JSON_UNESCAPED_UNICODE);
+        $usersData = $db->get('users');
+        $userIds = $usersData ? json_decode($usersData, true) : [];
+        if (!is_array($userIds)) {
+            $userIds = $userIds === null ? [] : [$userIds];
         }
+        if (!in_array($session['userId'], $userIds, true)) {
+            $userIds[] = $session['userId'];
+        }
+        $normalizedUserIds = [];
+        foreach ($userIds as $userId) {
+            if ($userId === null || $userId === '') {
+                continue;
+            }
+            if (!in_array($userId, $normalizedUserIds, true)) {
+                $normalizedUserIds[] = $userId;
+            }
+        }
+        $allDocuments = [];
+        $seenDocuments = [];
+        foreach ($normalizedUserIds as $userId) {
+            $documentsData = $db->get("documents_{$userId}");
+            if (!$documentsData) {
+                continue;
+            }
+            $documents = json_decode($documentsData, true);
+            if (is_string($documents)) {
+                $decodedDocuments = json_decode($documents, true);
+                if (json_last_error() === JSON_ERROR_NONE) {
+                    $documents = $decodedDocuments;
+                }
+            }
+            if (!is_array($documents)) {
+                $documents = $documents === null ? [] : [$documents];
+            }
+            foreach ($documents as $document) {
+                if (!is_array($document)) {
+                    continue;
+                }
+                $documentKey = $document['id'] ?? null;
+                if ($documentKey === null || isset($seenDocuments[$documentKey])) {
+                    continue;
+                }
+                $seenDocuments[$documentKey] = true;
+                $allDocuments[] = $document;
+            }
+        }
+        http_response_code(200);
+        echo json_encode(['documents' => $allDocuments], JSON_UNESCAPED_UNICODE);
         
     } else {
         http_response_code(405);

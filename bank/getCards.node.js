@@ -43,27 +43,31 @@ async function handleGetCards() {
 
     let allCards = [];
 
-    if (isAdmin) {
-      // 管理员：遍历所有用户
-      const usersData = await db.get('users');
-      const userIds = usersData ? JSON.parse(usersData) : [];
+    const usersData = await db.get('users');
+    const userIds = usersData ? JSON.parse(usersData) : [];
 
-      // 依次获取每个用户的卡片
-      for (const userId of userIds) {
-        const cardsData = await db.get(`bank_cards:${userId}`);
-        if (cardsData) {
-          let cards = JSON.parse(cardsData);
-          if (!Array.isArray(cards)) cards = [cards];
-          allCards = allCards.concat(cards);
-        }
-      }
-    } else {
-      // 普通用户
-      const cardsData = await db.get(`bank_cards:${currentUserId}`);
+    if (!userIds.includes(currentUserId)) {
+      userIds.push(currentUserId);
+    }
+
+    const normalizedUserIds = Array.from(
+      new Set(userIds.filter((value) => value !== null && value !== ''))
+    );
+
+    const seenCards = new Set();
+
+    for (const userId of normalizedUserIds) {
+      const cardsData = await db.get(`bank_cards:${userId}`);
       if (cardsData) {
         let cards = JSON.parse(cardsData);
         if (!Array.isArray(cards)) cards = [cards];
-        allCards = cards;
+        for (const card of cards) {
+          if (!card || typeof card !== 'object') continue;
+          const cardKey = card.id ?? card.cardNumber ?? null;
+          if (!cardKey || seenCards.has(cardKey)) continue;
+          seenCards.add(cardKey);
+          allCards.push(card);
+        }
       }
     }
 

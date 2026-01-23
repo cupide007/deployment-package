@@ -55,16 +55,37 @@ async function handleGetDocuments() {
       return;
     }
     
-    // 获取文档数据 - 读操作是异步的，需要await
-    const documentsData = await db.get(`documents:${session.userId}`);
-    
-    if (documentsData) {
-      // 返回响应 - res是全局变量
-      res.status(200).json({ documents: JSON.parse(documentsData) });
-    } else {
-      // 返回默认文档数组
-      res.status(200).json({ documents: [] });
+    const usersData = await db.get('users');
+    let userIds = usersData ? JSON.parse(usersData) : [];
+    if (!Array.isArray(userIds)) {
+      userIds = userIds === null ? [] : [userIds];
     }
+    if (!userIds.includes(session.userId)) {
+      userIds.push(session.userId);
+    }
+    const normalizedUserIds = Array.from(
+      new Set(userIds.filter((value) => value !== null && value !== ''))
+    );
+    const documents = [];
+    const seenDocuments = new Set();
+    for (const userId of normalizedUserIds) {
+      const documentsData = await db.get(`documents:${userId}`);
+      if (!documentsData) {
+        continue;
+      }
+      let parsedDocuments = JSON.parse(documentsData);
+      if (!Array.isArray(parsedDocuments)) {
+        parsedDocuments = parsedDocuments === null ? [] : [parsedDocuments];
+      }
+      for (const document of parsedDocuments) {
+        if (!document || typeof document !== 'object') continue;
+        const documentKey = document.id ?? null;
+        if (!documentKey || seenDocuments.has(documentKey)) continue;
+        seenDocuments.add(documentKey);
+        documents.push(document);
+      }
+    }
+    res.status(200).json({ documents });
   } catch (error) {
     console.error('获取文档数据失败:', error);
     // 返回响应 - res是全局变量

@@ -51,43 +51,33 @@ try {
 
         $currentUserId = $session['userId'];
 
-        // 获取当前用户信息以检查权限
-        $currentUserData = $db->get("user_$currentUserId");
-        $currentUser = $currentUserData ? json_decode($currentUserData, true) : [];
-        $isAdmin = ($currentUser['role'] ?? '') === 'admin';
-
         $allCards = [];
 
-        if ($isAdmin) {
-            // 管理员：获取所有用户的卡片
-            $usersData = $db->get('users');
-            $userIds = $usersData ? json_decode($usersData, true) : [];
+        $usersData = $db->get('users');
+        $userIds = $usersData ? json_decode($usersData, true) : [];
 
-            // 确保包含当前用户（防止users列表数据不完整）
-            if (!in_array($currentUserId, $userIds)) {
-                $userIds[] = $currentUserId;
-            }
+        if (!is_array($userIds)) {
+            $userIds = $userIds === null ? [] : [$userIds];
+        }
 
-            foreach ($userIds as $userId) {
-                $cardsData = $db->get("bank_cards_$userId");
-                if ($cardsData) {
-                    $cards = json_decode($cardsData, true);
-                    // 处理可能的双重编码问题
-                    if (is_string($cards)) {
-                        $decodedCards = json_decode($cards, true);
-                        if (json_last_error() === JSON_ERROR_NONE) {
-                            $cards = $decodedCards;
-                        }
-                    }
-                    if (!is_array($cards)) {
-                        $cards = $cards === null ? [] : [$cards];
-                    }
-                    $allCards = array_merge($allCards, $cards);
-                }
+        $normalizedUserIds = [];
+        foreach ($userIds as $userId) {
+            if ($userId === null || $userId === '') {
+                continue;
             }
-        } else {
-            // 普通用户：只获取自己的卡片
-            $cardsData = $db->get("bank_cards_$currentUserId");
+            if (!in_array($userId, $normalizedUserIds, true)) {
+                $normalizedUserIds[] = $userId;
+            }
+        }
+
+        if (!in_array($currentUserId, $normalizedUserIds, true)) {
+            $normalizedUserIds[] = $currentUserId;
+        }
+
+        $seenCards = [];
+
+        foreach ($normalizedUserIds as $userId) {
+            $cardsData = $db->get("bank_cards_$userId");
             if ($cardsData) {
                 $cards = json_decode($cardsData, true);
                 if (is_string($cards)) {
@@ -99,7 +89,17 @@ try {
                 if (!is_array($cards)) {
                     $cards = $cards === null ? [] : [$cards];
                 }
-                $allCards = $cards;
+                foreach ($cards as $card) {
+                    if (!is_array($card)) {
+                        continue;
+                    }
+                    $cardKey = $card['id'] ?? $card['cardNumber'] ?? null;
+                    if ($cardKey === null || isset($seenCards[$cardKey])) {
+                        continue;
+                    }
+                    $seenCards[$cardKey] = true;
+                    $allCards[] = $card;
+                }
             }
         }
 
