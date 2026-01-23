@@ -51,27 +51,32 @@ try {
 
         $currentUserId = $session['userId'];
 
-        // 获取当前用户信息以检查权限
-        $currentUserData = $db->get("user_$currentUserId");
-        $currentUser = $currentUserData ? json_decode($currentUserData, true) : [];
-        $isAdmin = ($currentUser['role'] ?? '') === 'admin';
-
         $allCards = [];
 
         $usersData = $db->get('users');
         $userIds = $usersData ? json_decode($usersData, true) : [];
 
-        if (!in_array($currentUserId, $userIds)) {
-            $userIds[] = $currentUserId;
+        if (!is_array($userIds)) {
+            $userIds = $userIds === null ? [] : [$userIds];
         }
 
-        $userIds = array_values(array_unique(array_filter($userIds, function($value) {
-            return $value !== null && $value !== '';
-        })));
+        $normalizedUserIds = [];
+        foreach ($userIds as $userId) {
+            if ($userId === null || $userId === '') {
+                continue;
+            }
+            if (!in_array($userId, $normalizedUserIds, true)) {
+                $normalizedUserIds[] = $userId;
+            }
+        }
+
+        if (!in_array($currentUserId, $normalizedUserIds, true)) {
+            $normalizedUserIds[] = $currentUserId;
+        }
 
         $seenCards = [];
 
-        foreach ($userIds as $userId) {
+        foreach ($normalizedUserIds as $userId) {
             $cardsData = $db->get("bank_cards_$userId");
             if ($cardsData) {
                 $cards = json_decode($cardsData, true);
