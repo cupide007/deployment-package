@@ -10,7 +10,7 @@
     <!-- Font Awesome -->
     <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
     <!-- Chart.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.8/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Retinbox 配置 -->
     <script src="retinbox-config.js"></script>
     <!-- 统一的 Tailwind 配置 -->
@@ -617,8 +617,109 @@
                                         </table>
                                     </div>
                                 </div>
+
                             </div>
                         </div>
+                        <div id="panel-repayment" class="hidden animate-fade-in">
+                            <div class="bg-white rounded-lg shadow-md p-6">
+                                <h2 class="text-2xl font-bold text-primary mb-6">信用卡还款</h2>
+
+                                <form id="repayment-form" class="space-y-6">
+                                    <div>
+                                        <h3 class="text-lg font-medium text-gray-800 mb-4">选择信用卡</h3>
+                                        <select id="credit-card-select" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required>
+                                            <option value="">请选择要还款的信用卡</option>
+                                            <!-- 信用卡选项将通过JavaScript动态添加 -->
+                                        </select>
+                                    </div>
+
+                                    <div class="bg-gray-50 p-4 rounded-lg">
+                                        <h4 class="font-medium text-gray-800 mb-2">信用卡信息</h4>
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                                            <div>
+                                                <span class="text-gray-600">卡号：</span>
+                                                <span id="repayment-card-number" class="font-medium">-</span>
+                                            </div>
+                                            <div>
+                                                <span class="text-gray-600">持卡人：</span>
+                                                <span id="repayment-card-holder" class="font-medium">-</span>
+                                            </div>
+                                            <div>
+                                                <span class="text-gray-600">账单日：</span>
+                                                <span id="repayment-billing-date" class="font-medium">-</span>
+                                            </div>
+                                            <div>
+                                                <span class="text-gray-600">还款日：</span>
+                                                <span id="repayment-due-date" class="font-medium">-</span>
+                                            </div>
+                                            <div>
+                                                <span class="text-gray-600">本期应还：</span>
+                                                <span id="repayment-amount-due" class="font-medium text-red-600">-</span>
+                                            </div>
+                                            <div>
+                                                <span class="text-gray-600">最低还款额：</span>
+                                                <span id="repayment-min-amount" class="font-medium text-orange-600">-</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- 选择还款账户 -->
+                                    <div>
+                                        <h3 class="text-lg font-medium text-gray-800 mb-4">选择还款账户</h3>
+                                        <select id="debit-card-select" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required>
+                                            <option value="">请选择还款账户（借记卡）</option>
+                                            <!-- 借记卡选项将通过JavaScript动态添加 -->
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <label for="repayment-amount" class="block text-gray-700 mb-2">还款金额</label>
+                                        <div class="relative">
+                                            <span class="absolute left-4 top-2 text-gray-500">¥</span>
+                                            <input type="number" id="repayment-amount" min="0.01" step="0.01" class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" placeholder="请输入还款金额" required>
+                                        </div>
+                                        <div id="repayment-error" class="mt-1 text-sm text-red-600 hidden"></div>
+                                        <div class="mt-2 flex space-x-2">
+                                            <button type="button" id="pay-min-btn" class="text-sm text-orange-600 hover:text-orange-700">
+                                                最低还款额
+                                            </button>
+                                            <button type="button" id="pay-full-btn" class="text-sm text-green-600 hover:text-green-700">
+                                                全额还款
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div class="bg-gray-50 p-4 rounded-lg">
+                                        <h4 class="font-medium text-gray-800 mb-2">还款信息确认</h4>
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                                            <div>
+                                                <span class="text-gray-600">还款账户：</span>
+                                                <span id="confirm-debit-card" class="font-medium">未选择</span>
+                                            </div>
+                                            <div>
+                                                <span class="text-gray-600">还款金额：</span>
+                                                <span id="confirm-repayment-amount" class="font-medium">¥0.00</span>
+                                            </div>
+                                            <div>
+                                                <span class="text-gray-600">手续费：</span>
+                                                <span class="font-medium">¥0.00</span>
+                                            </div>
+                                            <div>
+                                                <span class="text-gray-600">实付金额：</span>
+                                                <span id="confirm-total-amount" class="font-medium text-primary">¥0.00</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="text-center">
+                                        <button type="submit" class="bg-primary text-white px-8 py-3 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium">
+                                            确认还款
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             </div>
@@ -768,108 +869,6 @@
             </div>
         </div>
     </div>
-
-    <!-- 信用卡还款面板 -->
-    <div id="panel-repayment" class="hidden animate-fade-in">
-        <div class="bg-white rounded-lg shadow-md p-6">
-            <h2 class="text-2xl font-bold text-primary mb-6">信用卡还款</h2>
-            
-            <form id="repayment-form" class="space-y-6">
-                <div>
-                    <h3 class="text-lg font-medium text-gray-800 mb-4">选择信用卡</h3>
-                    <select id="credit-card-select" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required>
-                        <option value="">请选择要还款的信用卡</option>
-                        <!-- 信用卡选项将通过JavaScript动态添加 -->
-                    </select>
-                </div>
-                
-                <div class="bg-gray-50 p-4 rounded-lg">
-                    <h4 class="font-medium text-gray-800 mb-2">信用卡信息</h4>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                        <div>
-                            <span class="text-gray-600">卡号：</span>
-                            <span id="repayment-card-number" class="font-medium">-</span>
-                        </div>
-                        <div>
-                            <span class="text-gray-600">持卡人：</span>
-                            <span id="repayment-card-holder" class="font-medium">-</span>
-                        </div>
-                        <div>
-                            <span class="text-gray-600">账单日：</span>
-                            <span id="repayment-billing-date" class="font-medium">-</span>
-                        </div>
-                        <div>
-                            <span class="text-gray-600">还款日：</span>
-                            <span id="repayment-due-date" class="font-medium">-</span>
-                        </div>
-                        <div>
-                            <span class="text-gray-600">本期应还：</span>
-                            <span id="repayment-amount-due" class="font-medium text-red-600">-</span>
-                        </div>
-                        <div>
-                            <span class="text-gray-600">最低还款额：</span>
-                            <span id="repayment-min-amount" class="font-medium text-orange-600">-</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- 选择还款账户 -->
-                <div>
-                    <h3 class="text-lg font-medium text-gray-800 mb-4">选择还款账户</h3>
-                    <select id="debit-card-select" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required>
-                        <option value="">请选择还款账户（借记卡）</option>
-                        <!-- 借记卡选项将通过JavaScript动态添加 -->
-                    </select>
-                </div>
-                
-                <div>
-                    <label for="repayment-amount" class="block text-gray-700 mb-2">还款金额</label>
-                    <div class="relative">
-                        <span class="absolute left-4 top-2 text-gray-500">¥</span>
-                        <input type="number" id="repayment-amount" min="0.01" step="0.01" class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" placeholder="请输入还款金额" required>
-                    </div>
-                    <div id="repayment-error" class="mt-1 text-sm text-red-600 hidden"></div>
-                    <div class="mt-2 flex space-x-2">
-                        <button type="button" id="pay-min-btn" class="text-sm text-orange-600 hover:text-orange-700">
-                            最低还款额
-                        </button>
-                        <button type="button" id="pay-full-btn" class="text-sm text-green-600 hover:text-green-700">
-                            全额还款
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="bg-gray-50 p-4 rounded-lg">
-                    <h4 class="font-medium text-gray-800 mb-2">还款信息确认</h4>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                        <div>
-                            <span class="text-gray-600">还款账户：</span>
-                            <span id="confirm-debit-card" class="font-medium">未选择</span>
-                        </div>
-                        <div>
-                            <span class="text-gray-600">还款金额：</span>
-                            <span id="confirm-repayment-amount" class="font-medium">¥0.00</span>
-                        </div>
-                        <div>
-                            <span class="text-gray-600">手续费：</span>
-                            <span class="font-medium">¥0.00</span>
-                        </div>
-                        <div>
-                            <span class="text-gray-600">实付金额：</span>
-                            <span id="confirm-total-amount" class="font-medium text-primary">¥0.00</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="text-center">
-                    <button type="submit" class="bg-primary text-white px-8 py-3 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium">
-                        确认还款
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
     <!-- JavaScript -->
     <script>
         // 页面加载完成后执行
