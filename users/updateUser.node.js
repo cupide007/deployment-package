@@ -42,13 +42,10 @@ async function handleUpdateUser() {
     }
     
     // 获取请求数据
-    const updateData = req.body;
-    
-    // 验证更新数据
-    if (!updateData) {
-      // 返回响应 - res是全局变量
-    res.status(400).json({ error: '请提供要更新的数据' });
-      return;
+    let updateData = req.body;
+
+    if (!updateData || Object.keys(updateData).length === 0) {
+      updateData = req.query;
     }
     
     // 获取当前用户数据
@@ -66,9 +63,14 @@ async function handleUpdateUser() {
     const filteredUpdateData = {};
     
     for (const field of allowedFields) {
-      if (updateData.hasOwnProperty(field)) {
+      if (Object.prototype.hasOwnProperty.call(updateData, field)) {
         filteredUpdateData[field] = updateData[field];
       }
+    }
+
+    if (Object.keys(filteredUpdateData).length === 0) {
+      res.status(400).json({ error: '请提供要更新的数据' });
+      return;
     }
     
     // 更新用户数据

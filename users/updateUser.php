@@ -64,17 +64,21 @@ try {
         // 获取请求数据
         $rawInput = file_get_contents('php://input');
         $trimmedInput = trim($rawInput);
-        $updateData = null;
+        $updateData = [];
 
         if ($trimmedInput !== '') {
-            $updateData = json_decode($trimmedInput, true);
-            if (json_last_error() !== JSON_ERROR_NONE) {
-                $updateData = [];
-            } elseif ($updateData === null) {
-                $updateData = [];
+            $decodedInput = json_decode($trimmedInput, true);
+            if (json_last_error() === JSON_ERROR_NONE && $decodedInput !== null) {
+                $updateData = $decodedInput;
             }
-        } else {
-            $updateData = [];
+        }
+
+        if (empty($updateData)) {
+            $updateData = $_POST;
+        }
+
+        if (empty($updateData)) {
+            $updateData = $_REQUEST;
         }
         
         // 获取当前用户数据
@@ -95,6 +99,12 @@ try {
             if (array_key_exists($field, $updateData)) {
                 $filteredUpdateData[$field] = $updateData[$field];
             }
+        }
+
+        if (empty($filteredUpdateData)) {
+            http_response_code(400);
+            echo json_encode(['error' => '请提供要更新的数据'], JSON_UNESCAPED_UNICODE);
+            exit;
         }
         
         // 更新用户数据
