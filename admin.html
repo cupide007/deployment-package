@@ -1909,7 +1909,7 @@
             const users = await getUsers();
 
             const accounts = await window.safeGetData('bankCards', []);
-            const documents = JSON.parse(localStorage.getItem('documents')) || [];
+            const documents = await window.safeGetData('documents', []);
 
             // 更新统计数据
             document.getElementById('total-users').textContent = users.length;
