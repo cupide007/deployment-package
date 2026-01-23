@@ -58,36 +58,15 @@ try {
 
         $allCards = [];
 
-        if ($isAdmin) {
-            // 管理员：获取所有用户的卡片
-            $usersData = $db->get('users');
-            $userIds = $usersData ? json_decode($usersData, true) : [];
+        $usersData = $db->get('users');
+        $userIds = $usersData ? json_decode($usersData, true) : [];
 
-            // 确保包含当前用户（防止users列表数据不完整）
-            if (!in_array($currentUserId, $userIds)) {
-                $userIds[] = $currentUserId;
-            }
+        if (!in_array($currentUserId, $userIds)) {
+            $userIds[] = $currentUserId;
+        }
 
-            foreach ($userIds as $userId) {
-                $cardsData = $db->get("bank_cards_$userId");
-                if ($cardsData) {
-                    $cards = json_decode($cardsData, true);
-                    // 处理可能的双重编码问题
-                    if (is_string($cards)) {
-                        $decodedCards = json_decode($cards, true);
-                        if (json_last_error() === JSON_ERROR_NONE) {
-                            $cards = $decodedCards;
-                        }
-                    }
-                    if (!is_array($cards)) {
-                        $cards = $cards === null ? [] : [$cards];
-                    }
-                    $allCards = array_merge($allCards, $cards);
-                }
-            }
-        } else {
-            // 普通用户：只获取自己的卡片
-            $cardsData = $db->get("bank_cards_$currentUserId");
+        foreach ($userIds as $userId) {
+            $cardsData = $db->get("bank_cards_$userId");
             if ($cardsData) {
                 $cards = json_decode($cardsData, true);
                 if (is_string($cards)) {
@@ -99,7 +78,7 @@ try {
                 if (!is_array($cards)) {
                     $cards = $cards === null ? [] : [$cards];
                 }
-                $allCards = $cards;
+                $allCards = array_merge($allCards, $cards);
             }
         }
 
