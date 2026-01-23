@@ -65,6 +65,12 @@ try {
             $userIds[] = $currentUserId;
         }
 
+        $userIds = array_values(array_unique(array_filter($userIds, function($value) {
+            return $value !== null && $value !== '';
+        })));
+
+        $seenCards = [];
+
         foreach ($userIds as $userId) {
             $cardsData = $db->get("bank_cards_$userId");
             if ($cardsData) {
@@ -78,7 +84,17 @@ try {
                 if (!is_array($cards)) {
                     $cards = $cards === null ? [] : [$cards];
                 }
-                $allCards = array_merge($allCards, $cards);
+                foreach ($cards as $card) {
+                    if (!is_array($card)) {
+                        continue;
+                    }
+                    $cardKey = $card['id'] ?? $card['cardNumber'] ?? null;
+                    if ($cardKey === null || isset($seenCards[$cardKey])) {
+                        continue;
+                    }
+                    $seenCards[$cardKey] = true;
+                    $allCards[] = $card;
+                }
             }
         }
 

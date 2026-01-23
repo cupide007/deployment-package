@@ -50,12 +50,24 @@ async function handleGetCards() {
       userIds.push(currentUserId);
     }
 
-    for (const userId of userIds) {
+    const normalizedUserIds = Array.from(
+      new Set(userIds.filter((value) => value !== null && value !== ''))
+    );
+
+    const seenCards = new Set();
+
+    for (const userId of normalizedUserIds) {
       const cardsData = await db.get(`bank_cards:${userId}`);
       if (cardsData) {
         let cards = JSON.parse(cardsData);
         if (!Array.isArray(cards)) cards = [cards];
-        allCards = allCards.concat(cards);
+        for (const card of cards) {
+          if (!card || typeof card !== 'object') continue;
+          const cardKey = card.id ?? card.cardNumber ?? null;
+          if (!cardKey || seenCards.has(cardKey)) continue;
+          seenCards.add(cardKey);
+          allCards.push(card);
+        }
       }
     }
 
