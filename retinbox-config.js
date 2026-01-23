@@ -633,7 +633,7 @@ class UserDataManager {
       return result.transactions;
     } catch (error) {
       console.error('获取交易记录失败:', error);
-      return [];
+      return null;
     }
   }
 
@@ -653,7 +653,7 @@ class UserDataManager {
       return result.cards;
     } catch (error) {
       console.error('获取银行卡片失败:', error);
-      return [];
+      return null;
     }
   }
 
@@ -700,7 +700,7 @@ class UserDataManager {
       return result.documents;
     } catch (error) {
       console.error('获取文档失败:', error);
-      return [];
+      return null;
     }
   }
 
@@ -720,7 +720,7 @@ class UserDataManager {
       return result.templates;
     } catch (error) {
       console.error('获取权限模板失败:', error);
-      return [];
+      return null;
     }
   }
 
@@ -739,7 +739,7 @@ class UserDataManager {
       return result.permissions;
     } catch (error) {
       console.error('获取管理员权限失败:', error);
-      return [];
+      return null;
     }
   }
 
@@ -758,7 +758,7 @@ class UserDataManager {
       return result.logs;
     } catch (error) {
       console.error('获取管理员日志失败:', error);
-      return [];
+      return null;
     }
   }
 
@@ -778,7 +778,7 @@ class UserDataManager {
       return result.logs;
     } catch (error) {
       console.error('获取系统日志失败:', error);
-      return [];
+      return null;
     }
   }
 
@@ -876,19 +876,19 @@ window.safeGetData = async function(dataType, defaultValue = []) {
     if (window.userDataManager) {
       switch(dataType) {
         case 'bankCards':
-          return await window.userDataManager.getBankCards();
+          return await window.userDataManager.getBankCards() ?? defaultValue;
         case 'documents':
-          return await window.userDataManager.getDocuments();
+          return await window.userDataManager.getDocuments() ?? defaultValue;
         case 'transactions':
-          return await window.userDataManager.getTransactions();
+          return await window.userDataManager.getTransactions() ?? defaultValue;
         case 'permissionTemplates':
-          return await window.userDataManager.getPermissionTemplates();
+          return await window.userDataManager.getPermissionTemplates() ?? defaultValue;
         case 'adminPermissions':
-          return await window.userDataManager.getAdminPermissions();
+          return await window.userDataManager.getAdminPermissions() ?? defaultValue;
         case 'adminLogs':
-          return await window.userDataManager.getAdminLogs();
+          return await window.userDataManager.getAdminLogs() ?? defaultValue;
         case 'systemLogs':
-          return await window.userDataManager.getSystemLogs();
+          return await window.userDataManager.getSystemLogs() ?? defaultValue;
         default:
           console.warn(`未知的数据类型: ${dataType}`);
           return defaultValue;
@@ -1003,7 +1003,7 @@ function fetchRemoteStorageKey(key) {
       default:
         data = null;
     }
-    if (data !== undefined && !remoteStorageDirty.has(key)) {
+    if (data !== undefined && data !== null && !remoteStorageDirty.has(key)) {
       remoteStorageCache.set(key, data);
       originalLocalStorageSetItem(key, JSON.stringify(data ?? []));
     }
