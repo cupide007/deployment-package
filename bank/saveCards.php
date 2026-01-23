@@ -49,7 +49,52 @@ try {
             $cards = $cards === null ? [] : [$cards];
         }
         
-        $db->set("bank_cards_{$session['userId']}", json_encode($cards));
+        $currentUserId = $session['userId'];
+        $currentUserData = $db->get("user_$currentUserId");
+        $currentUser = $currentUserData ? json_decode($currentUserData, true) : [];
+        $isAdmin = ($currentUser['role'] ?? '') === 'admin';
+        if ($isAdmin) {
+            $cardsByUser = [];
+            $seenByUser = [];
+            foreach ($cards as $card) {
+                if (!is_array($card)) {
+                    continue;
+                }
+                $cardUserId = $card['userId'] ?? null;
+                if (!$cardUserId) {
+                    continue;
+                }
+                $cardKey = $card['id'] ?? $card['cardNumber'] ?? null;
+                if ($cardKey === null) {
+                    continue;
+                }
+                if (!isset($seenByUser[$cardUserId])) {
+                    $seenByUser[$cardUserId] = [];
+                }
+                if (isset($seenByUser[$cardUserId][$cardKey])) {
+                    continue;
+                }
+                $seenByUser[$cardUserId][$cardKey] = true;
+                if (!isset($cardsByUser[$cardUserId])) {
+                    $cardsByUser[$cardUserId] = [];
+                }
+                $cardsByUser[$cardUserId][] = $card;
+            }
+            $userIdsData = $db->get('users');
+            $userIds = $userIdsData ? json_decode($userIdsData, true) : [];
+            if (!in_array($currentUserId, $userIds, true)) {
+                $userIds[] = $currentUserId;
+            }
+            if (!$userIds) {
+                $userIds = array_keys($cardsByUser);
+            }
+            foreach ($userIds as $userId) {
+                $userCards = $cardsByUser[$userId] ?? [];
+                $db->set("bank_cards_$userId", json_encode(array_values($userCards)));
+            }
+        } else {
+            $db->set("bank_cards_{$session['userId']}", json_encode($cards));
+        }
         
         http_response_code(200);
         echo json_encode(['message' => '银行卡片保存成功', 'cards' => $cards], JSON_UNESCAPED_UNICODE);

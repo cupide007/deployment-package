@@ -39,6 +39,7 @@ try {
         $amount = $data['amount'] ?? null;
         $type = $data['type'] ?? '';
         $description = $data['description'] ?? '';
+        $normalizedType = $type === 'withdrawal' ? 'withdraw' : $type;
         
         if ($amount === null || empty($type) || empty($description)) {
             http_response_code(400);
@@ -46,7 +47,7 @@ try {
             exit;
         }
         
-        if ($type !== 'deposit' && $type !== 'withdrawal') {
+        if ($normalizedType !== 'deposit' && $normalizedType !== 'withdraw') {
             http_response_code(400);
             echo json_encode(['error' => '交易类型无效'], JSON_UNESCAPED_UNICODE);
             exit;
@@ -68,9 +69,9 @@ try {
         $account = json_decode($accountData, true);
         $newBalance = $account['balance'];
         
-        if ($type === 'deposit') {
+        if ($normalizedType === 'deposit') {
             $newBalance += $amount;
-        } else if ($type === 'withdrawal') {
+        } else if ($normalizedType === 'withdraw') {
             if ($amount > $account['balance']) {
                 http_response_code(400);
                 echo json_encode(['error' => '余额不足'], JSON_UNESCAPED_UNICODE);

@@ -2422,7 +2422,7 @@
                 const searchTerm = transactionSearch.value.toLowerCase();
                 const filterType = transactionFilter.value;
                 
-                const transactions = JSON.parse(localStorage.getItem('transactions'));
+                const transactions = JSON.parse(localStorage.getItem('transactions')) || [];
                 const userCards = getCurrentUserCards();
                 const userCardIds = userCards.map(card => card.id);
                 
@@ -2452,7 +2452,7 @@
                 const startDate = new Date();
                 startDate.setDate(startDate.getDate() - days);
                 
-                const transactions = JSON.parse(localStorage.getItem('transactions'));
+                const transactions = JSON.parse(localStorage.getItem('transactions')) || [];
                 const userCards = getCurrentUserCards();
                 const userCardIds = userCards.map(card => card.id);
                 
@@ -2602,7 +2602,7 @@
             // 获取当前用户的卡片
             function getCurrentUserCards() {
                 const userId = getCurrentUserId();
-                const cards = JSON.parse(localStorage.getItem('bankCards'));
+                const cards = JSON.parse(localStorage.getItem('bankCards')) || [];
                 
                 return cards.filter(card => card.userId === userId);
             }
