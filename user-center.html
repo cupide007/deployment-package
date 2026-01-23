@@ -701,6 +701,16 @@
                 throw new Error('云函数未初始化');
             }
 
+            function buildPayload(data) {
+                const payload = Object.fromEntries(
+                    Object.entries(data).filter(([, value]) => value !== undefined)
+                );
+                if (Object.keys(payload).length === 0) {
+                    payload.updatedAt = new Date().toISOString();
+                }
+                return payload;
+            }
+
             async function getCurrentUser() {
                 try {
                     const currentUser = await window.checkLoginStatusSafely();
@@ -913,7 +923,7 @@
                     const user = await getCurrentUser();
                     
                     if (user) {
-                        await callCloudFunction('updateUser', {
+                        const payload = buildPayload({
                             username,
                             email,
                             qq,
@@ -923,6 +933,7 @@
                             residence,
                             bio
                         });
+                        await callCloudFunction('updateUser', payload);
                         
                         cachedUserData = {
                             ...(cachedUserData || {}),
@@ -1032,7 +1043,7 @@
                     const user = await getCurrentUser();
                     
                     if (user) {
-                        await callCloudFunction('updateUserSettings', {
+                        const payload = buildPayload({
                             notifications: {
                                 email: emailNotifications,
                                 system: systemNotifications,
@@ -1040,6 +1051,7 @@
                             },
                             notificationFrequency: notificationFrequency
                         });
+                        await callCloudFunction('updateUserSettings', payload);
                         
                         showSuccessModal('通知设置更新成功', '您的通知设置已成功更新。');
                     }
