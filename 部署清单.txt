@@ -1,0 +1,121 @@
+========================================
+Retinbox 部署包 - 文件清单
+========================================
+
+生成时间: 2026-01-22
+总文件数: 42
+
+========================================
+前端页面文件 (6 个)
+========================================
+✓ index.html                    - 主页
+✓ bank.html                     - 银行页面
+✓ library.html                  - 图书馆页面
+✓ user-center.html              - 用户中心
+✓ admin.html                    - 管理后台
+✓ comprehensive-test.html       - 综合测试页面
+
+========================================
+配置和资源文件 (3 个)
+========================================
+✓ retinbox-config.js            - 前端配置（必须）
+✓ tailwind.css                  - 样式文件
+✓ paper-texture.svg             - 背景图片
+
+========================================
+初始化云函数 (1 个)
+========================================
+✓ init.node.js                  - 数据库初始化（首次部署必须调用）
+
+========================================
+认证模块云函数 (4 个)
+========================================
+✓ auth/getCurrentUser.node.js  - 获取当前用户
+✓ auth/login.node.js            - 用户登录
+✓ auth/logout.node.js           - 用户登出
+✓ auth/register.node.js         - 用户注册
+
+========================================
+银行模块云函数 (9 个)
+========================================
+✓ bank/addTransaction.node.js  - 添加交易
+✓ bank/createAccount.node.js   - 创建银行账户
+✓ bank/getAccount.node.js      - 获取银行账户
+✓ bank/getCards.node.js        - 获取银行卡片
+✓ bank/getSystemLogs.node.js   - 获取系统日志
+✓ bank/getTransactions.node.js - 获取交易记录
+✓ bank/saveCards.node.js       - 保存银行卡片
+✓ bank/saveSystemLogs.node.js  - 保存系统日志
+✓ bank/updateBalance.node.js   - 更新余额
+
+========================================
+游戏模块云函数 (2 个)
+========================================
+✓ game/getProgress.node.js     - 获取游戏进度
+✓ game/saveProgress.node.js    - 保存游戏进度
+
+========================================
+图书馆模块云函数 (5 个)
+========================================
+✓ library/addRecord.node.js    - 添加借阅记录
+✓ library/getDocuments.node.js - 获取文档
+✓ library/getRecords.node.js   - 获取借阅记录
+✓ library/returnBook.node.js   - 归还图书
+✓ library/saveDocuments.node.js- 保存文档
+
+========================================
+设置模块云函数 (2 个)
+========================================
+✓ settings/getSettings.node.js - 获取用户设置
+✓ settings/updateSettings.node.js - 更新用户设置
+
+========================================
+用户模块云函数 (3 个)
+========================================
+✓ users/getUser.node.js        - 获取用户信息
+✓ users/getUsers.node.js       - 获取用户列表
+✓ users/updateUser.node.js     - 更新用户信息
+
+========================================
+管理后台云函数 (7 个)
+========================================
+✓ admin/getAdminLogs.node.js           - 获取管理员日志
+✓ admin/getAdminPermissions.node.js    - 获取管理员权限
+✓ admin/getEnvironmentInfo.node.js     - 获取环境信息
+✓ admin/getPermissionTemplates.node.js - 获取权限模板
+✓ admin/saveAdminLogs.node.js          - 保存管理员日志
+✓ admin/saveAdminPermissions.node.js   - 保存管理员权限
+✓ admin/savePermissionTemplates.node.js- 保存权限模板
+
+========================================
+部署步骤
+========================================
+
+1. 上传所有文件到 Retinbox 平台
+   - 保持目录结构不变
+   - 确保所有云函数文件扩展名为 .node.js
+
+2. 初始化数据库（首次部署必须执行）
+   POST https://你的域名/init.node.js
+   
+   或在浏览器控制台执行：
+   await window.userDataManager.initDatabase();
+
+3. 使用默认管理员账号登录
+   用户名: admin
+   密码: test
+   邮箱: admin@antister.com
+
+4. 修改管理员密码（重要！）
+
+========================================
+注意事项
+========================================
+
+✓ 已排除本地开发文件（server.js, database.js等）
+✓ 已排除 node_modules 和依赖配置文件
+✓ 已排除所有文档文件（.md）
+✓ 所有云函数已修复 RuntimeExit 问题
+✓ init.node.js 已修复作用域问题
+
+========================================

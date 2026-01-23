@@ -1,0 +1,2655 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>安提斯特国家银行 - 安提斯特虚拟国</title>
+    <!-- Tailwind CSS v3 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.8/chart.umd.min.js"></script>
+    <!-- Retinbox 配置 -->
+    <script src="retinbox-config.js"></script>
+    <!-- 统一的 Tailwind 配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#0A2463', // 深蓝色
+                        secondary: '#E6AF2E', // 金色
+                        accent: '#3E92CC', // 天蓝色
+                        light: '#FFFAFF', // 白色
+                        dark: '#1E1B18', // 深灰色
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        serif: ['Georgia', 'serif'],
+                    },
+                    animation: {
+                        'float': 'float 3s ease-in-out infinite',
+                        'fade-in': 'fadeIn 1s ease-in-out',
+                        'slide-up': 'slideUp 0.5s ease-out',
+                        'slide-down': 'slideDown 0.5s ease-out',
+                        'slide-left': 'slideLeft 0.5s ease-out',
+                        'slide-right': 'slideRight 0.5s ease-out',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        },
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(20px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        },
+                        slideDown: {
+                            '0%': { transform: 'translateY(-20px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        },
+                        slideLeft: {
+                            '0%': { transform: 'translateX(20px)', opacity: '0' },
+                            '100%': { transform: 'translateX(0)', opacity: '1' },
+                        },
+                        slideRight: {
+                            '0%': { transform: 'translateX(-20px)', opacity: '0' },
+                            '100%': { transform: 'translateX(0)', opacity: '1' },
+                        },
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .text-shadow {
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            }
+            .text-shadow-sm {
+                text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+            }
+            .bg-gradient-primary {
+                background: linear-gradient(135deg, theme('colors.primary'), theme('colors.accent'));
+            }
+            .border-gradient {
+                border-image: linear-gradient(to right, theme('colors.secondary'), theme('colors.accent')) 1;
+            }
+            .glass-effect {
+                background: rgba(255, 250, 255, 0.1);
+                backdrop-filter: blur(10px);
+                -webkit-backdrop-filter: blur(10px);
+                border: 1px solid rgba(255, 250, 255, 0.2);
+            }
+            .card-shine {
+                position: relative;
+                overflow: hidden;
+            }
+            .card-shine::after {
+                content: '';
+                position: absolute;
+                top: -50%;
+                left: -50%;
+                width: 200%;
+                height: 200%;
+                background: linear-gradient(
+                    to bottom right,
+                    rgba(255, 255, 255, 0) 0%,
+                    rgba(255, 255, 255, 0.3) 50%,
+                    rgba(255, 255, 255, 0) 100%
+                );
+                transform: rotate(45deg);
+                animation: shine 3s infinite;
+            }
+            @keyframes shine {
+                0% {
+                    transform: translate(-100%, -100%) rotate(45deg);
+                }
+                100% {
+                    transform: translate(100%, 100%) rotate(45deg);
+                }
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans">
+    <!-- 顶部导航栏 -->
+    <nav id="main-nav" class="bg-primary text-light shadow-lg fixed w-full z-50 transition-all duration-300">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/d8ddf5e8d8c84316a653dcb93cf61629~tplv-a9rns2rl98-image.image?lk3s=8e244e95&rcl=202601202312037748F98E243C1F231D4E&rrcfp=f06b921b&x-expires=1771513966&x-signature=gxZfK%2BBdsU1IDbMR4LFDmEH2PhA%3D" alt="安提斯特国旗" class="h-10 w-10 rounded-full">
+                <span class="text-xl font-bold">安提斯特虚拟国</span>
+            </div>
+            <div class="hidden md:flex space-x-6">
+                <a href="index.html" class="hover:text-secondary transition-colors duration-200">首页</a>
+                <a href="#" class="text-secondary font-medium">国家银行</a>
+                <a href="library.html" class="hover:text-secondary transition-colors duration-200">国家图书馆</a>
+            </div>
+            <div class="flex items-center space-x-4">
+                <span id="welcome-user" class="hidden">欢迎，<span id="current-username"></span></span>
+                <button id="logout-btn" class="bg-gray-700 text-light px-4 py-2 rounded-md hover:bg-gray-600 transition-all duration-200 font-medium">
+                    出国
+                </button>
+                <button id="mobile-menu-btn" class="md:hidden text-2xl">
+                    <i class="fa fa-bars"></i>
+                </button>
+            </div>
+        </div>
+        <!-- 移动端菜单 -->
+        <div id="mobile-menu" class="hidden md:hidden bg-primary border-t border-gray-700 animate-slide-down">
+            <div class="container mx-auto px-4 py-2 flex flex-col space-y-3">
+                <a href="index.html" class="py-2 hover:text-secondary transition-colors duration-200">首页</a>
+                <a href="#" class="py-2 text-secondary font-medium">国家银行</a>
+                <a href="library.html" class="py-2 hover:text-secondary transition-colors duration-200">国家图书馆</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主内容 -->
+    <main class="pt-16">
+        <!-- 银行顶部横幅 -->
+        <section class="bg-gradient-primary py-16 relative overflow-hidden">
+            <div class="absolute inset-0 opacity-10">
+                <div class="absolute top-10 left-10 w-40 h-40 rounded-full bg-secondary"></div>
+                <div class="absolute bottom-10 right-10 w-60 h-60 rounded-full bg-accent"></div>
+            </div>
+            <div class="container mx-auto px-4 relative z-10">
+                <div class="flex flex-col md:flex-row items-center justify-between">
+                    <div class="md:w-1/2 text-light mb-10 md:mb-0 animate-slide-up">
+                        <h1 class="text-4xl md:text-5xl font-bold mb-4 text-shadow">
+                            安提斯特国家银行
+                        </h1>
+                        <p class="text-xl mb-6 max-w-lg">
+                            为安提斯特公民提供安全、便捷的金融服务，管理您的虚拟资产。
+                        </p>
+                        <div class="flex flex-wrap gap-4">
+                            <button id="open-account-btn" class="bg-secondary text-primary px-6 py-3 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium text-lg">
+                                办理银行卡
+                            </button>
+                            <button id="view-transactions-btn" class="bg-transparent border-2 border-light text-light px-6 py-3 rounded-md hover:bg-light hover:text-primary transition-all duration-200 font-medium text-lg">
+                                查看交易记录
+                            </button>
+                        </div>
+                    </div>
+                    <div class="md:w-1/2 flex justify-center animate-float">
+                        <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/cb84f055384c4766bcbcd12fb0a99578~tplv-a9rns2rl98-image.image?lk3s=8e244e95&rcl=202601202312037748F98E243C1F231D4E&rrcfp=f06b921b&x-expires=1771513966&x-signature=giP5KXxOUmZcUibFeHLetfVQI4Y%3D" alt="安提斯特国家银行" class="w-64 h-64 md:w-80 md:h-80 object-cover rounded-lg shadow-2xl">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 银行服务选项卡 -->
+        <section class="py-12 bg-white">
+            <div class="container mx-auto px-4">
+                <div class="flex flex-col md:flex-row gap-8">
+                    <!-- 左侧选项卡导航 -->
+                    <div class="md:w-1/4">
+                        <div class="bg-gray-100 rounded-lg shadow-md p-4 sticky top-20">
+                            <h3 class="text-xl font-bold text-primary mb-6 border-b border-gray-300 pb-2">银行服务</h3>
+                            <ul class="space-y-2">
+                                <li>
+                                    <button id="tab-accounts" class="w-full text-left px-4 py-3 rounded-md bg-primary text-light font-medium hover:bg-opacity-90 transition-colors duration-200 flex items-center">
+                                        <i class="fa fa-credit-card mr-3"></i>
+                                        我的账户
+                                    </button>
+                                </li>
+                                <li>
+                                    <button id="tab-new-card" class="w-full text-left px-4 py-3 rounded-md hover:bg-gray-200 transition-colors duration-200 flex items-center">
+                                        <i class="fa fa-plus-circle mr-3"></i>
+                                        办理新卡
+                                    </button>
+                                </li>
+                                <li>
+                                    <button id="tab-transactions" class="w-full text-left px-4 py-3 rounded-md hover:bg-gray-200 transition-colors duration-200 flex items-center">
+                                        <i class="fa fa-exchange mr-3"></i>
+                                        交易记录
+                                    </button>
+                                </li>
+                                <li>
+                                    <button id="tab-transfer" class="w-full text-left px-4 py-3 rounded-md hover:bg-gray-200 transition-colors duration-200 flex items-center">
+                                        <i class="fa fa-arrow-right mr-3"></i>
+                                        转账汇款
+                                    </button>
+                                </li>
+                                <li>
+                                    <button id="tab-statistics" class="w-full text-left px-4 py-3 rounded-md hover:bg-gray-200 transition-colors duration-200 flex items-center">
+                                        <i class="fa fa-bar-chart mr-3"></i>
+                                        财务统计
+                                    </button>
+                                </li>
+                                <li>
+                                    <button id="tab-repayment" class="w-full text-left px-4 py-3 rounded-md hover:bg-gray-200 transition-colors duration-200 flex items-center">
+                                        <i class="fa fa-credit-card mr-3"></i>
+                                        信用卡还款
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- 右侧内容区域 -->
+                    <div class="md:w-3/4">
+                        <!-- 账户信息面板 -->
+                        <div id="panel-accounts" class="animate-fade-in">
+                            <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+                                <h2 class="text-2xl font-bold text-primary mb-6">我的账户</h2>
+                                
+                                <!-- 账户概览 -->
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                                    <div class="bg-primary bg-opacity-10 rounded-lg p-4">
+                                        <h3 class="text-lg font-medium text-gray-700 mb-2">总资产</h3>
+                                        <p class="text-3xl font-bold text-primary" id="total-assets">¥0.00</p>
+                                    </div>
+                                    <div class="bg-secondary bg-opacity-10 rounded-lg p-4">
+                                        <h3 class="text-lg font-medium text-gray-700 mb-2">借记卡余额</h3>
+                                        <p class="text-3xl font-bold text-secondary" id="debit-balance">¥0.00</p>
+                                    </div>
+                                    <div class="bg-accent bg-opacity-10 rounded-lg p-4">
+                                        <h3 class="text-lg font-medium text-gray-700 mb-2">信用卡额度</h3>
+                                        <p class="text-3xl font-bold text-accent" id="credit-limit">¥0.00</p>
+                                    </div>
+                                </div>
+
+                                <!-- 银行卡列表 -->
+                                <h3 class="text-xl font-bold text-gray-800 mb-4">我的银行卡</h3>
+                                <div id="cards-container" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <!-- 示例卡片 -->
+                                    <div class="bg-gradient-to-r from-primary to-accent rounded-lg shadow-lg p-6 text-white card-shine relative overflow-hidden">
+                                        <div class="absolute top-4 right-4">
+                                            <span class="bg-secondary text-primary text-xs font-bold px-2 py-1 rounded">借记卡</span>
+                                        </div>
+                                        <div class="mb-6">
+                                            <img src="https://p9-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/6a9bbecde6c24ec4b9fd8b26c263ab54~tplv-a9rns2rl98-image.image?lk3s=8e244e95&rcl=202601202312037748F98E243C1F231D4E&rrcfp=f06b921b&x-expires=1771513965&x-signature=BR2pSwvk0BUY9Xk2se6VkW25DMQ%3D" alt="安提斯特国徽" class="h-10 w-10 opacity-80">
+                                        </div>
+                                        <div class="mb-4">
+                                            <p class="text-sm opacity-80 mb-1">卡号</p>
+                                            <p class="text-xl font-mono tracking-wider">**** **** **** 1234</p>
+                                        </div>
+                                        <div class="mb-4">
+                                            <p class="text-sm opacity-80 mb-1">持卡人</p>
+                                            <p class="text-lg font-medium">用户名</p>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <div>
+                                                <p class="text-sm opacity-80 mb-1">有效期</p>
+                                                <p>12/28</p>
+                                            </div>
+                                            <div>
+                                                <p class="text-sm opacity-80 mb-1">余额</p>
+                                                <p class="text-lg font-bold">¥0.00</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- 添加新卡卡片 -->
+                                    <div id="add-card-placeholder" class="border-2 border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center justify-center text-center cursor-pointer hover:border-primary transition-colors duration-200 h-64">
+                                        <div class="text-5xl text-gray-300 mb-4">
+                                            <i class="fa fa-plus-circle"></i>
+                                        </div>
+                                        <h3 class="text-xl font-medium text-gray-700 mb-2">办理新卡</h3>
+                                        <p class="text-gray-500">点击此处申请新的银行卡</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 办理新卡面板 -->
+                        <div id="panel-new-card" class="hidden animate-fade-in">
+                            <div class="bg-white rounded-lg shadow-md p-6">
+                                <h2 class="text-2xl font-bold text-primary mb-6">办理新卡</h2>
+                                
+                                <div class="mb-8">
+                                    <h3 class="text-xl font-medium text-gray-800 mb-4">选择卡类型</h3>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <!-- 借记卡选项 -->
+                                        <div class="border border-gray-200 rounded-lg p-6 hover:border-primary hover:shadow-md transition-all duration-200 cursor-pointer card-option" data-type="debit">
+                                            <div class="flex items-start">
+                                                <div class="bg-primary bg-opacity-10 rounded-full p-3 mr-4">
+                                                    <i class="fa fa-credit-card text-primary text-xl"></i>
+                                                </div>
+                                                <div>
+                                                    <h4 class="text-lg font-medium text-gray-800 mb-2">安提斯特借记卡</h4>
+                                                    <p class="text-gray-600 mb-4">安全便捷的日常支付卡片，适合所有公民使用。</p>
+                                                    <ul class="space-y-2 text-sm text-gray-600">
+                                                        <li class="flex items-center">
+                                                            <i class="fa fa-check text-green-500 mr-2"></i>
+                                                            <span>无年费</span>
+                                                        </li>
+                                                        <li class="flex items-center">
+                                                            <i class="fa fa-check text-green-500 mr-2"></i>
+                                                            <span>支持网上银行</span>
+                                                        </li>
+                                                        <li class="flex items-center">
+                                                            <i class="fa fa-check text-green-500 mr-2"></i>
+                                                            <span>电子支付功能</span>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- 信用卡选项 -->
+                                        <div class="border border-gray-200 rounded-lg p-6 hover:border-secondary hover:shadow-md transition-all duration-200 cursor-pointer card-option" data-type="credit">
+                                            <div class="flex items-start">
+                                                <div class="bg-secondary bg-opacity-10 rounded-full p-3 mr-4">
+                                                    <i class="fa fa-credit-card text-secondary text-xl"></i>
+                                                </div>
+                                                <div>
+                                                    <h4 class="text-lg font-medium text-gray-800 mb-2">安提斯特信用卡</h4>
+                                                    <p class="text-gray-600 mb-4">灵活的信用额度，适合有一定消费需求的公民。</p>
+                                                    <ul class="space-y-2 text-sm text-gray-600">
+                                                        <li class="flex items-center">
+                                                            <i class="fa fa-check text-green-500 mr-2"></i>
+                                                            <span>初始额度 ¥5,000</span>
+                                                        </li>
+                                                        <li class="flex items-center">
+                                                            <i class="fa fa-check text-green-500 mr-2"></i>
+                                                            <span>免息期 30 天</span>
+                                                        </li>
+                                                        <li class="flex items-center">
+                                                            <i class="fa fa-check text-green-500 mr-2"></i>
+                                                            <span>消费积分奖励</span>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- 申请表单 -->
+                                <form id="card-application-form" class="space-y-6">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div>
+                                            <label for="card-holder" class="block text-gray-700 mb-2">持卡人姓名</label>
+                                            <input type="text" id="card-holder" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required>
+                                        </div>
+                                        <div>
+                                            <label for="card-type" class="block text-gray-700 mb-2">卡类型</label>
+                                            <input type="text" id="card-type" class="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-100" readonly>
+                                        </div>
+                                    </div>
+                                    
+                                    <div>
+                                        <label for="card-purpose" class="block text-gray-700 mb-2">办卡用途</label>
+                                        <textarea id="card-purpose" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" placeholder="请简要说明您办卡的主要用途..."></textarea>
+                                    </div>
+                                    
+                                    <div class="flex items-center">
+                                        <input type="checkbox" id="agree-terms" class="mr-2" required>
+                                        <label for="agree-terms" class="text-gray-700">我已阅读并同意<a href="#" id="terms-link" class="text-primary hover:underline">《安提斯特国家银行服务条款》</a></label>
+                                    </div>
+                                    
+                                    <div class="text-center">
+                                        <button type="submit" class="bg-primary text-white px-8 py-3 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium">
+                                            提交申请
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- 交易记录面板 -->
+                        <div id="panel-transactions" class="hidden animate-fade-in">
+                            <div class="bg-white rounded-lg shadow-md p-6">
+                                <h2 class="text-2xl font-bold text-primary mb-6">交易记录</h2>
+                                
+                                <!-- 筛选选项 -->
+                                <div class="flex flex-col md:flex-row gap-4 mb-6">
+                                    <div class="flex-grow">
+                                        <input type="text" id="transaction-search" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" placeholder="搜索交易记录...">
+                                    </div>
+                                    <div>
+                                        <select id="transaction-filter" class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+                                            <option value="all">全部交易</option>
+                                            <option value="deposit">存款</option>
+                                            <option value="withdraw">取款</option>
+                                            <option value="transfer">转账</option>
+                                            <option value="payment">支付</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <!-- 交易表格 -->
+                                <div class="overflow-x-auto">
+                                    <table class="min-w-full bg-white">
+                                        <thead>
+                                            <tr class="bg-gray-100 text-gray-700">
+                                                <th class="py-3 px-4 text-left">日期</th>
+                                                <th class="py-3 px-4 text-left">类型</th>
+                                                <th class="py-3 px-4 text-left">描述</th>
+                                                <th class="py-3 px-4 text-right">金额</th>
+                                                <th class="py-3 px-4 text-left">状态</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="transactions-table-body">
+                                            <!-- 交易记录将通过JavaScript动态添加 -->
+                                            <tr class="border-b">
+                                                <td colspan="5" class="py-8 text-center text-gray-500">暂无交易记录</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                
+                                <!-- 分页 -->
+                                <div class="flex justify-between items-center mt-6">
+                                    <div class="text-sm text-gray-600">
+                                        显示 <span id="showing-records">0</span> 条记录，共 <span id="total-records">0</span> 条
+                                    </div>
+                                    <div class="flex space-x-2">
+                                        <button id="prev-page" class="px-4 py-2 border border-gray-300 rounded-md bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                                            上一页
+                                        </button>
+                                        <button id="next-page" class="px-4 py-2 border border-gray-300 rounded-md bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                                            下一页
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 转账汇款面板 -->
+                        <div id="panel-transfer" class="hidden animate-fade-in">
+                            <div class="bg-white rounded-lg shadow-md p-6">
+                                <h2 class="text-2xl font-bold text-primary mb-6">转账汇款</h2>
+                                
+                                <form id="transfer-form" class="space-y-6">
+                                    <div class="space-y-4">
+                                        <div>
+                                            <label for="from-account" class="block text-gray-700 mb-2">付款账户（请选择您的借记卡）</label>
+                                            <select id="from-account" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required>
+                                                <option value="">请选择付款账户</option>
+                                                <!-- 账户选项将通过JavaScript动态添加 -->
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label for="recipient-name" class="block text-gray-700 mb-2">收款人姓名</label>
+                                            <div class="relative">
+                                                <input type="text" id="recipient-name" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" placeholder="请输入收款人姓名...">
+                                                <div id="recipient-suggestions" class="absolute w-full bg-white border border-gray-300 rounded-md shadow-lg mt-1 z-10 hidden max-h-60 overflow-y-auto"></div>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label for="to-account" class="block text-gray-700 mb-2">收款账户（收款人借记卡）</label>
+                                            <select id="to-account" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required>
+                                                <option value="">请先输入收款人姓名</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    
+                                    <div>
+                                        <label for="transfer-amount" class="block text-gray-700 mb-2">转账金额</label>
+                                        <div class="relative">
+                                            <span class="absolute left-4 top-2 text-gray-500">¥</span>
+                                            <input type="number" id="transfer-amount" min="0.01" step="0.01" class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" placeholder="请输入转账金额" required>
+                                        </div>
+                                    </div>
+                                    
+                                    <div>
+                                        <label for="transfer-description" class="block text-gray-700 mb-2">转账说明</label>
+                                        <textarea id="transfer-description" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" placeholder="请输入转账说明..."></textarea>
+                                    </div>
+                                    
+                                    <div class="bg-gray-50 p-4 rounded-lg">
+                                        <h4 class="font-medium text-gray-800 mb-2">转账信息确认</h4>
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                                            <div>
+                                                <span class="text-gray-600">付款账户：</span>
+                                                <span id="confirm-from-account" class="font-medium">未选择</span>
+                                            </div>
+                                            <div>
+                                                <span class="text-gray-600">收款账户：</span>
+                                                <span id="confirm-to-account" class="font-medium">-</span>
+                                            </div>
+                                            <div>
+                                                <span class="text-gray-600">收款人：</span>
+                                                <span id="confirm-to-name" class="font-medium">-</span>
+                                            </div>
+                                            <div>
+                                                <span class="text-gray-600">转账金额：</span>
+                                                <span id="confirm-amount" class="font-medium">¥0.00</span>
+                                            </div>
+                                            <div>
+                                                <span class="text-gray-600">手续费：</span>
+                                                <span class="font-medium">¥0.00</span>
+                                            </div>
+                                            <div>
+                                                <span class="text-gray-600">实付金额：</span>
+                                                <span id="confirm-total" class="font-medium text-primary">¥0.00</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="text-center">
+                                        <button type="submit" class="bg-primary text-white px-8 py-3 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium">
+                                            确认转账
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- 财务统计面板 -->
+                        <div id="panel-statistics" class="hidden animate-fade-in">
+                            <div class="bg-white rounded-lg shadow-md p-6">
+                                <h2 class="text-2xl font-bold text-primary mb-6">财务统计</h2>
+                                
+                                <!-- 统计时间范围选择 -->
+                                <div class="flex flex-col md:flex-row gap-4 mb-8">
+                                    <div class="flex-grow">
+                                        <select id="statistics-period" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+                                            <option value="7">最近7天</option>
+                                            <option value="30" selected>最近30天</option>
+                                            <option value="90">最近90天</option>
+                                            <option value="180">最近180天</option>
+                                            <option value="365">最近一年</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <button id="refresh-statistics" class="px-4 py-2 bg-primary text-white rounded-md hover:bg-opacity-90 transition-all duration-200 flex items-center">
+                                            <i class="fa fa-refresh mr-2"></i>
+                                            刷新数据
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- 统计卡片 -->
+                                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                                    <div class="bg-primary bg-opacity-10 rounded-lg p-4">
+                                        <h3 class="text-lg font-medium text-gray-700 mb-2">总收入</h3>
+                                        <p class="text-2xl font-bold text-primary" id="total-income">¥0.00</p>
+                                    </div>
+                                    <div class="bg-red-100 rounded-lg p-4">
+                                        <h3 class="text-lg font-medium text-gray-700 mb-2">总支出</h3>
+                                        <p class="text-2xl font-bold text-red-500" id="total-expense">¥0.00</p>
+                                    </div>
+                                    <div class="bg-green-100 rounded-lg p-4">
+                                        <h3 class="text-lg font-medium text-gray-700 mb-2">净收入</h3>
+                                        <p class="text-2xl font-bold text-green-500" id="net-income">¥0.00</p>
+                                    </div>
+                                    <div class="bg-secondary bg-opacity-10 rounded-lg p-4">
+                                        <h3 class="text-lg font-medium text-gray-700 mb-2">交易笔数</h3>
+                                        <p class="text-2xl font-bold text-secondary" id="transaction-count">0</p>
+                                    </div>
+                                </div>
+                                
+                                <!-- 消费类别饼图 -->
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                                    <div>
+                                        <h3 class="text-xl font-medium text-gray-800 mb-4">消费类别分布</h3>
+                                        <div class="bg-gray-50 rounded-lg p-4 flex justify-center">
+                                            <canvas id="expense-category-chart" width="300" height="300"></canvas>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-xl font-medium text-gray-800 mb-4">收支趋势</h3>
+                                        <div class="bg-gray-50 rounded-lg p-4">
+                                            <canvas id="income-expense-chart" width="400" height="300"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- 最近交易 -->
+                                <div>
+                                    <h3 class="text-xl font-medium text-gray-800 mb-4">最近交易</h3>
+                                    <div class="overflow-x-auto">
+                                        <table class="min-w-full bg-white">
+                                            <thead>
+                                                <tr class="bg-gray-100 text-gray-700">
+                                                    <th class="py-3 px-4 text-left">日期</th>
+                                                    <th class="py-3 px-4 text-left">类型</th>
+                                                    <th class="py-3 px-4 text-left">描述</th>
+                                                    <th class="py-3 px-4 text-right">金额</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="recent-transactions-body">
+                                                <!-- 最近交易将通过JavaScript动态添加 -->
+                                                <tr class="border-b">
+                                                    <td colspan="4" class="py-8 text-center text-gray-500">暂无交易记录</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-primary text-light py-8">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <div class="flex items-center space-x-2">
+                        <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/d8ddf5e8d8c84316a653dcb93cf61629~tplv-a9rns2rl98-image.image?lk3s=8e244e95&rcl=202601202312037748F98E243C1F231D4E&rrcfp=f06b921b&x-expires=1771513966&x-signature=gxZfK%2BBdsU1IDbMR4LFDmEH2PhA%3D" alt="安提斯特国旗" class="h-8 w-8 rounded-full">
+                        <span class="text-lg font-bold">安提斯特虚拟国</span>
+                    </div>
+                    <p class="text-sm text-gray-300 mt-2">
+                        © 2025 安提斯特国家银行. 保留所有权利.
+                    </p>
+                </div>
+                <div class="flex space-x-6">
+                    <a href="#" class="hover:text-secondary transition-colors duration-200">
+                        <i class="fa fa-qq text-2xl"></i>
+                    </a>
+                    <a href="#" class="hover:text-secondary transition-colors duration-200">
+                        <i class="fa fa-weixin text-2xl"></i>
+                    </a>
+                    <a href="#" class="hover:text-secondary transition-colors duration-200">
+                        <i class="fa fa-weibo text-2xl"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="mt-6 pt-6 border-t border-gray-700 text-center text-sm text-gray-400">
+                <p>安提斯特国家银行是安提斯特虚拟国的官方金融机构，为公民提供安全、便捷的金融服务。</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 办理新卡成功模态框 -->
+    <div id="card-success-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 overflow-hidden animate-fade-in">
+            <div class="bg-green-500 text-white p-4 flex justify-between items-center">
+                <h2 class="text-xl font-bold">申请成功</h2>
+                <button id="close-success-modal" class="text-2xl hover:text-gray-200 transition-colors duration-200">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="p-6 text-center">
+                <div class="text-6xl text-green-500 mb-4">
+                    <i class="fa fa-check-circle"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-800 mb-2">您的银行卡申请已提交成功！</h3>
+                <p class="text-gray-600 mb-6">您的卡片将在1-2个工作日内处理完成，请注意查收。</p>
+                <div class="bg-gray-100 p-4 rounded-lg mb-6 text-left">
+                    <p class="font-medium text-gray-800 mb-2">申请信息</p>
+                    <p class="text-gray-600 mb-1"><span class="font-medium">卡号：</span><span id="new-card-number">**** **** **** ****</span></p>
+                    <p class="text-gray-600 mb-1"><span class="font-medium">持卡人：</span><span id="new-card-holder">用户名</span></p>
+                    <p class="text-gray-600"><span class="font-medium">卡类型：</span><span id="new-card-type">借记卡</span></p>
+                </div>
+                <button id="view-new-card-btn" class="bg-primary text-white px-6 py-3 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium text-lg">
+                    查看卡片
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 服务条款模态框 -->
+    <div id="terms-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl mx-4 overflow-hidden animate-fade-in">
+            <div class="bg-primary text-white p-4 flex justify-between items-center">
+                <h2 class="text-xl font-bold">安提斯特国家银行服务条款</h2>
+                <button id="close-terms-modal" class="text-2xl hover:text-gray-200 transition-colors duration-200">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="p-6 max-h-[70vh] overflow-y-auto">
+                <div class="space-y-4">
+                    <p class="text-gray-800"><strong>第一条 总则</strong></p>
+                    <p class="text-gray-600">安提斯特国家银行（以下简称"本行"）为安提斯特虚拟国公民提供金融服务。本条款旨在规范本行与客户之间的权利义务关系，保护客户的合法权益。</p>
+                    
+                    <p class="text-gray-800"><strong>第二条 账户管理</strong></p>
+                    <p class="text-gray-600">1. 客户需年满18周岁，持有效身份证件，方可在本行开立账户。</p>
+                    <p class="text-gray-600">2. 客户应妥善保管账户密码及相关信息，因密码泄露或信息保管不善造成的损失，由客户自行承担。</p>
+                    <p class="text-gray-600">3. 客户应及时更新账户信息，确保信息的真实性、准确性和完整性。</p>
+                    
+                    <p class="text-gray-800"><strong>第三条 银行卡使用</strong></p>
+                    <p class="text-gray-600">1. 借记卡：持卡人可在本行规定的额度内使用借记卡进行消费、转账、存取款等业务。</p>
+                    <p class="text-gray-600">2. 信用卡：持卡人可在信用额度内透支消费，须在账单规定的还款日之前偿还欠款。</p>
+                    <p class="text-gray-600">3. 银行卡仅限本人使用，不得出租、出借或出售。</p>
+                    
+                    <p class="text-gray-800"><strong>第四条 转账汇款</strong></p>
+                    <p class="text-gray-600">1. 客户办理转账业务时，应提供准确的收款账户信息。因客户提供信息有误导致的损失，由客户自行承担。</p>
+                    <p class="text-gray-600">2. 本行有权根据反洗钱、反恐融资等法律法规的要求，对大额或可疑交易进行审核。</p>
+                    
+                    <p class="text-gray-800"><strong>第五条 收费标准</strong></p>
+                    <p class="text-gray-600">1. 本行对部分业务收取手续费，具体收费标准以本行公告为准。</p>
+                    <p class="text-gray-600">2. 客户可通过本行网站、手机银行等渠道查询最新的收费标准。</p>
+                    
+                    <p class="text-gray-800"><strong>第六条 违约责任</strong></p>
+                    <p class="text-gray-600">1. 客户违反本条款约定的，本行有权采取暂停账户服务、限制交易等措施。</p>
+                    <p class="text-gray-600">2. 因本行过错给客户造成损失的，本行应承担相应的赔偿责任。</p>
+                    
+                    <p class="text-gray-800"><strong>第七条 争议解决</strong></p>
+                    <p class="text-gray-600">本条款的解释和适用，以及与本条款有关的争议，均适用安提斯特虚拟国法律。</p>
+                    
+                    <p class="text-gray-800"><strong>第八条 附则</strong></p>
+                    <p class="text-gray-600">1. 本条款自公布之日起生效。</p>
+                    <p class="text-gray-600">2. 本行有权根据业务发展和监管要求，对本条款进行修改，并通过本行网站等渠道公告。</p>
+                </div>
+            </div>
+            <div class="bg-gray-50 p-4 flex justify-end">
+                <button id="agree-terms-btn" class="bg-primary text-white px-6 py-2 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium">
+                    我已阅读并同意
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 转账成功模态框 -->
+    <div id="transfer-success-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 overflow-hidden animate-fade-in">
+            <div class="bg-green-500 text-white p-4 flex justify-between items-center">
+                <h2 class="text-xl font-bold">转账成功</h2>
+                <button id="close-transfer-modal" class="text-2xl hover:text-gray-200 transition-colors duration-200">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="p-6 text-center">
+                <div class="text-6xl text-green-500 mb-4">
+                    <i class="fa fa-check-circle"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-800 mb-2">您的转账已成功处理！</h3>
+                <p class="text-gray-600 mb-6">资金已转入收款人账户，交易号：<span id="transfer-id" class="font-medium">TRX123456789</span></p>
+                <div class="bg-gray-100 p-4 rounded-lg mb-6 text-left">
+                    <p class="font-medium text-gray-800 mb-2">转账信息</p>
+                    <p class="text-gray-600 mb-1"><span class="font-medium">收款账户：</span><span id="transfer-to-account">**** **** **** ****</span></p>
+                    <p class="text-gray-600 mb-1"><span class="font-medium">收款人：</span><span id="transfer-to-name">收款人</span></p>
+                    <p class="text-gray-600"><span class="font-medium">转账金额：</span><span id="transfer-amount-display">¥0.00</span></p>
+                </div>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <button id="view-transfer-detail-btn" class="bg-primary text-white px-6 py-3 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium">
+                        查看详情
+                    </button>
+                    <button id="new-transfer-btn" class="bg-white border border-primary text-primary px-6 py-3 rounded-md hover:bg-gray-50 transition-all duration-200 font-medium">
+                        再次转账
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 信用卡还款面板 -->
+    <div id="panel-repayment" class="hidden animate-fade-in">
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-2xl font-bold text-primary mb-6">信用卡还款</h2>
+            
+            <form id="repayment-form" class="space-y-6">
+                <div>
+                    <h3 class="text-lg font-medium text-gray-800 mb-4">选择信用卡</h3>
+                    <select id="credit-card-select" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required>
+                        <option value="">请选择要还款的信用卡</option>
+                        <!-- 信用卡选项将通过JavaScript动态添加 -->
+                    </select>
+                </div>
+                
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h4 class="font-medium text-gray-800 mb-2">信用卡信息</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <span class="text-gray-600">卡号：</span>
+                            <span id="repayment-card-number" class="font-medium">-</span>
+                        </div>
+                        <div>
+                            <span class="text-gray-600">持卡人：</span>
+                            <span id="repayment-card-holder" class="font-medium">-</span>
+                        </div>
+                        <div>
+                            <span class="text-gray-600">账单日：</span>
+                            <span id="repayment-billing-date" class="font-medium">-</span>
+                        </div>
+                        <div>
+                            <span class="text-gray-600">还款日：</span>
+                            <span id="repayment-due-date" class="font-medium">-</span>
+                        </div>
+                        <div>
+                            <span class="text-gray-600">本期应还：</span>
+                            <span id="repayment-amount-due" class="font-medium text-red-600">-</span>
+                        </div>
+                        <div>
+                            <span class="text-gray-600">最低还款额：</span>
+                            <span id="repayment-min-amount" class="font-medium text-orange-600">-</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 选择还款账户 -->
+                <div>
+                    <h3 class="text-lg font-medium text-gray-800 mb-4">选择还款账户</h3>
+                    <select id="debit-card-select" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required>
+                        <option value="">请选择还款账户（借记卡）</option>
+                        <!-- 借记卡选项将通过JavaScript动态添加 -->
+                    </select>
+                </div>
+                
+                <div>
+                    <label for="repayment-amount" class="block text-gray-700 mb-2">还款金额</label>
+                    <div class="relative">
+                        <span class="absolute left-4 top-2 text-gray-500">¥</span>
+                        <input type="number" id="repayment-amount" min="0.01" step="0.01" class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" placeholder="请输入还款金额" required>
+                    </div>
+                    <div id="repayment-error" class="mt-1 text-sm text-red-600 hidden"></div>
+                    <div class="mt-2 flex space-x-2">
+                        <button type="button" id="pay-min-btn" class="text-sm text-orange-600 hover:text-orange-700">
+                            最低还款额
+                        </button>
+                        <button type="button" id="pay-full-btn" class="text-sm text-green-600 hover:text-green-700">
+                            全额还款
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h4 class="font-medium text-gray-800 mb-2">还款信息确认</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <span class="text-gray-600">还款账户：</span>
+                            <span id="confirm-debit-card" class="font-medium">未选择</span>
+                        </div>
+                        <div>
+                            <span class="text-gray-600">还款金额：</span>
+                            <span id="confirm-repayment-amount" class="font-medium">¥0.00</span>
+                        </div>
+                        <div>
+                            <span class="text-gray-600">手续费：</span>
+                            <span class="font-medium">¥0.00</span>
+                        </div>
+                        <div>
+                            <span class="text-gray-600">实付金额：</span>
+                            <span id="confirm-total-amount" class="font-medium text-primary">¥0.00</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="text-center">
+                    <button type="submit" class="bg-primary text-white px-8 py-3 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium">
+                        确认还款
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', async function() {
+            // 引入统一的数据初始化脚本
+            const initScript = document.createElement('script');
+            initScript.src = 'init-data.js';
+            document.head.appendChild(initScript);
+            
+            // 检查用户是否已登录
+            await checkLoginStatus();
+            
+            // 移动端菜单切换
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            const mobileMenu = document.getElementById('mobile-menu');
+            
+            mobileMenuBtn.addEventListener('click', function() {
+                mobileMenu.classList.toggle('hidden');
+            });
+            
+            // 退出登录
+            const logoutBtn = document.getElementById('logout-btn');
+            
+            logoutBtn.addEventListener('click', async function() {
+                try {
+                    // 使用Retinbox云函数退出登录
+                    await window.userDataManager.logout();
+                    
+                    // 清除登录状态
+                    sessionStorage.removeItem('currentUser');
+                    localStorage.removeItem('rememberedUser');
+                    
+                    // 跳转到首页
+                    window.location.href = 'index.html';
+                } catch (error) {
+                    console.error('退出登录失败:', error);
+                    alert('退出登录失败: ' + error.message);
+                }
+            });
+            
+            // 选项卡切换
+            const tabs = ['accounts', 'new-card', 'transactions', 'transfer', 'statistics', 'repayment'];
+            const tabButtons = tabs.map(tab => document.getElementById(`tab-${tab}`));
+            const panels = tabs.map(tab => document.getElementById(`panel-${tab}`));
+            
+            tabButtons.forEach((button, index) => {
+                button.addEventListener('click', async function() {
+                    // 隐藏所有面板
+                    panels.forEach(panel => panel.classList.add('hidden'));
+                    
+                    // 移除所有选项卡的活动状态
+                    tabButtons.forEach(btn => {
+                        btn.classList.remove('bg-primary', 'text-light');
+                        btn.classList.add('hover:bg-gray-200');
+                    });
+                    
+                    // 显示当前面板
+                    panels[index].classList.remove('hidden');
+                    
+                    // 添加当前选项卡的活动状态
+                    button.classList.add('bg-primary', 'text-light');
+                    button.classList.remove('hover:bg-gray-200');
+                    
+                    // 如果是统计面板，初始化图表
+                    if (tabs[index] === 'statistics') {
+                        await initCharts();
+                    }
+                });
+            });
+            
+            // 办理新卡相关
+            const addCardPlaceholder = document.getElementById('add-card-placeholder');
+            const cardOptions = document.querySelectorAll('.card-option');
+            const cardTypeInput = document.getElementById('card-type');
+            const cardApplicationForm = document.getElementById('card-application-form');
+            const cardSuccessModal = document.getElementById('card-success-modal');
+            const closeSuccessModal = document.getElementById('close-success-modal');
+            const viewNewCardBtn = document.getElementById('view-new-card-btn');
+            const openAccountBtn = document.getElementById('open-account-btn');
+            
+            // 服务条款相关
+            const termsLink = document.getElementById('terms-link');
+            const termsModal = document.getElementById('terms-modal');
+            const closeTermsModal = document.getElementById('close-terms-modal');
+            const agreeTermsBtn = document.getElementById('agree-terms-btn');
+            const agreeTermsCheckbox = document.getElementById('agree-terms');
+            
+            // 点击添加新卡占位符
+            addCardPlaceholder.addEventListener('click', function() {
+                // 切换到办理新卡选项卡
+                document.getElementById('tab-new-card').click();
+            });
+            
+            // 点击办卡按钮
+            openAccountBtn.addEventListener('click', function() {
+                // 切换到办理新卡选项卡
+                document.getElementById('tab-new-card').click();
+            });
+            
+            // 选择卡类型
+            cardOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    const cardType = this.getAttribute('data-type');
+                    cardTypeInput.value = cardType === 'debit' ? '借记卡' : '信用卡';
+                    
+                    // 移除所有选项的选中状态
+                    cardOptions.forEach(opt => {
+                        opt.classList.remove('border-primary', 'shadow-md');
+                        opt.classList.add('border-gray-200');
+                    });
+                    
+                    // 添加当前选项的选中状态
+                    this.classList.add('border-primary', 'shadow-md');
+                    this.classList.remove('border-gray-200');
+                });
+            });
+            
+            // 提交办卡申请
+            cardApplicationForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const cardHolder = document.getElementById('card-holder').value;
+                const cardType = document.getElementById('card-type').value;
+                
+                if (!cardHolder || !cardType) {
+                    alert('请填写完整的申请信息');
+                    return;
+                }
+                
+                // 生成卡号
+                const cardNumber = generateCardNumber();
+                
+                // 创建新卡
+                const newCard = {
+                    id: Date.now().toString(),
+                    userId: getCurrentUserId(),
+                    cardNumber: cardNumber,
+                    cardType: cardType === '借记卡' ? 'debit' : 'credit',
+                    balance: 0,
+                    creditLimit: cardType === '信用卡' ? 5000 : 0,
+                    holderName: cardHolder,
+                    createdAt: new Date().toISOString()
+                };
+                
+                // 保存新卡
+                const cards = JSON.parse(localStorage.getItem('bankCards'));
+                cards.push(newCard);
+                localStorage.setItem('bankCards', JSON.stringify(cards));
+                
+                // 更新卡片显示
+                updateCardsDisplay();
+                
+                // 更新账户概览
+                updateAccountOverview();
+                
+                // 显示成功模态框
+                document.getElementById('new-card-number').textContent = formatCardNumber(cardNumber);
+                document.getElementById('new-card-holder').textContent = cardHolder;
+                document.getElementById('new-card-type').textContent = cardType;
+                cardSuccessModal.classList.remove('hidden');
+                
+                // 重置表单
+                cardApplicationForm.reset();
+                cardTypeInput.value = '';
+                
+                // 移除所有选项的选中状态
+                cardOptions.forEach(opt => {
+                    opt.classList.remove('border-primary', 'shadow-md');
+                    opt.classList.add('border-gray-200');
+                });
+            });
+            
+            // 关闭成功模态框
+            closeSuccessModal.addEventListener('click', function() {
+                cardSuccessModal.classList.add('hidden');
+            });
+            
+            // 点击查看新卡按钮
+            viewNewCardBtn.addEventListener('click', function() {
+                // 切换到账户选项卡
+                document.getElementById('tab-accounts').click();
+                cardSuccessModal.classList.add('hidden');
+            });
+            
+            // 点击模态框外部关闭
+            cardSuccessModal.addEventListener('click', function(e) {
+                if (e.target === cardSuccessModal) {
+                    cardSuccessModal.classList.add('hidden');
+                }
+            });
+            
+            // 服务条款相关事件
+            termsLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                termsModal.classList.remove('hidden');
+            });
+            
+            closeTermsModal.addEventListener('click', function() {
+                termsModal.classList.add('hidden');
+            });
+            
+            agreeTermsBtn.addEventListener('click', function() {
+                agreeTermsCheckbox.checked = true;
+                termsModal.classList.add('hidden');
+            });
+            
+            // 点击模态框外部关闭
+            termsModal.addEventListener('click', function(e) {
+                if (e.target === termsModal) {
+                    termsModal.classList.add('hidden');
+                }
+            });
+            
+            // 转账相关
+            const transferForm = document.getElementById('transfer-form');
+            const transferSuccessModal = document.getElementById('transfer-success-modal');
+            const closeTransferModal = document.getElementById('close-transfer-modal');
+            const viewTransferDetailBtn = document.getElementById('view-transfer-detail-btn');
+            const newTransferBtn = document.getElementById('new-transfer-btn');
+            const viewTransactionsBtn = document.getElementById('view-transactions-btn');
+            
+            // 收款人搜索相关
+            const recipientName = document.getElementById('recipient-name');
+            const recipientSuggestions = document.getElementById('recipient-suggestions');
+            const toAccount = document.getElementById('to-account');
+            const fromAccount = document.getElementById('from-account');
+            
+            // 点击查看交易记录按钮
+            viewTransactionsBtn.addEventListener('click', function() {
+                // 切换到交易记录选项卡
+                document.getElementById('tab-transactions').click();
+            });
+            
+            // 更新转账确认信息
+            const transferAmount = document.getElementById('transfer-amount');
+            
+            function updateTransferConfirmation() {
+                document.getElementById('confirm-from-account').textContent = fromAccount.options[fromAccount.selectedIndex]?.text || '未选择';
+                
+                const selectedToAccount = toAccount.options[toAccount.selectedIndex];
+                document.getElementById('confirm-to-account').textContent = selectedToAccount ? selectedToAccount.text : '-';
+                document.getElementById('confirm-to-name').textContent = recipientName.value || '-';
+                document.getElementById('confirm-amount').textContent = `¥${parseFloat(transferAmount.value || 0).toFixed(2)}`;
+                document.getElementById('confirm-total').textContent = `¥${parseFloat(transferAmount.value || 0).toFixed(2)}`;
+            }
+            
+            fromAccount.addEventListener('change', updateTransferConfirmation);
+            toAccount.addEventListener('change', updateTransferConfirmation);
+            transferAmount.addEventListener('input', updateTransferConfirmation);
+            
+            // 收款人搜索功能
+            recipientName.addEventListener('input', async function() {
+                const searchTerm = this.value.trim().toLowerCase();
+                
+                if (searchTerm.length < 1) {
+                    recipientSuggestions.classList.add('hidden');
+                    return;
+                }
+                
+                const suggestions = await searchRecipients(searchTerm);
+                console.log('搜索结果:', suggestions);
+                displayRecipientSuggestions(suggestions);
+            });
+            
+            // 点击页面其他地方关闭建议列表
+            document.addEventListener('click', function(e) {
+                if (!recipientName.contains(e.target) && !recipientSuggestions.contains(e.target)) {
+                    recipientSuggestions.classList.add('hidden');
+                }
+            });
+            
+            // 搜索收款人
+            async function searchRecipients(searchTerm) {
+                const allCards = JSON.parse(localStorage.getItem('bankCards')) || [];
+                let users = [];
+                
+                try {
+                    const usersResult = await window.userDataManager.getUsers();
+                    users = usersResult.users || [];
+                } catch (error) {
+                    console.error('获取用户列表失败:', error);
+                    // 如果获取用户列表失败，使用空数组作为默认值
+                }
+                
+                const currentUserId = getCurrentUserId();
+                
+                console.log('搜索条件:', searchTerm);
+                console.log('所有卡片:', allCards);
+                console.log('所有用户:', users);
+                console.log('当前用户ID:', currentUserId);
+                
+                const results = [];
+                
+                allCards.forEach(card => {
+                    // 跳过当前用户的卡片
+                    if (card.userId === currentUserId) {
+                        console.log('跳过当前用户的卡片:', card);
+                        return;
+                    }
+                    
+                    const user = users.find(u => u.id === card.userId);
+                    const holderName = user ? user.username : '未知用户';
+                    
+                    console.log('检查卡片:', card.cardNumber, '持有人:', holderName, '匹配:', card.cardNumber.includes(searchTerm) || holderName.toLowerCase().includes(searchTerm));
+                    
+                    // 搜索卡号或姓名（现在支持所有类型的卡片）
+                    if (card.cardNumber.includes(searchTerm) || holderName.toLowerCase().includes(searchTerm)) {
+                        results.push({
+                            ...card,
+                            holderName: holderName
+                        });
+                    }
+                });
+                
+                console.log('最终搜索结果:', results);
+                return results;
+            }
+            
+            // 显示收款人建议
+            function displayRecipientSuggestions(suggestions) {
+                recipientSuggestions.innerHTML = '';
+                
+                if (suggestions.length === 0) {
+                    recipientSuggestions.classList.add('hidden');
+                    return;
+                }
+                
+                // 按用户名分组
+                const users = {};
+                suggestions.forEach(suggestion => {
+                    if (!users[suggestion.holderName]) {
+                        users[suggestion.holderName] = [];
+                    }
+                    users[suggestion.holderName].push(suggestion);
+                });
+                
+                // 显示每个用户
+                Object.keys(users).forEach(username => {
+                    const item = document.createElement('div');
+                    item.className = 'px-4 py-2 hover:bg-gray-100 cursor-pointer';
+                    item.textContent = username;
+                    
+                    item.addEventListener('click', function() {
+                        recipientName.value = username;
+                        recipientSuggestions.classList.add('hidden');
+                        
+                        // 填充收款账户下拉框（只显示借记卡）
+                        const debitCards = users[username];
+                        populateRecipientAccounts(debitCards);
+                    });
+                    
+                    recipientSuggestions.appendChild(item);
+                });
+                
+                recipientSuggestions.classList.remove('hidden');
+            }
+            
+            // 填充收款人账户选项
+            function populateRecipientAccounts(cards) {
+                console.log('填充收款账户，卡片数量:', cards.length);
+                console.log('卡片详情:', cards);
+                
+                toAccount.innerHTML = '<option value="">请选择收款账户</option>';
+                
+                if (cards.length === 0) {
+                    const option = document.createElement('option');
+                    option.value = '';
+                    option.textContent = '该用户没有可用的卡片';
+                    toAccount.appendChild(option);
+                    updateTransferConfirmation();
+                    return;
+                }
+                
+                cards.forEach(card => {
+                    const option = document.createElement('option');
+                    option.value = card.cardNumber;
+                    
+                    // 根据卡片类型显示余额信息
+                    let balanceText;
+                    if (card.cardType === 'debit') {
+                        balanceText = `余额: ¥${card.balance.toFixed(2)}`;
+                    } else {
+                        // 信用卡显示信用额度信息
+                        const creditLimit = parseFloat(card.creditLimit) || 0;
+                        const availableCredit = creditLimit - Math.abs(card.balance);
+                        balanceText = `可用额度: ¥${availableCredit.toFixed(2)}`;
+                    }
+                    
+                    option.textContent = `${formatCardNumber(card.cardNumber)} (${card.cardType === 'debit' ? '借记卡' : '信用卡'}) - ${balanceText}`;
+                    toAccount.appendChild(option);
+                });
+                
+                updateTransferConfirmation();
+            }
+            
+            // 提交转账
+            transferForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const fromAccountId = fromAccount.value;
+                const toAccountNumber = toAccount.value;
+                const toAccountName = recipientName.value;
+                const amount = parseFloat(transferAmount.value);
+                const description = document.getElementById('transfer-description').value || '转账';
+                
+                if (!fromAccountId || !toAccountNumber || !toAccountName || !amount || amount <= 0) {
+                    alert('请填写完整的转账信息');
+                    return;
+                }
+                
+                try {
+                    // 获取所有银行卡
+                    const allCards = JSON.parse(localStorage.getItem('bankCards')) || [];
+                    
+                    // 检查付款账户
+                    const fromCard = allCards.find(card => card.id === fromAccountId);
+                    if (!fromCard) {
+                        alert('付款账户不存在');
+                        return;
+                    }
+                    
+                    // 获取当前用户信息
+                    const currentUser = JSON.parse(sessionStorage.getItem('currentUser'));
+                    if (!currentUser) {
+                        alert('用户未登录');
+                        return;
+                    }
+                    fromCard.holderName = currentUser.username;
+                    
+                    // 检查收款账户
+                    const toCard = allCards.find(card => card.cardNumber === toAccountNumber);
+                    if (!toCard) {
+                        alert('收款账户不存在');
+                        return;
+                    }
+                    
+                    // 检查收款人是否为当前用户（不能转账给自己）
+                    if (fromCard.userId === toCard.userId) {
+                        alert('不能向自己的账户转账');
+                        return;
+                    }
+                    
+                    // 检查付款账户余额/额度
+                    let isCreditCard = fromCard.cardType === 'credit';
+                    let canTransfer = true;
+                    let errorMessage = '';
+                    let transferFee = 0;
+                    
+                    if (isCreditCard) {
+                        // 信用卡转账：检查可用额度
+                        // 确保creditLimit和balance是数字类型
+                        const creditLimit = parseFloat(fromCard.creditLimit) || 0;
+                        const currentBalance = parseFloat(fromCard.balance) || 0;
+                        // 信用卡余额为正数表示欠款，可用额度 = 信用额度 - 欠款
+                        const availableCredit = creditLimit - Math.abs(currentBalance);
+                        
+                        console.log('信用卡信息:', fromCard);
+                        console.log('creditLimit:', creditLimit);
+                        console.log('currentBalance:', currentBalance);
+                        console.log('availableCredit:', availableCredit);
+                        
+                        // 信用卡转账收取1%手续费
+                        transferFee = amount * 0.01;
+                        const totalAmount = amount + transferFee;
+                        
+                        console.log('转账金额:', amount);
+                        console.log('手续费:', transferFee);
+                        console.log('总金额:', totalAmount);
+                        
+                        if (availableCredit < totalAmount) {
+                            canTransfer = false;
+                            errorMessage = '信用卡可用额度不足';
+                            console.log('可用额度不足，拒绝转账');
+                        } else {
+                            console.log('可用额度充足，允许转账');
+                        }
+                    } else {
+                        // 借记卡转账：检查余额
+                        if (fromCard.balance < amount) {
+                            canTransfer = false;
+                            errorMessage = '借记卡余额不足';
+                        }
+                    }
+                    
+                    if (!canTransfer) {
+                        alert(errorMessage);
+                        return;
+                    }
+                    
+                    // 执行转账
+                    if (isCreditCard) {
+                        // 信用卡转账增加欠款（余额为正数表示欠款）
+                        fromCard.balance += amount + transferFee;
+                    } else {
+                        // 借记卡转账直接扣除
+                        fromCard.balance -= amount;
+                    }
+                    
+                    // 收款账户增加金额
+                    toCard.balance += amount;
+                    
+                    // 保存更新后的银行卡信息
+                    localStorage.setItem('bankCards', JSON.stringify(allCards));
+                    
+                    // 记录交易
+                    const transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+                    const transferId = `TRX${Date.now()}`;
+                    
+                    // 为付款账户添加支出交易
+                    const outgoingTransaction = {
+                        id: transferId,
+                        cardId: fromCard.id,
+                        type: 'transfer',
+                        amount: isCreditCard ? -(amount + transferFee) : -amount,
+                        description: description,
+                        recipient: {
+                            name: toAccountName,
+                            account: toAccountNumber
+                        },
+                        timestamp: new Date().toISOString(),
+                        status: 'completed',
+                        isCredit: isCreditCard,
+                        fee: transferFee
+                    };
+                    transactions.push(outgoingTransaction);
+                    
+                    // 为收款账户添加收入交易
+                    const incomingTransaction = {
+                        id: `${transferId}_receive`,
+                        cardId: toCard.id,
+                        type: 'transfer',
+                        amount: amount,
+                        description: `收到来自 ${fromCard.holderName} 的转账`,
+                        sender: {
+                            name: fromCard.holderName,
+                            account: fromCard.cardNumber
+                        },
+                        timestamp: new Date().toISOString(),
+                        status: 'completed'
+                    };
+                    transactions.push(incomingTransaction);
+                    
+                    // 保存交易记录
+                    localStorage.setItem('transactions', JSON.stringify(transactions));
+                    
+                    // 更新显示 - 确保所有显示组件都更新
+                    updateCardsDisplay();
+                    updateAccountOverview();
+                    updateTransactionsDisplay();
+                    populateFromAccounts(); // 重新填充付款账户选项（因为余额已更改）
+                    await populateToAccounts(); // 重新填充收款账户选项
+                    
+                    // 显示成功提示
+                    document.getElementById('transfer-id').textContent = transferId;
+                    document.getElementById('transfer-to-account').textContent = formatCardNumber(toAccountNumber);
+                    document.getElementById('transfer-to-name').textContent = toAccountName;
+                    document.getElementById('transfer-amount-display').textContent = `¥${amount.toFixed(2)}`;
+                    transferSuccessModal.classList.remove('hidden');
+                    
+                    // 重置表单
+                    transferForm.reset();
+                    updateTransferConfirmation();
+                    
+                } catch (error) {
+                    console.error('转账失败:', error);
+                    alert('转账失败: ' + error.message);
+                }
+            });
+            
+            // 信用卡还款相关
+            const repaymentForm = document.getElementById('repayment-form');
+            const creditCardSelect = document.getElementById('credit-card-select');
+            const debitCardSelect = document.getElementById('debit-card-select');
+            const repaymentAmount = document.getElementById('repayment-amount');
+            const payMinBtn = document.getElementById('pay-min-btn');
+            const payFullBtn = document.getElementById('pay-full-btn');
+            
+            // 更新信用卡还款确认信息
+            function updateRepaymentConfirmation() {
+                const repaymentAmountValue = parseFloat(repaymentAmount.value || 0);
+                const debitCard = debitCardSelect.options[debitCardSelect.selectedIndex];
+                const paymentMethodText = debitCard ? debitCard.text : '未选择';
+                
+                document.getElementById('confirm-debit-card').textContent = paymentMethodText;
+                document.getElementById('confirm-repayment-amount').textContent = `¥${repaymentAmountValue.toFixed(2)}`;
+                document.getElementById('confirm-total-amount').textContent = `¥${repaymentAmountValue.toFixed(2)}`;
+            }
+            
+            // 更新信用卡信息
+            function updateCreditCardInfo(cardId) {
+                const allCards = JSON.parse(localStorage.getItem('bankCards')) || [];
+                const card = allCards.find(c => c.id === cardId);
+                
+                if (card) {
+                    document.getElementById('repayment-card-number').textContent = formatCardNumber(card.cardNumber);
+                    document.getElementById('repayment-card-holder').textContent = card.holderName;
+                    
+                    // 计算账单日和还款日（假设账单日为每月10号，还款日为账单日后20天）
+                    const billingDate = '10';
+                    const dueDate = '30';
+                    document.getElementById('repayment-billing-date').textContent = billingDate;
+                    document.getElementById('repayment-due-date').textContent = dueDate;
+                    
+                    // 计算应还款额和最低还款额（假设最低还款额为应还款额的10%）
+                    const amountDue = Math.abs(card.balance);
+                    const minAmount = Math.max(amountDue * 0.1, 10); // 最低还款额至少10元
+                    
+                    document.getElementById('repayment-amount-due').textContent = `¥${amountDue.toFixed(2)}`;
+                    document.getElementById('repayment-min-amount').textContent = `¥${minAmount.toFixed(2)}`;
+                }
+            }
+            
+            // 填充还款表单
+            function populateRepaymentForm() {
+                // 填充信用卡下拉框
+                const creditCardSelect = document.getElementById('credit-card-select');
+                const debitCardSelect = document.getElementById('debit-card-select');
+                const userCards = getCurrentUserCards();
+                
+                // 清空信用卡下拉框
+                creditCardSelect.innerHTML = '<option value="">请选择要还款的信用卡</option>';
+                
+                // 清空借记卡下拉框
+                debitCardSelect.innerHTML = '<option value="">请选择还款账户（借记卡）</option>';
+                
+                // 添加信用卡选项
+                userCards.forEach(card => {
+                    if (card.cardType === 'credit') {
+                        const option = document.createElement('option');
+                        option.value = card.id;
+                        const creditLimit = parseFloat(card.creditLimit) || 0;
+                        const availableCredit = creditLimit - Math.abs(card.balance);
+                        option.textContent = `${formatCardNumber(card.cardNumber)} - 可用额度: ¥${availableCredit.toFixed(2)}/${creditLimit}`;
+                        creditCardSelect.appendChild(option);
+                    }
+                });
+                
+                // 添加借记卡选项
+                userCards.forEach(card => {
+                    if (card.cardType === 'debit') {
+                        const option = document.createElement('option');
+                        option.value = card.id;
+                        option.textContent = `${formatCardNumber(card.cardNumber)} - 余额: ¥${card.balance.toFixed(2)}`;
+                        debitCardSelect.appendChild(option);
+                    }
+                });
+                
+                // 添加第三方支付平台选项
+                const paymentPlatforms = [
+                    { id: 'alipay', name: '支付宝' },
+                    { id: 'wechat', name: '微信支付' },
+                    { id: 'unionpay', name: '银联云闪付' }
+                ];
+                
+                const paymentPlatformSelect = document.getElementById('payment-platform-select');
+                if (paymentPlatformSelect) {
+                    // 清空第三方支付平台下拉框
+                    paymentPlatformSelect.innerHTML = '<option value="">请选择第三方支付平台</option>';
+                    
+                    // 添加第三方支付平台选项
+                    paymentPlatforms.forEach(platform => {
+                        const option = document.createElement('option');
+                        option.value = platform.id;
+                        option.textContent = platform.name;
+                        paymentPlatformSelect.appendChild(option);
+                    });
+                }
+            }
+            
+            // 选择信用卡时更新信息
+            creditCardSelect.addEventListener('change', function() {
+                const cardId = this.value;
+                if (cardId) {
+                    updateCreditCardInfo(cardId);
+                } else {
+                    // 重置显示
+                    document.getElementById('repayment-card-number').textContent = '-';
+                    document.getElementById('repayment-card-holder').textContent = '-';
+                    document.getElementById('repayment-billing-date').textContent = '-';
+                    document.getElementById('repayment-due-date').textContent = '-';
+                    document.getElementById('repayment-amount-due').textContent = '-';
+                    document.getElementById('repayment-min-amount').textContent = '-';
+                }
+            });
+            
+            // 移除了其他还款方式，只保留借记卡还款方式
+            
+            // 选择还款账户时更新确认信息
+            debitCardSelect.addEventListener('change', updateRepaymentConfirmation);
+            
+            // 输入还款金额时更新确认信息
+            repaymentAmount.addEventListener('input', updateRepaymentConfirmation);
+            
+            // 最低还款额按钮
+            payMinBtn.addEventListener('click', function() {
+                const cardId = creditCardSelect.value;
+                if (!cardId) return;
+                
+                const allCards = JSON.parse(localStorage.getItem('bankCards')) || [];
+                const card = allCards.find(c => c.id === cardId);
+                if (card) {
+                    const minAmount = Math.max(Math.abs(card.balance) * 0.1, 10);
+                    repaymentAmount.value = minAmount.toFixed(2);
+                    updateRepaymentConfirmation();
+                }
+            });
+            
+            // 全额还款按钮
+            payFullBtn.addEventListener('click', function() {
+                const cardId = creditCardSelect.value;
+                if (!cardId) return;
+                
+                const allCards = JSON.parse(localStorage.getItem('bankCards')) || [];
+                const card = allCards.find(c => c.id === cardId);
+                if (card) {
+                    repaymentAmount.value = Math.abs(card.balance).toFixed(2);
+                    updateRepaymentConfirmation();
+                }
+            });
+            
+            // 提交还款
+            repaymentForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const creditCardId = creditCardSelect.value;
+                const debitCardId = debitCardSelect.value;
+                const amount = parseFloat(repaymentAmount.value);
+                const errorElement = document.getElementById('repayment-error');
+                
+                // 重置错误信息
+                errorElement.textContent = '';
+                errorElement.classList.add('hidden');
+                
+                if (!creditCardId || !debitCardId || !amount || amount <= 0) {
+                    errorElement.textContent = '请填写完整的还款信息';
+                    errorElement.classList.remove('hidden');
+                    return;
+                }
+                
+                try {
+                    const allCards = JSON.parse(localStorage.getItem('bankCards')) || [];
+                    const creditCard = allCards.find(card => card.id === creditCardId);
+                    const debitCard = allCards.find(card => card.id === debitCardId);
+                    
+                    if (!creditCard || !debitCard) {
+                        errorElement.textContent = '账户信息错误';
+                        errorElement.classList.remove('hidden');
+                        return;
+                    }
+                    
+                    // 获取当前用户信息
+                    const currentUser = JSON.parse(sessionStorage.getItem('currentUser'));
+                    if (!currentUser) {
+                        errorElement.textContent = '用户未登录';
+                        errorElement.classList.remove('hidden');
+                        return;
+                    }
+                    creditCard.holderName = currentUser.username;
+                    debitCard.holderName = currentUser.username;
+                    
+                    // 检查两个卡是否属于同一个用户
+                    if (creditCard.userId !== debitCard.userId) {
+                        errorElement.textContent = '只能使用自己名下的借记卡进行信用卡还款';
+                        errorElement.classList.remove('hidden');
+                        return;
+                    }
+                    
+                    // 检查信用卡是否为欠款状态（余额为正数表示欠款）
+                    if (creditCard.balance <= 0) {
+                        errorElement.textContent = '信用卡当前没有欠款';
+                        errorElement.classList.remove('hidden');
+                        return;
+                    }
+                    
+                    // 检查还款金额是否超过信用卡欠款
+                    const outstandingAmount = Math.abs(creditCard.balance);
+                    if (amount > outstandingAmount) {
+                        errorElement.textContent = `还款金额不能超过欠款金额 ¥${outstandingAmount.toFixed(2)}`;
+                        errorElement.classList.remove('hidden');
+                        return;
+                    }
+                    
+                    // 检查还款账户余额
+                    if (debitCard.balance < amount) {
+                        errorElement.textContent = '还款账户余额不足';
+                        errorElement.classList.remove('hidden');
+                        return;
+                    }
+                    
+                    // 执行还款
+                    debitCard.balance -= amount;
+                    creditCard.balance -= amount; // 信用卡余额减少（减少欠款），如果原来是正数则减到0或负数
+                    
+                    // 如果信用卡还款后余额小于0，将其设为0（避免出现负欠款）
+                    if (creditCard.balance < 0) {
+                        creditCard.balance = 0;
+                    }
+                    
+                    // 保存更新后的银行卡信息
+                    localStorage.setItem('bankCards', JSON.stringify(allCards));
+                    
+                    // 记录交易
+                    const transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+                    const repaymentId = `REP${Date.now()}`;
+                    
+                    // 为借记卡添加支出交易
+                    const debitTransaction = {
+                        id: repaymentId,
+                        cardId: debitCard.id,
+                        type: 'repayment',
+                        amount: -amount,
+                        description: '信用卡还款',
+                        recipient: {
+                            name: creditCard.holderName,
+                            account: creditCard.cardNumber
+                        },
+                        timestamp: new Date().toISOString(),
+                        status: 'completed',
+                        fee: 0
+                    };
+                    transactions.push(debitTransaction);
+                    
+                    // 为信用卡添加收入交易
+                    const creditTransaction = {
+                        id: `${repaymentId}_credit`,
+                        cardId: creditCard.id,
+                        type: 'repayment',
+                        amount: amount,
+                        description: '信用卡还款',
+                        sender: {
+                            name: debitCard.holderName,
+                            account: debitCard.cardNumber
+                        },
+                        timestamp: new Date().toISOString(),
+                        status: 'completed',
+                        fee: 0
+                    };
+                    transactions.push(creditTransaction);
+                    
+                    // 保存交易记录
+                    localStorage.setItem('transactions', JSON.stringify(transactions));
+                    
+                    // 更新显示
+                    updateCardsDisplay();
+                    updateAccountOverview();
+                    updateTransactionsDisplay();
+                    populateRepaymentForm();
+                    
+                    // 显示成功提示
+                    alert('还款成功！');
+                    
+                    // 重置表单
+                    repaymentForm.reset();
+                    updateRepaymentConfirmation();
+                } catch (error) {
+                    console.error('还款失败:', error);
+                    errorElement.textContent = '还款失败: ' + error.message;
+                    errorElement.classList.remove('hidden');
+                }
+            });
+                
+
+            
+            // 关闭转账成功模态框
+            closeTransferModal.addEventListener('click', function() {
+                transferSuccessModal.classList.add('hidden');
+            });
+            
+            // 点击查看转账详情按钮
+            viewTransferDetailBtn.addEventListener('click', function() {
+                // 切换到交易记录选项卡
+                document.getElementById('tab-transactions').click();
+                transferSuccessModal.classList.add('hidden');
+            });
+            
+            // 点击再次转账按钮
+            newTransferBtn.addEventListener('click', function() {
+                transferSuccessModal.classList.add('hidden');
+            });
+            
+            // 点击模态框外部关闭
+            transferSuccessModal.addEventListener('click', function(e) {
+                if (e.target === transferSuccessModal) {
+                    transferSuccessModal.classList.add('hidden');
+                }
+            });
+            
+            // 交易记录相关
+            const transactionSearch = document.getElementById('transaction-search');
+            const transactionFilter = document.getElementById('transaction-filter');
+            const prevPageBtn = document.getElementById('prev-page');
+            const nextPageBtn = document.getElementById('next-page');
+            
+            let currentPage = 1;
+            const recordsPerPage = 10;
+            
+            // 搜索交易记录
+            transactionSearch.addEventListener('input', function() {
+                currentPage = 1;
+                updateTransactionsDisplay();
+            });
+            
+            // 筛选交易记录
+            transactionFilter.addEventListener('change', function() {
+                currentPage = 1;
+                updateTransactionsDisplay();
+            });
+            
+            // 上一页
+            prevPageBtn.addEventListener('click', function() {
+                if (currentPage > 1) {
+                    currentPage--;
+                    updateTransactionsDisplay();
+                }
+            });
+            
+            // 下一页
+            nextPageBtn.addEventListener('click', function() {
+                const transactions = getFilteredTransactions();
+                const totalPages = Math.ceil(transactions.length / recordsPerPage);
+                
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    updateTransactionsDisplay();
+                }
+            });
+            
+            // 财务统计相关
+            const statisticsPeriod = document.getElementById('statistics-period');
+            const refreshStatistics = document.getElementById('refresh-statistics');
+            
+            // 更改统计时间范围
+            statisticsPeriod.addEventListener('change', async function() {
+                await initCharts();
+            });
+            
+            // 刷新统计数据
+            refreshStatistics.addEventListener('click', async function() {
+                await initCharts();
+            });
+            
+            // 初始化页面
+            async function initPage() {
+                // 更新卡片显示
+                updateCardsDisplay();
+                
+                // 更新账户概览
+                updateAccountOverview();
+                
+                // 更新交易记录
+                updateTransactionsDisplay();
+                
+                // 填充转账表单的付款账户选项
+                populateFromAccounts();
+                
+                // 填充转账表单的收款账户选项
+                await populateToAccounts();
+                
+                // 填充信用卡还款表单
+                populateRepaymentForm();
+                
+                // 确保所有数据都已加载完成后再更新显示
+                setTimeout(() => {
+                    updateCardsDisplay();
+                    updateAccountOverview();
+                }, 300);
+            }
+            
+            // 简单的数据转换函数
+            function encryptData(data) {
+                // 直接返回JSON字符串，不使用Base64编码
+                return JSON.stringify(data);
+            }
+            
+            function decryptData(encryptedData) {
+                // 直接解析JSON字符串，不使用Base64解码
+                return JSON.parse(encryptedData);
+            }
+            
+            // 初始化测试数据（使用统一脚本）
+            function initTestData() {
+                // 引入统一的数据初始化脚本
+                const initScript = document.createElement('script');
+                initScript.src = 'init-data.js';
+                document.head.appendChild(initScript);
+            }
+            
+            // 系统日志记录函数
+            function logSystemEvent(eventType, details) {
+                const logs = JSON.parse(localStorage.getItem('systemLogs')) || [];
+                const currentUser = JSON.parse(sessionStorage.getItem('currentUser'));
+                
+                const logEntry = {
+                    id: Date.now().toString(),
+                    timestamp: new Date().toISOString(),
+                    eventType: eventType,
+                    userId: currentUser ? currentUser.id : 'anonymous',
+                    username: currentUser ? currentUser.username : '匿名用户',
+                    details: details,
+                    ip: '127.0.0.1', // 实际项目中应获取真实IP
+                    userAgent: navigator.userAgent
+                };
+                
+                logs.push(logEntry);
+                localStorage.setItem('systemLogs', JSON.stringify(logs));
+            }
+            
+            // 添加登录成功日志
+            function addLoginLog() {
+                const currentUser = JSON.parse(sessionStorage.getItem('currentUser'));
+                if (currentUser) {
+                    logSystemEvent('login', `用户 ${currentUser.username} 成功登录`);
+                }
+            }
+            
+            // 添加退出登录日志
+            function addLogoutLog() {
+                const currentUser = JSON.parse(sessionStorage.getItem('currentUser'));
+                if (currentUser) {
+                    logSystemEvent('logout', `用户 ${currentUser.username} 成功退出登录`);
+                }
+            }
+
+            // 检查用户登录状态
+            checkLoginStatus();
+            
+            // 初始化测试数据
+            initTestData();
+            
+            // 初始化页面
+            async function delayedInitPage() {
+                // 延迟初始化以确保数据加载完成
+                setTimeout(async () => {
+                    await initPage();
+                }, 500);
+            }
+            
+            delayedInitPage();
+            
+            // 初始化图表
+            async function initCharts() {
+                // 异步等待Chart.js加载
+                let chartLoaded = false;
+                const maxAttempts = 20; // 最多尝试20次
+                const delay = 500; // 每次等待500ms
+                
+                for (let i = 0; i < maxAttempts; i++) {
+                    if (typeof Chart !== 'undefined') {
+                        chartLoaded = true;
+                        break;
+                    }
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                }
+                
+                // 检查Canvas元素是否存在
+                const expenseCategoryCanvas = document.getElementById('expense-category-chart');
+                const incomeExpenseCanvas = document.getElementById('income-expense-chart');
+                
+                if (!expenseCategoryCanvas || !incomeExpenseCanvas) {
+                    console.error('图表Canvas元素未找到，无法初始化图表');
+                    // 更新统计卡片
+                    const days = parseInt(statisticsPeriod.value);
+                    const stats = getStatistics(days);
+                    document.getElementById('total-income').textContent = `¥${stats.totalIncome.toFixed(2)}`;
+                    document.getElementById('total-expense').textContent = `¥${stats.totalExpense.toFixed(2)}`;
+                    document.getElementById('net-income').textContent = `¥${(stats.totalIncome - stats.totalExpense).toFixed(2)}`;
+                    document.getElementById('transaction-count').textContent = stats.transactionCount;
+                    updateRecentTransactions(stats.recentTransactions);
+                    return;
+                }
+                
+                if (!chartLoaded) {
+                    console.error('Chart.js加载超时，无法初始化图表');
+                    // 向页面添加友好的错误提示
+                    const chartContainers = document.querySelectorAll('.bg-gray-50.rounded-lg.p-4');
+                    chartContainers.forEach(container => {
+                        container.innerHTML = `
+                            <div class="flex flex-col items-center justify-center h-full py-12">
+                                <div class="text-red-500 text-4xl mb-4">
+                                    <i class="fa fa-exclamation-triangle"></i>
+                                </div>
+                                <h3 class="text-xl font-medium text-gray-800 mb-2">图表加载失败</h3>
+                                <p class="text-gray-600 text-center mb-4">由于网络原因，图表库未能及时加载<br>请刷新页面重试</p>
+                                <button onclick="location.reload()" class="bg-primary text-white px-4 py-2 rounded-md hover:bg-opacity-90 transition-all duration-200">
+                                    刷新页面
+                                </button>
+                            </div>
+                        `;
+                    });
+                    // 更新统计卡片
+                    const days = parseInt(statisticsPeriod.value);
+                    const stats = getStatistics(days);
+                    document.getElementById('total-income').textContent = `¥${stats.totalIncome.toFixed(2)}`;
+                    document.getElementById('total-expense').textContent = `¥${stats.totalExpense.toFixed(2)}`;
+                    document.getElementById('net-income').textContent = `¥${(stats.totalIncome - stats.totalExpense).toFixed(2)}`;
+                    document.getElementById('transaction-count').textContent = stats.transactionCount;
+                    updateRecentTransactions(stats.recentTransactions);
+                    return;
+                }
+                
+                try {
+                    // 获取统计时间范围
+                    const days = parseInt(statisticsPeriod.value);
+                    
+                    // 获取统计数据
+                    const stats = getStatistics(days);
+                    
+                    // 更新统计卡片
+                    document.getElementById('total-income').textContent = `¥${stats.totalIncome.toFixed(2)}`;
+                    document.getElementById('total-expense').textContent = `¥${stats.totalExpense.toFixed(2)}`;
+                    document.getElementById('net-income').textContent = `¥${(stats.totalIncome - stats.totalExpense).toFixed(2)}`;
+                    document.getElementById('transaction-count').textContent = stats.transactionCount;
+                    
+                    // 更新最近交易
+                    updateRecentTransactions(stats.recentTransactions);
+                    
+                    // 消费类别饼图
+                    const expenseCategoryCtx = document.getElementById('expense-category-chart').getContext('2d');
+                    
+                    if (window.expenseCategoryChart) {
+                        window.expenseCategoryChart.destroy();
+                    }
+                    
+                    window.expenseCategoryChart = new Chart(expenseCategoryCtx, {
+                        type: 'pie',
+                        data: {
+                            labels: Object.keys(stats.expenseByCategory),
+                            datasets: [{
+                                data: Object.values(stats.expenseByCategory),
+                                backgroundColor: [
+                                    '#0A2463',
+                                    '#3E92CC',
+                                    '#E6AF2E',
+                                    '#D9314F',
+                                    '#5C80BC',
+                                    '#A3C4F3',
+                                    '#F9DC5C',
+                                    '#FF9B73'
+                                ],
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                legend: {
+                                    position: 'right',
+                                }
+                            }
+                        }
+                    });
+                    
+                    // 收支趋势图
+                    const incomeExpenseCtx = document.getElementById('income-expense-chart').getContext('2d');
+                    
+                    if (window.incomeExpenseChart) {
+                        window.incomeExpenseChart.destroy();
+                    }
+                    
+                    window.incomeExpenseChart = new Chart(incomeExpenseCtx, {
+                        type: 'line',
+                        data: {
+                            labels: stats.dailyData.labels,
+                            datasets: [
+                                {
+                                    label: '收入',
+                                    data: stats.dailyData.income,
+                                    borderColor: '#3E92CC',
+                                    backgroundColor: 'rgba(62, 146, 204, 0.1)',
+                                    borderWidth: 2,
+                                    fill: true,
+                                    tension: 0.4
+                                },
+                                {
+                                    label: '支出',
+                                    data: stats.dailyData.expense,
+                                    borderColor: '#D9314F',
+                                    backgroundColor: 'rgba(217, 49, 79, 0.1)',
+                                    borderWidth: 2,
+                                    fill: true,
+                                    tension: 0.4
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        callback: function(value) {
+                                            return '¥' + value;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                } catch (error) {
+                    console.error('初始化图表失败:', error);
+                }
+            }
+            
+            // 更新卡片显示
+            function updateCardsDisplay() {
+                const cardsContainer = document.getElementById('cards-container');
+                const cards = getCurrentUserCards();
+                
+                // 清空容器
+                cardsContainer.innerHTML = '';
+                
+                // 添加卡片
+                cards.forEach(card => {
+                    const cardElement = document.createElement('div');
+                    cardElement.className = `bg-gradient-to-r from-primary to-accent rounded-lg shadow-lg p-6 text-white card-shine relative overflow-hidden`;
+                    
+                    const cardTypeText = card.cardType === 'debit' ? '借记卡' : '信用卡';
+                    const balanceText = card.cardType === 'debit' ? 
+                        `余额：¥${card.balance.toFixed(2)}` : 
+                        `可用额度：¥${((parseFloat(card.creditLimit) || 0) - Math.abs(card.balance)).toFixed(2)}/${parseFloat(card.creditLimit) || 0}`;
+                    
+                    cardElement.innerHTML = `
+                        <div class="absolute top-4 right-4">
+                            <span class="bg-secondary text-primary text-xs font-bold px-2 py-1 rounded">${cardTypeText}</span>
+                        </div>
+                        <div class="mb-6">
+                            <img src="https://p9-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/6a9bbecde6c24ec4b9fd8b26c263ab54~tplv-a9rns2rl98-image.image?lk3s=8e244e95&rcl=202601202312037748F98E243C1F231D4E&rrcfp=f06b921b&x-expires=1771513965&x-signature=BR2pSwvk0BUY9Xk2se6VkW25DMQ%3D" alt="安提斯特国徽" class="h-10 w-10 opacity-80">
+                        </div>
+                        <div class="mb-4">
+                            <p class="text-sm opacity-80 mb-1">卡号</p>
+                            <p class="text-xl font-mono tracking-wider">${formatCardNumber(card.cardNumber)}</p>
+                        </div>
+                        <div class="mb-4">
+                            <p class="text-sm opacity-80 mb-1">持卡人</p>
+                            <p class="text-lg font-medium">${card.holderName}</p>
+                        </div>
+                        <div class="flex justify-between">
+                            <div>
+                                <p class="text-sm opacity-80 mb-1">有效期</p>
+                                <p>${getCardExpiry(card.createdAt)}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm opacity-80 mb-1">${card.cardType === 'debit' ? '余额' : '可用额度'}</p>
+                                <p class="text-lg font-bold">${card.cardType === 'debit' ? 
+                                    `¥${card.balance.toFixed(2)}` : 
+                                    `¥${((parseFloat(card.creditLimit) || 0) - Math.abs(card.balance)).toFixed(2)}`}</p>
+                            </div>
+                        </div>
+                    `;
+                    
+                    cardsContainer.appendChild(cardElement);
+                });
+                
+                // 添加添加新卡占位符
+                const addCardElement = document.createElement('div');
+                addCardElement.id = 'add-card-placeholder';
+                addCardElement.className = 'border-2 border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center justify-center text-center cursor-pointer hover:border-primary transition-colors duration-200 h-64';
+                addCardElement.innerHTML = `
+                    <div class="text-5xl text-gray-300 mb-4">
+                        <i class="fa fa-plus-circle"></i>
+                    </div>
+                    <h3 class="text-xl font-medium text-gray-700 mb-2">办理新卡</h3>
+                    <p class="text-gray-500">点击此处申请新的银行卡</p>
+                `;
+                
+                // 添加点击事件
+                addCardElement.addEventListener('click', function() {
+                    // 切换到办理新卡选项卡
+                    document.getElementById('tab-new-card').click();
+                });
+                
+                cardsContainer.appendChild(addCardElement);
+            }
+            
+            // 更新账户概览
+            function updateAccountOverview() {
+                const cards = getCurrentUserCards();
+                
+                let totalAssets = 0;
+                let debitBalance = 0;
+                let creditLimit = 0;
+                
+                cards.forEach(card => {
+                    if (card.cardType === 'debit') {
+                        totalAssets += card.balance;
+                        debitBalance += card.balance;
+                    } else {
+                        // 总资产不再包含信用卡额度
+                        creditLimit += parseFloat(card.creditLimit) || 0;
+                    }
+                });
+                
+                document.getElementById('total-assets').textContent = `¥${totalAssets.toFixed(2)}`;
+                document.getElementById('debit-balance').textContent = `¥${debitBalance.toFixed(2)}`;
+                document.getElementById('credit-limit').textContent = `¥${creditLimit.toFixed(2)}`;
+            }
+            
+            // 更新交易记录
+            function updateTransactionsDisplay() {
+                const transactionsTableBody = document.getElementById('transactions-table-body');
+                const transactions = getFilteredTransactions();
+                
+                // 计算分页
+                const startIndex = (currentPage - 1) * recordsPerPage;
+                const endIndex = startIndex + recordsPerPage;
+                const paginatedTransactions = transactions.slice(startIndex, endIndex);
+                
+                // 更新分页信息
+                document.getElementById('showing-records').textContent = paginatedTransactions.length;
+                document.getElementById('total-records').textContent = transactions.length;
+                
+                // 更新分页按钮状态
+                prevPageBtn.disabled = currentPage === 1;
+                nextPageBtn.disabled = endIndex >= transactions.length;
+                
+                // 清空表格
+                transactionsTableBody.innerHTML = '';
+                
+                // 添加交易记录
+                if (paginatedTransactions.length === 0) {
+                    const emptyRow = document.createElement('tr');
+                    emptyRow.className = 'border-b';
+                    emptyRow.innerHTML = `
+                        <td colspan="5" class="py-8 text-center text-gray-500">暂无交易记录</td>
+                    `;
+                    transactionsTableBody.appendChild(emptyRow);
+                } else {
+                    paginatedTransactions.forEach(transaction => {
+                        const row = document.createElement('tr');
+                        row.className = 'border-b hover:bg-gray-50';
+                        
+                        const date = new Date(transaction.timestamp);
+                        const formattedDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+                        
+                        let typeText = '';
+                        let typeClass = '';
+                        
+                        switch (transaction.type) {
+                            case 'deposit':
+                                typeText = '存款';
+                                typeClass = 'bg-green-100 text-green-800';
+                                break;
+                            case 'withdraw':
+                                typeText = '取款';
+                                typeClass = 'bg-red-100 text-red-800';
+                                break;
+                            case 'transfer':
+                                typeText = '转账';
+                                typeClass = 'bg-blue-100 text-blue-800';
+                                break;
+                            case 'payment':
+                                typeText = '支付';
+                                typeClass = 'bg-yellow-100 text-yellow-800';
+                                break;
+                            default:
+                                typeText = '其他';
+                                typeClass = 'bg-gray-100 text-gray-800';
+                        }
+                        
+                        const amount = transaction.amount > 0 ? 
+                            `+¥${transaction.amount.toFixed(2)}` : 
+                            `¥${transaction.amount.toFixed(2)}`;
+                        
+                        const amountClass = transaction.amount > 0 ? 'text-green-600' : 'text-red-600';
+                        
+                        row.innerHTML = `
+                            <td class="py-3 px-4">${formattedDate}</td>
+                            <td class="py-3 px-4">
+                                <span class="px-2 py-1 rounded-full text-xs font-medium ${typeClass}">${typeText}</span>
+                            </td>
+                            <td class="py-3 px-4">${transaction.description}</td>
+                            <td class="py-3 px-4 text-right font-medium ${amountClass}">${amount}</td>
+                            <td class="py-3 px-4">
+                                <span class="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">${transaction.status === 'completed' ? '已完成' : '处理中'}</span>
+                            </td>
+                        `;
+                        
+                        transactionsTableBody.appendChild(row);
+                    });
+                }
+            }
+            
+            // 更新最近交易
+            function updateRecentTransactions(transactions) {
+                const recentTransactionsBody = document.getElementById('recent-transactions-body');
+                
+                // 清空表格
+                recentTransactionsBody.innerHTML = '';
+                
+                // 添加交易记录
+                if (transactions.length === 0) {
+                    const emptyRow = document.createElement('tr');
+                    emptyRow.className = 'border-b';
+                    emptyRow.innerHTML = `
+                        <td colspan="4" class="py-8 text-center text-gray-500">暂无交易记录</td>
+                    `;
+                    recentTransactionsBody.appendChild(emptyRow);
+                } else {
+                    transactions.forEach(transaction => {
+                        const row = document.createElement('tr');
+                        row.className = 'border-b hover:bg-gray-50';
+                        
+                        const date = new Date(transaction.timestamp);
+                        const formattedDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+                        
+                        let typeText = '';
+                        
+                        switch (transaction.type) {
+                            case 'deposit':
+                                typeText = '存款';
+                                break;
+                            case 'withdraw':
+                                typeText = '取款';
+                                break;
+                            case 'transfer':
+                                typeText = '转账';
+                                break;
+                            case 'payment':
+                                typeText = '支付';
+                                break;
+                            default:
+                                typeText = '其他';
+                        }
+                        
+                        const amount = transaction.amount > 0 ? 
+                            `+¥${transaction.amount.toFixed(2)}` : 
+                            `¥${transaction.amount.toFixed(2)}`;
+                        
+                        const amountClass = transaction.amount > 0 ? 'text-green-600' : 'text-red-600';
+                        
+                        row.innerHTML = `
+                            <td class="py-3 px-4">${formattedDate}</td>
+                            <td class="py-3 px-4">${typeText}</td>
+                            <td class="py-3 px-4">${transaction.description}</td>
+                            <td class="py-3 px-4 text-right font-medium ${amountClass}">${amount}</td>
+                        `;
+                        
+                        recentTransactionsBody.appendChild(row);
+                    });
+                }
+            }
+            
+            // 填充转账表单的付款账户选项
+            function populateFromAccounts() {
+                const fromAccount = document.getElementById('from-account');
+                const cards = getCurrentUserCards();
+                
+                // 清空选项
+                fromAccount.innerHTML = '<option value="">请选择付款账户</option>';
+                
+                // 添加选项，包括信用卡和借记卡
+                cards.forEach(card => {
+                    const option = document.createElement('option');
+                    option.value = card.id;
+                    
+                    let balanceText;
+                    if (card.cardType === 'debit') {
+                        balanceText = `余额：¥${card.balance.toFixed(2)}`;
+                    } else {
+                        // 信用卡显示可用额度（余额为欠款，所以需要用信用额度减去欠款金额）
+                        const creditLimit = parseFloat(card.creditLimit) || 0;
+                        const availableCredit = creditLimit - Math.abs(card.balance);
+                        balanceText = `可用额度：¥${availableCredit.toFixed(2)}`;
+                    }
+                    
+                    option.textContent = `${formatCardNumber(card.cardNumber)} (${card.cardType === 'debit' ? '借记卡' : '信用卡'}) - ${balanceText}`;
+                    
+                    fromAccount.appendChild(option);
+                });
+            }
+
+            // 填充转账表单的收款账户选项
+            async function populateToAccounts() {
+                const toAccount = document.getElementById('to-account');
+                const allCards = JSON.parse(localStorage.getItem('bankCards')) || [];
+                const currentUserId = getCurrentUserId();
+                
+                // 清空选项
+                toAccount.innerHTML = '<option value="">请选择收款账户</option>';
+                
+                try {
+                    const usersResult = await window.userDataManager.getUsers();
+                    const users = usersResult.users || [];
+                    
+                    // 添加其他用户的卡片作为选项
+                    allCards.forEach(card => {
+                        // 跳过当前用户的卡片
+                        if (card.userId === currentUserId) {
+                            return;
+                        }
+                        
+                        const option = document.createElement('option');
+                        option.value = card.cardNumber;
+                        
+                        // 查找持卡人信息
+                        const user = users.find(u => u.id === card.userId);
+                        const holderName = user ? user.username : '未知用户';
+                        
+                        const cardTypeText = card.cardType === 'debit' ? '借记卡' : '信用卡';
+                        
+                        option.textContent = `${holderName} - ${cardTypeText} (${formatCardNumber(card.cardNumber)})`;
+                        option.dataset.name = holderName;
+                        
+                        toAccount.appendChild(option);
+                    });
+                    
+                    // 如果没有找到其他用户的卡片，显示相应提示
+                    if (toAccount.children.length <= 1) { // 只有一个选项（默认选项）
+                        const option = document.createElement('option');
+                        option.value = '';
+                        option.textContent = '没有其他用户可以转账';
+                        option.disabled = true;
+                        toAccount.appendChild(option);
+                    }
+                } catch (error) {
+                    console.error('获取用户列表失败:', error);
+                    // 即使获取用户列表失败，也要显示基础的卡片信息
+                    allCards.forEach(card => {
+                        // 跳过当前用户的卡片
+                        if (card.userId === currentUserId) {
+                            return;
+                        }
+                        
+                        const option = document.createElement('option');
+                        option.value = card.cardNumber;
+                        
+                        // 如果无法获取用户信息，使用卡片ID作为名称
+                        const holderName = '未知用户';
+                        
+                        const cardTypeText = card.cardType === 'debit' ? '借记卡' : '信用卡';
+                        
+                        option.textContent = `${holderName} - ${cardTypeText} (${formatCardNumber(card.cardNumber)})`;
+                        option.dataset.name = holderName;
+                        
+                        toAccount.appendChild(option);
+                    });
+                    
+                    // 如果仍然没有可用选项，显示错误信息
+                    if (toAccount.children.length <= 1) { // 只有一个选项（默认选项）
+                        const option = document.createElement('option');
+                        option.value = '';
+                        option.textContent = '没有其他用户可以转账';
+                        option.disabled = true;
+                        toAccount.appendChild(option);
+                    }
+                }
+            }
+            
+            // 获取筛选后的交易记录
+            function getFilteredTransactions() {
+                const searchTerm = transactionSearch.value.toLowerCase();
+                const filterType = transactionFilter.value;
+                
+                const transactions = JSON.parse(localStorage.getItem('transactions'));
+                const userCards = getCurrentUserCards();
+                const userCardIds = userCards.map(card => card.id);
+                
+                return transactions.filter(transaction => {
+                    // 筛选用户的交易
+                    if (!userCardIds.includes(transaction.cardId)) {
+                        return false;
+                    }
+                    
+                    // 筛选搜索词
+                    if (searchTerm && !transaction.description.toLowerCase().includes(searchTerm)) {
+                        return false;
+                    }
+                    
+                    // 筛选交易类型
+                    if (filterType !== 'all' && transaction.type !== filterType) {
+                        return false;
+                    }
+                    
+                    return true;
+                }).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            }
+            
+            // 获取统计数据
+            function getStatistics(days) {
+                const endDate = new Date();
+                const startDate = new Date();
+                startDate.setDate(startDate.getDate() - days);
+                
+                const transactions = JSON.parse(localStorage.getItem('transactions'));
+                const userCards = getCurrentUserCards();
+                const userCardIds = userCards.map(card => card.id);
+                
+                // 筛选用户的交易
+                const userTransactions = transactions.filter(transaction => {
+                    return userCardIds.includes(transaction.cardId) && 
+                           new Date(transaction.timestamp) >= startDate && 
+                           new Date(transaction.timestamp) <= endDate;
+                });
+                
+                // 计算总收入和总支出
+                let totalIncome = 0;
+                let totalExpense = 0;
+                
+                userTransactions.forEach(transaction => {
+                    if (transaction.amount > 0) {
+                        totalIncome += transaction.amount;
+                    } else {
+                        totalExpense += Math.abs(transaction.amount);
+                    }
+                });
+                
+                // 按类别统计支出
+                const expenseByCategory = {};
+                
+                userTransactions.forEach(transaction => {
+                    if (transaction.amount < 0) {
+                        const category = getCategoryFromDescription(transaction.description);
+                        
+                        if (!expenseByCategory[category]) {
+                            expenseByCategory[category] = 0;
+                        }
+                        
+                        expenseByCategory[category] += Math.abs(transaction.amount);
+                    }
+                });
+                
+                // 生成每日数据
+                const dailyData = {
+                    labels: [],
+                    income: [],
+                    expense: []
+                };
+                
+                for (let i = 0; i < days; i++) {
+                    const date = new Date();
+                    date.setDate(date.getDate() - (days - i - 1));
+                    
+                    const dateStr = `${date.getMonth() + 1}/${date.getDate()}`;
+                    dailyData.labels.push(dateStr);
+                    
+                    // 计算当天的收入和支出
+                    let dayIncome = 0;
+                    let dayExpense = 0;
+                    
+                    userTransactions.forEach(transaction => {
+                        const transactionDate = new Date(transaction.timestamp);
+                        
+                        if (transactionDate.getDate() === date.getDate() && 
+                            transactionDate.getMonth() === date.getMonth() && 
+                            transactionDate.getFullYear() === date.getFullYear()) {
+                            
+                            if (transaction.amount > 0) {
+                                dayIncome += transaction.amount;
+                            } else {
+                                dayExpense += Math.abs(transaction.amount);
+                            }
+                        }
+                    });
+                    
+                    dailyData.income.push(dayIncome);
+                    dailyData.expense.push(dayExpense);
+                }
+                
+                // 获取最近交易
+                const recentTransactions = userTransactions
+                    .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+                    .slice(0, 5);
+                
+                return {
+                    totalIncome,
+                    totalExpense,
+                    transactionCount: userTransactions.length,
+                    expenseByCategory,
+                    dailyData,
+                    recentTransactions
+                };
+            }
+            
+            // 从描述中获取类别
+            function getCategoryFromDescription(description) {
+                const categories = [
+                    { name: '餐饮', keywords: ['餐', '饭', '食', '吃', '外卖', '餐厅'] },
+                    { name: '购物', keywords: ['买', '购', '商品', '衣服', '鞋', '包'] },
+                    { name: '交通', keywords: ['车', '油', '公交', '地铁', '打车', '机票'] },
+                    { name: '娱乐', keywords: ['游戏', '电影', '音乐', '娱乐', '玩'] },
+                    { name: '生活缴费', keywords: ['水电', '煤气', '物业', '话费', '网费'] }
+                ];
+                
+                for (const category of categories) {
+                    for (const keyword of category.keywords) {
+                        if (description.includes(keyword)) {
+                            return category.name;
+                        }
+                    }
+                }
+                
+                return '其他';
+            }
+            
+            // 生成卡号
+            function generateCardNumber() {
+                let cardNumber = '';
+                
+                for (let i = 0; i < 16; i++) {
+                    cardNumber += Math.floor(Math.random() * 10);
+                }
+                
+                return cardNumber;
+            }
+            
+            // 格式化卡号
+            function formatCardNumber(cardNumber) {
+                return cardNumber.replace(/(\d{4})(?=\d)/g, '$1 ');
+            }
+            
+            // 获取卡片有效期
+            function getCardExpiry(createdAt) {
+                const date = new Date(createdAt);
+                date.setFullYear(date.getFullYear() + 5);
+                
+                return `${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getFullYear()).slice(2)}`;
+            }
+            
+            // 获取当前用户ID
+            function getCurrentUserId() {
+                const currentUser = JSON.parse(sessionStorage.getItem('currentUser'));
+                return currentUser ? currentUser.id : null;
+            }
+            
+            // 获取当前用户名
+            function getCurrentUsername() {
+                const currentUser = JSON.parse(sessionStorage.getItem('currentUser'));
+                return currentUser ? currentUser.username : null;
+            }
+            
+            // 获取当前用户的卡片
+            function getCurrentUserCards() {
+                const userId = getCurrentUserId();
+                const cards = JSON.parse(localStorage.getItem('bankCards'));
+                
+                return cards.filter(card => card.userId === userId);
+            }
+            
+            // 检查用户是否已登录
+            async function checkLoginStatus() {
+                try {
+                    // 首先检查 sessionStorage 中的用户信息
+                    const currentUser = JSON.parse(sessionStorage.getItem('currentUser'));
+                    
+                    if (!currentUser) {
+                        // 如果没有本地登录状态，重定向到登录页面
+                        alert('请先登录以访问银行服务');
+                        window.location.href = 'index.html';
+                        return;
+                    }
+                    
+                    // 验证登录状态是否有效（可选验证，失败不影响页面使用）
+                    try {
+                        const result = await window.userDataManager.getCurrentUser();
+                        if (result && result.user) {
+                            // 登录状态有效，更新欢迎信息
+                            document.getElementById('welcome-user').classList.remove('hidden');
+                            document.getElementById('current-username').textContent = getCurrentUsername();
+                        } else {
+                            // 服务器端session过期，但保留本地状态让用户继续使用
+                            console.warn('服务器session可能已过期，使用本地缓存的用户信息');
+                            document.getElementById('welcome-user').classList.remove('hidden');
+                            document.getElementById('current-username').textContent = getCurrentUsername();
+                        }
+                    } catch (verifyError) {
+                        // 验证失败不影响页面使用，使用本地缓存的用户信息
+                        console.warn('验证登录状态失败，使用本地缓存的用户信息:', verifyError.message);
+                        document.getElementById('welcome-user').classList.remove('hidden');
+                        document.getElementById('current-username').textContent = getCurrentUsername();
+                    }
+                } catch (error) {
+                    console.error('检查登录状态失败:', error);
+                    // 发生严重错误，重定向到首页
+                    alert('登录状态检查失败，请重新登录');
+                    window.location.href = 'index.html';
+                }
+            }
+            
+            // 初始化页面
+            initPage();
+        });
+    </script>
+</body>
+</html>

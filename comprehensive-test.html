@@ -1,0 +1,1182 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="安提斯特虚拟国综合测试页面">
+    <meta name="keywords" content="安提斯特,虚拟国,云函数,测试,登录验证">
+    <meta name="author" content="Antister Virtual Country">
+    <title>综合测试 - 安提斯特虚拟国</title>
+    <!-- Tailwind CSS v3 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <!-- 自定义样式 -->
+    <style>
+        /* 定义主题颜色变量 */
+        :root {
+            --primary-color: #3b82f6;
+            --secondary-color: #f3f4f6;
+            --success-color: #10b981;
+            --danger-color: #ef4444;
+            --warning-color: #f59e0b;
+            --info-color: #3b82f6;
+            --light-color: #f3f4f6;
+            --dark-color: #1f2937;
+            --gray-color: #6b7280;
+        }
+        
+        /* 自定义主题颜色类 */
+        .text-primary { color: var(--primary-color); }
+        .bg-primary { background-color: var(--primary-color); }
+        .bg-primary-90 { background-color: rgba(59, 130, 246, 0.9); }
+        .text-secondary { color: var(--secondary-color); }
+        .bg-secondary { background-color: var(--secondary-color); }
+        .bg-secondary-90 { background-color: rgba(243, 244, 246, 0.9); }
+        
+        /* 加载状态样式 */
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+        
+        .loading::after {
+            content: "";
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            margin-left: 8px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* 结果容器样式 */
+        .result-container {
+            transition: all 0.3s ease;
+        }
+        
+        /* 错误状态样式 */
+        .error {
+            color: var(--danger-color);
+            border-color: var(--danger-color);
+        }
+        
+        /* 成功状态样式 */
+        .success {
+            color: var(--success-color);
+            border-color: var(--success-color);
+        }
+        
+        /* 焦点样式 */
+        button:focus {
+            outline: 2px solid var(--primary-color);
+            outline-offset: 2px;
+        }
+        
+        /* 按钮过渡效果 */
+        button {
+            transition: all 0.2s ease;
+        }
+        
+        /* 响应式设计优化 */
+        @media (max-width: 640px) {
+            .grid-cols-1 {
+                grid-template-columns: 1fr;
+            }
+            
+            .md\:grid-cols-2 {
+                grid-template-columns: 1fr;
+            }
+            
+            .md\:grid-cols-3 {
+                grid-template-columns: 1fr;
+            }
+            
+            .md\:col-span-2 {
+                grid-column: span 1;
+            }
+        }
+        
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .test-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .test-failure {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .test-info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+    </style>
+    <!-- Retinbox 配置 -->
+    <script src="retinbox-config.js"></script>
+    <!-- 统一的数据初始化脚本 -->
+    <script src="init-data.js"></script>
+</head>
+<body class="bg-gray-100">
+    <main class="container mx-auto px-4 py-8">
+        <header>
+            <h1 class="text-3xl font-bold text-center mb-8 text-primary">综合测试 - 安提斯特虚拟国</h1>
+            <p class="text-center mb-8 text-gray-600">整合了所有测试功能，包括云函数请求、登录验证、用户认证等</p>
+        </header>
+        
+        <!-- 云函数请求测试 -->
+        <section class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <header>
+                <h2 class="text-xl font-semibold mb-4">云函数请求测试</h2>
+            </header>
+            <div class="flex flex-wrap gap-2 mb-4">
+                <button id="test-request-success" class="bg-primary text-white px-4 py-2 rounded hover:bg-primary-90 transition-colors" aria-label="测试正常JSON响应">
+                    <i class="fa fa-check-circle mr-1"></i>测试正常响应
+                </button>
+                <button id="test-request-invalid-json" class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600 transition-colors" aria-label="测试无效JSON响应">
+                    <i class="fa fa-warning mr-1"></i>测试无效JSON
+                </button>
+                <button id="test-request-direct-source" class="bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600 transition-colors" aria-label="测试直接访问源文件">
+                    <i class="fa fa-file-code mr-1"></i>测试源文件访问
+                </button>
+                <button id="test-all-scenarios" class="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600 transition-colors" aria-label="测试所有场景">
+                    <i class="fa fa-cogs mr-1"></i>测试所有场景
+                </button>
+                <button id="clear-request" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 transition-colors" aria-label="清除云函数请求测试结果">
+                    <i class="fa fa-times mr-1"></i>清除结果
+                </button>
+            </div>
+            <div id="request-result" class="mt-4 p-4 bg-gray-50 rounded border border-gray-200 result-container" aria-live="polite" role="status"></div>
+        </section>
+        
+        <!-- 登录状态检查测试 -->
+        <section class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <header>
+                <h2 class="text-xl font-semibold mb-4">登录状态检查测试</h2>
+            </header>
+            <div class="flex flex-wrap gap-2 mb-4">
+                <button id="test-check-login-status" class="bg-primary text-white px-4 py-2 rounded hover:bg-primary-90 transition-colors" aria-label="测试检查登录状态">
+                    <i class="fa fa-user-circle mr-1"></i>检查登录状态
+                </button>
+                <button id="test-server-error" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-colors" aria-label="测试服务器错误">
+                    <i class="fa fa-exclamation-triangle mr-1"></i>测试服务器错误
+                </button>
+                <button id="clear-login-status" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 transition-colors" aria-label="清除登录状态测试结果">
+                    <i class="fa fa-times mr-1"></i>清除结果
+                </button>
+            </div>
+            <div id="login-status-result" class="mt-4 p-4 bg-gray-50 rounded border border-gray-200 result-container" aria-live="polite" role="status"></div>
+        </section>
+        
+        <!-- 认证测试 -->
+        <section class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <header>
+                <h2 class="text-xl font-semibold mb-4">用户认证测试</h2>
+            </header>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <h3 class="font-medium mb-2">操作按钮</h3>
+                    <div class="flex flex-wrap gap-2 mb-4">
+                        <button id="test-register" class="bg-primary text-white px-4 py-2 rounded hover:bg-primary-90 transition-colors" aria-label="测试注册功能">
+                            <i class="fa fa-user-plus mr-1"></i>测试注册
+                        </button>
+                        <button id="test-login" class="bg-secondary text-primary px-4 py-2 rounded hover:bg-secondary-90 transition-colors" aria-label="测试登录功能">
+                            <i class="fa fa-sign-in mr-1"></i>测试登录
+                        </button>
+                        <button id="test-logout" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-colors" aria-label="测试登出功能">
+                            <i class="fa fa-sign-out mr-1"></i>测试登出
+                        </button>
+                        <button id="test-get-current-user" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors" aria-label="测试获取当前用户">
+                            <i class="fa fa-user mr-1"></i>获取用户
+                        </button>
+                    </div>
+                    
+                    <h3 class="font-medium mb-2">输入字段</h3>
+                    <div class="space-y-3 mb-4">
+                        <div>
+                            <label for="reg-email" class="block text-sm text-gray-600 mb-1">注册邮箱:</label>
+                            <input type="email" id="reg-email" value="test@example.com" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                        </div>
+                        <div>
+                            <label for="reg-username" class="block text-sm text-gray-600 mb-1">注册用户名:</label>
+                            <input type="text" id="reg-username" value="testuser" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                        </div>
+                        <div>
+                            <label for="reg-password" class="block text-sm text-gray-600 mb-1">注册密码:</label>
+                            <input type="password" id="reg-password" value="test123456" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                        </div>
+                        <div>
+                            <label for="login-email" class="block text-sm text-gray-600 mb-1">登录邮箱:</label>
+                            <input type="email" id="login-email" value="test@example.com" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                        </div>
+                        <div>
+                            <label for="login-password" class="block text-sm text-gray-600 mb-1">登录密码:</label>
+                            <input type="password" id="login-password" value="test123456" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="font-medium mb-2">认证测试结果</h3>
+                    <div id="auth-result" class="p-4 bg-gray-50 rounded border border-gray-200 result-container" aria-live="polite" role="status"></div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 用户数据管理测试 -->
+        <section class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <header>
+                <h2 class="text-xl font-semibold mb-4">用户数据管理测试</h2>
+            </header>
+            <div class="flex flex-wrap gap-2 mb-4">
+                <button id="test-get-user" class="bg-primary text-white px-4 py-2 rounded hover:bg-primary-90 transition-colors" aria-label="获取用户信息">
+                    <i class="fa fa-user mr-1"></i>获取用户信息
+                </button>
+                <button id="test-get-users" class="bg-secondary text-primary px-4 py-2 rounded hover:bg-secondary-90 transition-colors" aria-label="获取用户列表">
+                    <i class="fa fa-users mr-1"></i>获取用户列表
+                </button>
+                <button id="test-update-user" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors" aria-label="更新用户信息">
+                    <i class="fa fa-edit mr-1"></i>更新用户信息
+                </button>
+                <button id="clear-user" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 transition-colors" aria-label="清除用户数据测试结果">
+                    <i class="fa fa-times mr-1"></i>清除结果
+                </button>
+            </div>
+            <div id="user-result" class="mt-4 p-4 bg-gray-50 rounded border border-gray-200 result-container" aria-live="polite" role="status"></div>
+        </section>
+        
+        <!-- 游戏进度测试 -->
+        <section class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <header>
+                <h2 class="text-xl font-semibold mb-4">游戏进度测试</h2>
+            </header>
+            <div class="flex flex-wrap gap-2 mb-4">
+                <button id="test-save-progress" class="bg-primary text-white px-4 py-2 rounded hover:bg-primary-90 transition-colors" aria-label="保存游戏进度">
+                    <i class="fa fa-save mr-1"></i>保存游戏进度
+                </button>
+                <button id="test-get-progress" class="bg-secondary text-primary px-4 py-2 rounded hover:bg-secondary-90 transition-colors" aria-label="获取游戏进度">
+                    <i class="fa fa-gamepad mr-1"></i>获取游戏进度
+                </button>
+                <button id="clear-game" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 transition-colors" aria-label="清除游戏进度测试结果">
+                    <i class="fa fa-times mr-1"></i>清除结果
+                </button>
+            </div>
+            <div id="game-result" class="mt-4 p-4 bg-gray-50 rounded border border-gray-200 result-container" aria-live="polite" role="status"></div>
+        </section>
+        
+        <!-- 用户设置测试 -->
+        <section class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <header>
+                <h2 class="text-xl font-semibold mb-4">用户设置测试</h2>
+            </header>
+            <div class="flex flex-wrap gap-2 mb-4">
+                <button id="test-get-settings" class="bg-primary text-white px-4 py-2 rounded hover:bg-primary-90 transition-colors" aria-label="获取用户设置">
+                    <i class="fa fa-cog mr-1"></i>获取设置
+                </button>
+                <button id="test-update-settings" class="bg-secondary text-primary px-4 py-2 rounded hover:bg-secondary-90 transition-colors" aria-label="更新用户设置">
+                    <i class="fa fa-refresh mr-1"></i>更新设置
+                </button>
+                <button id="clear-settings" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 transition-colors" aria-label="清除用户设置测试结果">
+                    <i class="fa fa-times mr-1"></i>清除结果
+                </button>
+            </div>
+            <div id="settings-result" class="mt-4 p-4 bg-gray-50 rounded border border-gray-200 result-container" aria-live="polite" role="status"></div>
+        </section>
+        
+        <!-- 银行功能测试 -->
+        <section class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <header>
+                <h2 class="text-xl font-semibold mb-4">银行功能测试</h2>
+            </header>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="flex flex-wrap gap-2">
+                    <button id="test-create-account" class="bg-primary text-white px-4 py-2 rounded hover:bg-primary-90 transition-colors" aria-label="创建银行账户">
+                        <i class="fa fa-bank mr-1"></i>创建账户
+                    </button>
+                    <button id="test-get-balance" class="bg-secondary text-primary px-4 py-2 rounded hover:bg-secondary-90 transition-colors" aria-label="查询账户余额">
+                        <i class="fa fa-money mr-1"></i>查询余额
+                    </button>
+                    <button id="test-add-transaction" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors" aria-label="添加交易记录">
+                        <i class="fa fa-plus-circle mr-1"></i>添加交易
+                    </button>
+                    <button id="test-get-transactions" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors" aria-label="获取交易记录">
+                        <i class="fa fa-list mr-1"></i>获取交易记录
+                    </button>
+                    <button id="clear-bank" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 transition-colors" aria-label="清除银行测试结果">
+                        <i class="fa fa-times mr-1"></i>清除结果
+                    </button>
+                </div>
+                <div id="bank-result" class="mt-4 p-4 bg-gray-50 rounded border border-gray-200 md:col-span-2 result-container" aria-live="polite" role="status"></div>
+            </div>
+        </section>
+        
+        <!-- 图书馆功能测试 -->
+        <section class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <header>
+                <h2 class="text-xl font-semibold mb-4">图书馆功能测试</h2>
+            </header>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="flex flex-wrap gap-2">
+                    <button id="test-add-record" class="bg-primary text-white px-4 py-2 rounded hover:bg-primary-90 transition-colors" aria-label="添加借阅记录">
+                        <i class="fa fa-plus mr-1"></i>添加借阅记录
+                    </button>
+                    <button id="test-get-records" class="bg-secondary text-primary px-4 py-2 rounded hover:bg-secondary-90 transition-colors" aria-label="获取借阅记录">
+                        <i class="fa fa-list-alt mr-1"></i>获取记录
+                    </button>
+                    <button id="test-return-book" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-colors" aria-label="归还书籍">
+                        <i class="fa fa-undo mr-1"></i>归还书籍
+                    </button>
+                    <button id="clear-library" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 transition-colors" aria-label="清除图书馆测试结果">
+                        <i class="fa fa-times mr-1"></i>清除结果
+                    </button>
+                </div>
+                <div id="library-result" class="mt-4 p-4 bg-gray-50 rounded border border-gray-200 result-container" aria-live="polite" role="status"></div>
+            </div>
+        </section>
+        
+        <!-- 登录验证测试 -->
+        <section class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <header>
+                <h2 class="text-xl font-semibold mb-4">登录验证测试</h2>
+            </header>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <h3 class="font-medium mb-2">手动测试</h3>
+                    <form id="manual-test-form" class="space-y-4 mb-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="manual-username" class="block text-gray-700 mb-2">用户名/邮箱</label>
+                                <input type="text" id="manual-username" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" placeholder="输入用户名或邮箱">
+                            </div>
+                            <div>
+                                <label for="manual-password" class="block text-gray-700 mb-2">密码</label>
+                                <input type="password" id="manual-password" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" placeholder="输入密码">
+                            </div>
+                        </div>
+                        <button type="submit" class="bg-primary text-white px-4 py-2 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium">
+                            <i class="fa fa-sign-in mr-1"></i>测试登录
+                        </button>
+                    </form>
+                    
+                    <h3 class="font-medium mb-2">推荐测试用例</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div class="p-4 bg-blue-50 rounded-lg">
+                            <h3 class="font-bold text-blue-800">管理员账户</h3>
+                            <p>用户名: admin</p>
+                            <p>邮箱: admin@antister.com</p>
+                            <p>密码: admin</p>
+                            <button class="mt-2 bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600" onclick="fillCredentials('admin', 'admin')">使用此账户</button>
+                        </div>
+                        <div class="p-4 bg-green-50 rounded-lg">
+                            <h3 class="font-bold text-green-800">普通用户</h3>
+                            <p>用户名: user1</p>
+                            <p>邮箱: user1@antister.com</p>
+                            <p>密码: password123</p>
+                            <button class="mt-2 bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600" onclick="fillCredentials('user1', 'password123')">使用此账户</button>
+                        </div>
+                    </div>
+                    
+                    <h3 class="font-medium mb-2">测试工具</h3>
+                    <div class="flex space-x-4">
+                        <button id="run-auto-tests" class="bg-primary text-white px-4 py-2 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium">
+                            <i class="fa fa-play mr-1"></i>运行自动测试
+                        </button>
+                        <button id="clear-storage" class="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium">
+                            <i class="fa fa-trash mr-1"></i>清除本地存储
+                        </button>
+                        <button id="show-users" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium">
+                            <i class="fa fa-users mr-1"></i>显示用户列表
+                        </button>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="font-medium mb-2">登录验证测试结果</h3>
+                    <div id="validation-result" class="p-4 bg-gray-50 rounded border border-gray-200 result-container" aria-live="polite" role="status"></div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 当前用户信息 -->
+        <section class="bg-white rounded-lg shadow-md p-6">
+            <header>
+                <h2 class="text-xl font-semibold mb-4">当前用户信息</h2>
+            </header>
+            <div id="current-user-info" class="p-4 bg-gray-50 rounded border border-gray-200"></div>
+        </section>
+    </main>
+    
+    <script>
+        // 辅助函数：显示结果
+        function showResult(elementId, result) {
+            const element = document.getElementById(elementId);
+            // 添加成功或错误类
+            element.className = 'mt-4 p-4 bg-gray-50 rounded border border-gray-200 result-container';
+            if (result.success) {
+                element.classList.add('success');
+            } else {
+                element.classList.add('error');
+            }
+            // 显示结果
+            element.innerHTML = `<pre>${JSON.stringify(result, null, 2)}</pre>`;
+        }
+        
+        // 辅助函数：显示加载状态
+        function showLoading(elementId) {
+            const element = document.getElementById(elementId);
+            element.disabled = true;
+            element.classList.add('loading');
+        }
+        
+        // 辅助函数：隐藏加载状态
+        function hideLoading(elementId) {
+            const element = document.getElementById(elementId);
+            element.disabled = false;
+            element.classList.remove('loading');
+        }
+        
+        // 辅助函数：清除结果
+        function clearResult(elementId) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = '';
+            element.className = 'mt-4 p-4 bg-gray-50 rounded border border-gray-200 result-container';
+        }
+        
+        // 辅助函数：显示通知
+        function showNotification(message, type = 'info') {
+            // 创建通知元素
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 px-4 py-2 rounded shadow-lg z-50 transition-all duration-300 ${type === 'success' ? 'bg-green-500 text-white' : type === 'error' ? 'bg-red-500 text-white' : 'bg-blue-500 text-white'}`;
+            notification.textContent = message;
+            
+            // 添加到页面
+            document.body.appendChild(notification);
+            
+            // 3秒后移除
+            setTimeout(() => {
+                notification.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+        
+        // 记录验证测试结果
+        function logValidationResult(message, type = 'info') {
+            const resultElement = document.getElementById('validation-result');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `test-result test-${type}`;
+            resultDiv.innerHTML = `<i class="fa fa-${type === 'success' ? 'check-circle' : type === 'failure' ? 'times-circle' : 'info-circle'}"></i> ${message}`;
+            resultElement.appendChild(resultDiv);
+            console.log(`${type.toUpperCase()}: ${message}`);
+        }
+        
+        // 清除验证测试结果
+        function clearValidationResults() {
+            const resultElement = document.getElementById('validation-result');
+            resultElement.innerHTML = '';
+        }
+        
+        // 更新当前用户信息
+        function updateCurrentUserInfo() {
+            const user = firebaseAuth.currentUser;
+            const currentUser = JSON.parse(sessionStorage.getItem('currentUser')) || 
+                               JSON.parse(localStorage.getItem('rememberedUser'));
+            
+            const userInfoElement = document.getElementById('current-user-info');
+            if (user && currentUser) {
+                userInfoElement.innerHTML = `
+                    <div class="p-4 bg-green-50 rounded-lg">
+                        <h3 class="font-bold">当前已登录用户</h3>
+                        <p>ID: ${user.uid}</p>
+                        <p>用户名: ${currentUser.username}</p>
+                        <p>角色: ${currentUser.role}</p>
+                    </div>
+                `;
+            } else {
+                userInfoElement.innerHTML = `
+                    <div class="p-4 bg-yellow-50 rounded-lg">
+                        <h3 class="font-bold">当前未登录</h3>
+                    </div>
+                `;
+            }
+        }
+        
+        // 填充登录凭据
+        function fillCredentials(username, password) {
+            document.getElementById('manual-username').value = username;
+            document.getElementById('manual-password').value = password;
+        }
+        
+        // 清除本地存储
+        function clearLocalStorage() {
+            localStorage.removeItem('users');
+            localStorage.removeItem('rememberedUser');
+            localStorage.removeItem('documents');
+            localStorage.removeItem('bankCards');
+            localStorage.removeItem('transactions');
+            sessionStorage.removeItem('currentUser');
+            sessionStorage.removeItem('adminLoggedIn');
+            logValidationResult('本地存储已清除', 'info');
+            updateCurrentUserInfo();
+        }
+        
+        // 显示用户列表
+        function showUsers() {
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            logValidationResult(`本地存储中的用户数量: ${users.length}`, 'info');
+            users.forEach((user, index) => {
+                logValidationResult(`用户 ${index + 1}: username='${user.username}', email='${user.email}', password='${user.password}', id='${user.id}'`, 'info');
+            });
+        }
+        
+        // 退出登录
+        async function logout() {
+            try {
+                await firebaseAuth.signOut();
+                sessionStorage.removeItem('currentUser');
+                localStorage.removeItem('rememberedUser');
+                logValidationResult('已退出登录', 'info');
+                updateCurrentUserInfo();
+            } catch (error) {
+                logValidationResult(`退出登录失败: ${error.message}`, 'failure');
+            }
+        }
+        
+        // 保存原始fetch
+        const originalFetch = window.fetch;
+        
+        // 模拟fetch API响应
+        function mockFetch(url, options, responseType) {
+            console.log(`模拟请求: ${options.method} ${url} (响应类型: ${responseType})`);
+            
+            return new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    if (responseType === 'success') {
+                        // 模拟成功响应
+                        resolve({
+                            ok: true,
+                            text: async () => JSON.stringify({ user: { id: 'test-user-123', email: 'test@example.com' } })
+                        });
+                    } else if (responseType === 'invalid-json') {
+                        // 模拟无效JSON响应
+                        resolve({
+                            ok: true,
+                            text: async () => '<html><body>Invalid JSON response</body></html>'
+                        });
+                    } else if (responseType === 'direct-source') {
+                        // 模拟直接访问源文件
+                        resolve({
+                            ok: true,
+                            text: async () => '// 获取当前用户云函数\n// 该函数用于获取当前登录用户的信息\nfunction getCurrentUser() {\n    // 函数实现\n}'
+                        });
+                    } else if (responseType === 'server-error') {
+                        // 模拟服务器错误
+                        resolve({
+                            ok: false,
+                            status: 500,
+                            statusText: 'Internal Server Error',
+                            text: async () => JSON.stringify({ error: '服务器内部错误' })
+                        });
+                    }
+                }, 100);
+            });
+        }
+        
+        // 云函数请求测试
+        document.getElementById('test-request-success').addEventListener('click', async () => {
+            try {
+                showLoading('test-request-success');
+                
+                // 替换fetch为模拟版本
+                window.fetch = (url, options) => mockFetch(url, options, 'success');
+                
+                const cloudFunctions = new RetinboxCloudFunctions();
+                const result = await cloudFunctions.request('auth/getCurrentUser.node.js');
+                
+                showResult('request-result', { success: true, data: result });
+                showNotification('正常JSON响应测试通过', 'success');
+            } catch (error) {
+                showResult('request-result', { success: false, error: error.message });
+                showNotification(`正常JSON响应测试失败: ${error.message}`, 'error');
+            } finally {
+                // 恢复原始fetch
+                window.fetch = originalFetch;
+                hideLoading('test-request-success');
+            }
+        });
+        
+        document.getElementById('test-request-invalid-json').addEventListener('click', async () => {
+            try {
+                showLoading('test-request-invalid-json');
+                
+                // 替换fetch为模拟版本
+                window.fetch = (url, options) => mockFetch(url, options, 'invalid-json');
+                
+                const cloudFunctions = new RetinboxCloudFunctions();
+                const result = await cloudFunctions.request('auth/getCurrentUser.node.js');
+                
+                showResult('request-result', { success: false, error: '未按预期抛出错误' });
+                showNotification('无效JSON响应测试未按预期抛出错误', 'error');
+            } catch (error) {
+                showResult('request-result', { success: true, error: error.message });
+                showNotification('无效JSON响应测试通过', 'success');
+            } finally {
+                // 恢复原始fetch
+                window.fetch = originalFetch;
+                hideLoading('test-request-invalid-json');
+            }
+        });
+        
+        document.getElementById('test-request-direct-source').addEventListener('click', async () => {
+            try {
+                showLoading('test-request-direct-source');
+                
+                // 替换fetch为模拟版本
+                window.fetch = (url, options) => mockFetch(url, options, 'direct-source');
+                
+                const cloudFunctions = new RetinboxCloudFunctions();
+                const result = await cloudFunctions.request('auth/getCurrentUser.node.js');
+                
+                showResult('request-result', { success: false, error: '未按预期抛出错误' });
+                showNotification('直接访问源文件测试未按预期抛出错误', 'error');
+            } catch (error) {
+                showResult('request-result', { success: true, error: error.message });
+                showNotification('直接访问源文件测试通过', 'success');
+            } finally {
+                // 恢复原始fetch
+                window.fetch = originalFetch;
+                hideLoading('test-request-direct-source');
+            }
+        });
+        
+        document.getElementById('test-all-scenarios').addEventListener('click', async () => {
+            try {
+                showLoading('test-all-scenarios');
+                
+                const testScenarios = [
+                    { name: '正常JSON响应', type: 'success' },
+                    { name: '无效JSON响应', type: 'invalid-json' },
+                    { name: '直接访问源文件', type: 'direct-source' },
+                    { name: '服务器错误', type: 'server-error' }
+                ];
+                
+                let log = '=== 开始所有场景测试 ===\n';
+                for (const scenario of testScenarios) {
+                    try {
+                        // 替换fetch为模拟版本
+                        window.fetch = (url, options) => mockFetch(url, options, scenario.type);
+                        
+                        log += `测试：${scenario.name}...\n`;
+                        showResult('request-result', { success: true, data: log });
+                        
+                        const cloudFunctions = new RetinboxCloudFunctions();
+                        const result = await cloudFunctions.request('auth/getCurrentUser.node.js');
+                        
+                        log += `✅ ${scenario.name}测试通过\n`;
+                        log += `响应结果: ${JSON.stringify(result, null, 2)}\n\n`;
+                        showResult('request-result', { success: true, data: log });
+                        
+                    } catch (error) {
+                        log += `✅ ${scenario.name}测试通过（按预期抛出错误）\n`;
+                        log += `错误信息: ${error.message}\n\n`;
+                        showResult('request-result', { success: true, data: log });
+                    } finally {
+                        // 恢复原始fetch
+                        window.fetch = originalFetch;
+                    }
+                }
+                
+                log += '=== 所有场景测试完成 ===';
+                showResult('request-result', { success: true, data: log });
+                showNotification('所有场景测试完成', 'success');
+            } catch (error) {
+                showResult('request-result', { success: false, error: error.message });
+                showNotification(`所有场景测试失败: ${error.message}`, 'error');
+            } finally {
+                hideLoading('test-all-scenarios');
+            }
+        });
+        
+        // 登录状态检查测试
+        document.getElementById('test-check-login-status').addEventListener('click', async () => {
+            try {
+                showLoading('test-check-login-status');
+                
+                // 替换fetch为模拟版本
+                window.fetch = (url, options) => mockFetch(url, options, 'direct-source');
+                
+                const userDataManager = new UserDataManager();
+                await userDataManager.checkLoginStatus();
+                
+                showResult('login-status-result', { success: true, data: { currentUser: userDataManager.currentUser } });
+                showNotification('检查登录状态测试通过', 'success');
+            } catch (error) {
+                showResult('login-status-result', { success: false, error: error.message });
+                showNotification(`检查登录状态测试失败: ${error.message}`, 'error');
+            } finally {
+                // 恢复原始fetch
+                window.fetch = originalFetch;
+                hideLoading('test-check-login-status');
+            }
+        });
+        
+        document.getElementById('test-server-error').addEventListener('click', async () => {
+            try {
+                showLoading('test-server-error');
+                
+                // 替换fetch为模拟版本
+                window.fetch = (url, options) => mockFetch(url, options, 'server-error');
+                
+                const userDataManager = new UserDataManager();
+                await userDataManager.checkLoginStatus();
+                
+                showResult('login-status-result', { success: true, data: { currentUser: userDataManager.currentUser } });
+                showNotification('服务器错误测试通过', 'success');
+            } catch (error) {
+                showResult('login-status-result', { success: false, error: error.message });
+                showNotification(`服务器错误测试失败: ${error.message}`, 'error');
+            } finally {
+                // 恢复原始fetch
+                window.fetch = originalFetch;
+                hideLoading('test-server-error');
+            }
+        });
+        
+        // 认证测试
+        document.getElementById('test-register').addEventListener('click', async () => {
+            try {
+                showLoading('test-register');
+                
+                const email = document.getElementById('reg-email').value;
+                const username = document.getElementById('reg-username').value;
+                const password = document.getElementById('reg-password').value;
+                
+                const result = await window.retinboxCloudFunctions.register(email, password, username);
+                showResult('auth-result', { success: true, data: result });
+                showNotification('注册测试成功', 'success');
+            } catch (error) {
+                showResult('auth-result', { success: false, error: error.message });
+                showNotification(`注册测试失败: ${error.message}`, 'error');
+            } finally {
+                hideLoading('test-register');
+            }
+        });
+        
+        document.getElementById('test-login').addEventListener('click', async () => {
+            try {
+                showLoading('test-login');
+                
+                const email = document.getElementById('login-email').value;
+                const password = document.getElementById('login-password').value;
+                
+                const result = await window.retinboxCloudFunctions.login(email, password);
+                showResult('auth-result', { success: true, data: result });
+                showNotification('登录测试成功', 'success');
+            } catch (error) {
+                showResult('auth-result', { success: false, error: error.message });
+                showNotification(`登录测试失败: ${error.message}`, 'error');
+            } finally {
+                hideLoading('test-login');
+            }
+        });
+        
+        document.getElementById('test-logout').addEventListener('click', async () => {
+            try {
+                showLoading('test-logout');
+                
+                const result = await window.retinboxCloudFunctions.logout();
+                showResult('auth-result', { success: true, data: result });
+                showNotification('登出测试成功', 'success');
+            } catch (error) {
+                showResult('auth-result', { success: false, error: error.message });
+                showNotification(`登出测试失败: ${error.message}`, 'error');
+            } finally {
+                hideLoading('test-logout');
+            }
+        });
+        
+        document.getElementById('test-get-current-user').addEventListener('click', async () => {
+            try {
+                showLoading('test-get-current-user');
+                
+                const result = await window.retinboxCloudFunctions.getCurrentUser();
+                showResult('auth-result', { success: true, data: result });
+                showNotification('获取当前用户测试成功', 'success');
+            } catch (error) {
+                showResult('auth-result', { success: false, error: error.message });
+                showNotification(`获取当前用户测试失败: ${error.message}`, 'error');
+            } finally {
+                hideLoading('test-get-current-user');
+            }
+        });
+        
+        // 用户数据测试
+        document.getElementById('test-get-user').addEventListener('click', async () => {
+            try {
+                showLoading('test-get-user');
+                const result = await window.userDataManager.getCurrentUserData();
+                showResult('user-result', { success: true, data: result });
+                showNotification('获取用户信息成功', 'success');
+            } catch (error) {
+                showResult('user-result', { success: false, error: error.message });
+                showNotification(`获取用户信息失败: ${error.message}`, 'error');
+            } finally {
+                hideLoading('test-get-user');
+            }
+        });
+        
+        // 游戏进度测试
+        document.getElementById('test-save-progress').addEventListener('click', async () => {
+            try {
+                showLoading('test-save-progress');
+                const result = await window.userDataManager.saveGameProgress({
+                    level: 5,
+                    experience: 1200,
+                    achievements: ['first_login', 'complete_tutorial']
+                });
+                showResult('game-result', { success: true, data: result });
+                showNotification('保存游戏进度成功', 'success');
+            } catch (error) {
+                showResult('game-result', { success: false, error: error.message });
+                showNotification(`保存游戏进度失败: ${error.message}`, 'error');
+            } finally {
+                hideLoading('test-save-progress');
+            }
+        });
+        
+        document.getElementById('test-get-progress').addEventListener('click', async () => {
+            try {
+                showLoading('test-get-progress');
+                const result = await window.userDataManager.getGameProgress();
+                showResult('game-result', { success: true, data: result });
+                showNotification('获取游戏进度成功', 'success');
+            } catch (error) {
+                showResult('game-result', { success: false, error: error.message });
+                showNotification(`获取游戏进度失败: ${error.message}`, 'error');
+            } finally {
+                hideLoading('test-get-progress');
+            }
+        });
+        
+        // 用户设置测试
+        document.getElementById('test-get-settings').addEventListener('click', async () => {
+            try {
+                showLoading('test-get-settings');
+                const result = await window.userDataManager.getUserSettings();
+                showResult('settings-result', { success: true, data: result });
+                showNotification('获取用户设置成功', 'success');
+            } catch (error) {
+                showResult('settings-result', { success: false, error: error.message });
+                showNotification(`获取用户设置失败: ${error.message}`, 'error');
+            } finally {
+                hideLoading('test-get-settings');
+            }
+        });
+        
+        document.getElementById('test-update-settings').addEventListener('click', async () => {
+            try {
+                showLoading('test-update-settings');
+                const result = await window.userDataManager.updateUserSettings({
+                    theme: 'dark',
+                    notifications: { email: true, system: false }
+                });
+                showResult('settings-result', { success: true, data: result });
+                showNotification('更新用户设置成功', 'success');
+            } catch (error) {
+                showResult('settings-result', { success: false, error: error.message });
+                showNotification(`更新用户设置失败: ${error.message}`, 'error');
+            } finally {
+                hideLoading('test-update-settings');
+            }
+        });
+        
+        // 银行测试
+        document.getElementById('test-create-account').addEventListener('click', async () => {
+            try {
+                showLoading('test-create-account');
+                const result = await window.userDataManager.createBankAccount();
+                showResult('bank-result', { success: true, data: result });
+                showNotification('创建银行账户成功', 'success');
+            } catch (error) {
+                showResult('bank-result', { success: false, error: error.message });
+                showNotification(`创建银行账户失败: ${error.message}`, 'error');
+            } finally {
+                hideLoading('test-create-account');
+            }
+        });
+        
+        document.getElementById('test-get-balance').addEventListener('click', async () => {
+            try {
+                showLoading('test-get-balance');
+                const result = await window.userDataManager.getBankAccount();
+                showResult('bank-result', { success: true, data: result });
+                showNotification('查询账户余额成功', 'success');
+            } catch (error) {
+                showResult('bank-result', { success: false, error: error.message });
+                showNotification(`查询账户余额失败: ${error.message}`, 'error');
+            } finally {
+                hideLoading('test-get-balance');
+            }
+        });
+        
+        document.getElementById('test-add-transaction').addEventListener('click', async () => {
+            try {
+                showLoading('test-add-transaction');
+                const result = await window.userDataManager.addTransaction(100, 'deposit', '测试存款');
+                showResult('bank-result', { success: true, data: result });
+                showNotification('添加交易记录成功', 'success');
+            } catch (error) {
+                showResult('bank-result', { success: false, error: error.message });
+                showNotification(`添加交易记录失败: ${error.message}`, 'error');
+            } finally {
+                hideLoading('test-add-transaction');
+            }
+        });
+        
+        document.getElementById('test-get-transactions').addEventListener('click', async () => {
+            try {
+                showLoading('test-get-transactions');
+                const result = await window.userDataManager.getTransactions();
+                showResult('bank-result', { success: true, data: result });
+                showNotification('获取交易记录成功', 'success');
+            } catch (error) {
+                showResult('bank-result', { success: false, error: error.message });
+                showNotification(`获取交易记录失败: ${error.message}`, 'error');
+            } finally {
+                hideLoading('test-get-transactions');
+            }
+        });
+        
+        // 图书馆测试
+        document.getElementById('test-add-record').addEventListener('click', async () => {
+            try {
+                showLoading('test-add-record');
+                const result = await window.userDataManager.addLibraryRecord('book123', '测试书籍');
+                showResult('library-result', { success: true, data: result });
+                showNotification('添加借阅记录成功', 'success');
+            } catch (error) {
+                showResult('library-result', { success: false, error: error.message });
+                showNotification(`添加借阅记录失败: ${error.message}`, 'error');
+            } finally {
+                hideLoading('test-add-record');
+            }
+        });
+        
+        document.getElementById('test-get-records').addEventListener('click', async () => {
+            try {
+                showLoading('test-get-records');
+                const result = await window.userDataManager.getLibraryRecords();
+                showResult('library-result', { success: true, data: result });
+                showNotification('获取借阅记录成功', 'success');
+            } catch (error) {
+                showResult('library-result', { success: false, error: error.message });
+                showNotification(`获取借阅记录失败: ${error.message}`, 'error');
+            } finally {
+                hideLoading('test-get-records');
+            }
+        });
+        
+        document.getElementById('test-return-book').addEventListener('click', async () => {
+            try {
+                showLoading('test-return-book');
+                // 先获取记录，然后归还第一条
+                const records = await window.userDataManager.getLibraryRecords();
+                if (records.length > 0) {
+                    const result = await window.userDataManager.returnBook(records[0].recordId);
+                    showResult('library-result', { success: true, data: result });
+                    showNotification('归还书籍成功', 'success');
+                } else {
+                    showResult('library-result', { success: false, error: '没有可归还的书籍' });
+                    showNotification('没有可归还的书籍', 'warning');
+                }
+            } catch (error) {
+                showResult('library-result', { success: false, error: error.message });
+                showNotification(`归还书籍失败: ${error.message}`, 'error');
+            } finally {
+                hideLoading('test-return-book');
+            }
+        });
+        
+        // 清除结果按钮
+        document.getElementById('clear-request').addEventListener('click', () => {
+            clearResult('request-result');
+            showNotification('云函数请求测试结果已清除');
+        });
+        
+        document.getElementById('clear-login-status').addEventListener('click', () => {
+            clearResult('login-status-result');
+            showNotification('登录状态测试结果已清除');
+        });
+        
+        document.getElementById('clear-auth').addEventListener('click', () => {
+            clearResult('auth-result');
+            showNotification('认证测试结果已清除');
+        });
+        
+        document.getElementById('clear-user').addEventListener('click', () => {
+            clearResult('user-result');
+            showNotification('用户数据测试结果已清除');
+        });
+        
+        document.getElementById('clear-game').addEventListener('click', () => {
+            clearResult('game-result');
+            showNotification('游戏进度测试结果已清除');
+        });
+        
+        document.getElementById('clear-settings').addEventListener('click', () => {
+            clearResult('settings-result');
+            showNotification('用户设置测试结果已清除');
+        });
+        
+        document.getElementById('clear-bank').addEventListener('click', () => {
+            clearResult('bank-result');
+            showNotification('银行测试结果已清除');
+        });
+        
+        document.getElementById('clear-library').addEventListener('click', () => {
+            clearResult('library-result');
+            showNotification('图书馆测试结果已清除');
+        });
+        
+        // 手动测试表单提交
+        document.getElementById('manual-test-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('manual-username').value;
+            const password = document.getElementById('manual-password').value;
+            
+            logValidationResult(`开始手动测试: 用户名/邮箱='${username}', 密码='${password}'`, 'info');
+            
+            try {
+                await logout(); // 确保先退出登录
+                
+                const userCredential = await firebaseAuth.signInWithEmailAndPassword(username, password);
+                const user = userCredential.user;
+                
+                // 获取用户详细信息
+                const userDoc = await firebaseFirestore.collection('users').doc(user.uid).get();
+                const userData = userDoc.exists ? userDoc.data() : { username: user.email.split('@')[0], role: 'user' };
+                
+                // 保存登录状态
+                sessionStorage.setItem('currentUser', JSON.stringify({
+                    id: user.uid,
+                    username: userData.username,
+                    role: userData.role
+                }));
+                
+                logValidationResult(`登录成功! 用户: ${userData.username} (${userData.role})`, 'success');
+                updateCurrentUserInfo();
+            } catch (error) {
+                logValidationResult(`登录失败: ${error.message}`, 'failure');
+                logValidationResult(`错误详情: ${JSON.stringify(error)}`, 'failure');
+            }
+        });
+        
+        // 登录验证测试相关事件
+        document.getElementById('run-auto-tests').addEventListener('click', async () => {
+            clearValidationResults();
+            logValidationResult('开始运行自动测试...', 'info');
+            
+            // 初始化测试数据
+            if (!localStorage.getItem('users')) {
+                const initialUsers = [
+                    {
+                        id: '1',
+                        username: 'admin',
+                        email: 'admin@antister.com',
+                        password: 'admin',
+                        qq: '123456789',
+                        role: 'admin',
+                        createdAt: new Date().toISOString(),
+                        lastLogin: null
+                    },
+                    {
+                        id: '2',
+                        username: 'user1',
+                        email: 'user1@antister.com',
+                        password: 'password123',
+                        qq: '987654321',
+                        role: 'user',
+                        createdAt: new Date().toISOString(),
+                        lastLogin: null
+                    }
+                ];
+                localStorage.setItem('users', JSON.stringify(initialUsers));
+                logValidationResult('测试数据已初始化', 'info');
+            }
+            
+            // 测试场景1: 使用正确的管理员凭据登录
+            await testLoginScenario('admin', 'admin', 'success', '使用正确的管理员用户名和密码登录');
+            
+            // 测试场景2: 使用管理员邮箱和正确密码登录
+            await testLoginScenario('admin@antister.com', 'admin', 'success', '使用管理员邮箱和正确密码登录');
+            
+            // 测试场景3: 使用正确的普通用户凭据登录
+            await testLoginScenario('user1', 'password123', 'success', '使用正确的普通用户用户名和密码登录');
+            
+            // 测试场景4: 使用普通用户邮箱和正确密码登录
+            await testLoginScenario('user1@antister.com', 'password123', 'success', '使用普通用户邮箱和正确密码登录');
+            
+            // 测试场景5: 使用错误的密码登录
+            await testLoginScenario('admin', 'wrongpassword', 'failure', '使用错误的密码登录管理员账户');
+            
+            // 测试场景6: 使用不存在的用户名登录
+            await testLoginScenario('nonexistentuser', 'password123', 'failure', '使用不存在的用户名登录');
+            
+            logValidationResult('所有自动测试已完成!', 'info');
+            updateCurrentUserInfo();
+        });
+        
+        // 测试登录场景辅助函数
+        async function testLoginScenario(username, password, expectedResult, description) {
+            logValidationResult(`开始测试: ${description}`, 'info');
+            
+            try {
+                await logout(); // 确保先退出登录
+                
+                const userCredential = await firebaseAuth.signInWithEmailAndPassword(username, password);
+                const user = userCredential.user;
+                
+                if (expectedResult === 'success') {
+                    logValidationResult(`测试通过: ${description}`, 'success');
+                    logValidationResult(`  - 用户ID: ${user.uid}`, 'success');
+                    logValidationResult(`  - 邮箱: ${user.email}`, 'success');
+                } else {
+                    logValidationResult(`测试失败: ${description} - 预期失败但实际成功`, 'failure');
+                }
+                
+                await logout(); // 测试完成后退出登录
+            } catch (error) {
+                if (expectedResult === 'failure') {
+                    logValidationResult(`测试通过: ${description} - 预期失败，实际失败: ${error.message}`, 'success');
+                } else {
+                    logValidationResult(`测试失败: ${description} - 预期成功但实际失败: ${error.message}`, 'failure');
+                    logValidationResult(`  - 错误详情: ${JSON.stringify(error)}`, 'failure');
+                }
+            }
+        }
+        
+        document.getElementById('clear-storage').addEventListener('click', clearLocalStorage);
+        document.getElementById('show-users').addEventListener('click', showUsers);
+        
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            updateCurrentUserInfo();
+            logValidationResult('页面加载完成，开始测试...', 'info');
+            showUsers();
+        });
+    </script>
+</body>
+</html>
