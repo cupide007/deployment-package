@@ -69,11 +69,8 @@ try {
         if ($trimmedInput !== '') {
             $updateData = json_decode($trimmedInput, true);
             if (json_last_error() !== JSON_ERROR_NONE) {
-                http_response_code(400);
-                echo json_encode(['error' => '请提供要更新的数据'], JSON_UNESCAPED_UNICODE);
-                exit;
-            }
-            if ($updateData === null) {
+                $updateData = [];
+            } elseif ($updateData === null) {
                 $updateData = [];
             }
         } else {
