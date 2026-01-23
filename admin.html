@@ -2503,6 +2503,7 @@
         }
 
         if (extension === '.txt' || extension === '.md') {
+            const textContent = getDataUrlTextContent(doc.fileUrl);
             newWindow.document.write(`
                 <html>
                 <head>
@@ -2519,7 +2520,7 @@
                         <p><strong>作者：</strong>${doc.author}</p>
                         <p><strong>分类：</strong>${doc.category}</p>
                         <hr>
-                        <pre>${doc.fileUrl}</pre>
+                        <pre>${textContent}</pre>
                     </div>
                 </body>
                 </html>
@@ -3378,7 +3379,7 @@
     function updateFilePreviewContent(fileUrl) {
         const filePreview = document.getElementById('file-preview');
         if (fileUrl.startsWith('data:text/')) {
-            filePreview.innerHTML = `<pre class="whitespace-pre-wrap">${fileUrl}</pre>`;
+            filePreview.innerHTML = `<pre class="whitespace-pre-wrap">${getDataUrlTextContent(fileUrl)}</pre>`;
             return;
         }
         if (fileUrl.includes('pdf')) {
@@ -3394,6 +3395,30 @@
             return;
         }
         filePreview.innerHTML = '<div class="text-center py-8"><i class="fa fa-file-o text-4xl text-gray-500"></i><p class="mt-2">文件已存在 - 保存后可下载</p></div>';
+    }
+
+    function getDataUrlTextContent(fileUrl) {
+        if (!fileUrl || !fileUrl.startsWith('data:')) {
+            return fileUrl || '';
+        }
+        const commaIndex = fileUrl.indexOf(',');
+        if (commaIndex === -1) {
+            return '';
+        }
+        const meta = fileUrl.slice(0, commaIndex);
+        const payload = fileUrl.slice(commaIndex + 1);
+        if (meta.includes(';base64')) {
+            try {
+                return decodeURIComponent(escape(window.atob(payload)));
+            } catch (error) {
+                return window.atob(payload);
+            }
+        }
+        try {
+            return decodeURIComponent(payload);
+        } catch (error) {
+            return payload;
+        }
     }
 
     // 处理角色变更
