@@ -3,9 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data: blob:; img-src 'self' data: blob: https:; script-src 'self' https: 'unsafe-inline' 'unsafe-eval'; style-src 'self' https: 'unsafe-inline'; font-src 'self' https: data:;">
-    <title>用户中心 - 安提斯特虚拟国</title>
-    <link rel="icon" href="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f4bb.png">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data: blob: 'unsafe-inline' 'unsafe-eval'; img-src 'self' https: data: blob:; script-src 'self' https: 'unsafe-inline' 'unsafe-eval'; style-src 'self' https: 'unsafe-inline'; font-src 'self' https: data:;">
     <!-- Tailwind CSS v3 -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome -->
@@ -387,7 +385,7 @@
                                                     <h3 class="text-2xl font-bold text-primary font-medieval">安提斯特虚拟国</h3>
                                                     <p class="text-lg text-gray-800">身份证</p>
                                                 </div>
-                                                <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/d8ddf5e8d8c84316a653dcb93cf61629~tplv-a9rns2rl98-image.image?lk3s=8e244e95&rcl=202601202312037748F98E243C1F231D4E&rrcfp=f06b921b&x-expires=1771513966&x-signature=gxZfK%2BBdsU1IDbMR4LFDmEH2PhA%3D" alt="安提斯特国旗" class="h-12 w-12 rounded">
+                                                <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/d8ddf5e8d8c84316a653dcb93cf61629~tplv-a9rns2rl98-image.image?lk3s=8e244e95&rcl=202601202312037748F98E243C1F231D4E&rrcfp=f06b921b&x-expires=1771513966&x-signature=gxZfK%2BBdsU1IDbMR4LFDmEH2PhA%3D" crossorigin="anonymous" alt="安提斯特国旗" class="h-12 w-12 rounded">
                                             </div>
                                             
                                             <div class="flex flex-1">
@@ -453,7 +451,7 @@
                                             <!-- 顶部 -->
                                             <div class="bg-primary text-white p-3 flex justify-between items-center">
                                                 <h3 class="text-xl font-bold font-medieval">PASSPORT</h3>
-                                                <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/d8ddf5e8d8c84316a653dcb93cf61629~tplv-a9rns2rl98-image.image?lk3s=8e244e95&rcl=202601202312037748F98E243C1F231D4E&rrcfp=f06b921b&x-expires=1771513966&x-signature=gxZfK%2BBdsU1IDbMR4LFDmEH2PhA%3D" alt="安提斯特国旗" class="h-8 w-8 rounded">
+                                                <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/d8ddf5e8d8c84316a653dcb93cf61629~tplv-a9rns2rl98-image.image?lk3s=8e244e95&rcl=202601202312037748F98E243C1F231D4E&rrcfp=f06b921b&x-expires=1771513966&x-signature=gxZfK%2BBdsU1IDbMR4LFDmEH2PhA%3D" crossorigin="anonymous" alt="安提斯特国旗" class="h-8 w-8 rounded">
                                             </div>
                                             
                                             <!-- 内容区域 -->
@@ -893,21 +891,30 @@
                     return;
                 }
 
+
+                // 用户中心主头像
                 userAvatarIcon.classList.add('hidden');
+                userAvatarImg.crossOrigin = 'anonymous';
                 userAvatarImg.src = resolvedAvatarUrl;
                 userAvatarImg.classList.remove('hidden');
-                
+
+                // 身份证头像
                 idAvatarIcon.classList.add('hidden');
+                idAvatarImg.crossOrigin = 'anonymous';
                 idAvatarImg.src = resolvedAvatarUrl;
                 idAvatarImg.classList.remove('hidden');
-                
+
+                // 护照头像
                 passportAvatarIcon.classList.add('hidden');
+                passportAvatarImg.crossOrigin = 'anonymous';
                 passportAvatarImg.src = resolvedAvatarUrl;
                 passportAvatarImg.classList.remove('hidden');
-                
+
+                // 预览头像
                 previewAvatarIcon.classList.add('hidden');
                 previewAvatarImg.src = resolvedAvatarUrl;
                 previewAvatarImg.classList.remove('hidden');
+
             }
 
             function getCachedAvatar() {
@@ -1137,48 +1144,47 @@
             // 下载身份证功能
             document.getElementById('download-id-card-btn').addEventListener('click', function() {
                 const idCardElement = document.getElementById('id-card-front');
-                
+
                 html2canvas(idCardElement, {
-                    scale: 4, // 提高分辨率，增强清晰度
+                    scale: 4,
                     useCORS: true,
-                    backgroundColor: '#f8f5e6',
-                    logging: false,
-                    letterRendering: true
+                    backgroundColor: '#f8f5e6', // 确保有底色
+                    logging: true,
+                    onclone: function(clonedDoc) {
+                        const clonedNode = clonedDoc.getElementById('id-card-front');
+                        clonedNode.style.backgroundImage = 'none';
+                        clonedNode.style.boxShadow = 'none';
+                    }
                 }).then(canvas => {
-                    const { jsPDF } = window.jspdf;
-                    const imgData = canvas.toDataURL('image/png', 1.0); // 使用最高质量压缩
-                    
-                    // 创建PDF，尺寸与身份证实际尺寸匹配
-                    const pdfWidth = 85.6; // 标准身份证宽度（mm）
-                    const pdfHeight = 54; // 标准身份证高度（mm）
-                    const doc = new jsPDF({
-                        orientation: 'landscape',
-                        unit: 'mm',
-                        format: [pdfWidth, pdfHeight]
-                    });
-                    
-                    // 获取身份证号用于文件名
-                    const idNumber = document.getElementById('id-number').textContent;
-                    
-                    // 计算图片在PDF中的正确尺寸和位置
-                    const imgProps = doc.getImageProperties(imgData);
-                    const imgWidth = imgProps.width;
-                    const imgHeight = imgProps.height;
-                    
-                    // 计算缩放比例，确保图片完全显示在PDF中
-                    const ratio = Math.min(pdfWidth / (imgWidth / 3.779528), pdfHeight / (imgHeight / 3.779528));
-                    const scaledWidth = (imgWidth / 3.779528) * ratio;
-                    const scaledHeight = (imgHeight / 3.779528) * ratio;
-                    
-                    // 计算居中位置
-                    const x = (pdfWidth - scaledWidth) / 2;
-                    const y = (pdfHeight - scaledHeight) / 2;
-                    
-                    // 添加图片到PDF，确保完整显示
-                    doc.addImage(imgData, 'PNG', x, y, scaledWidth, scaledHeight);
-                    
-                    // 保存PDF
-                    doc.save(`antister-id-card-${idNumber}.pdf`);
+                    try {
+                        // 尝试导出图片
+                        const imgData = canvas.toDataURL('image/png', 1.0);
+
+                        // 创建PDF
+                        const { jsPDF } = window.jspdf;
+                        const pdfWidth = 85.6;
+                        const pdfHeight = 54;
+                        const doc = new jsPDF({
+                            orientation: 'landscape',
+                            unit: 'mm',
+                            format: [pdfWidth, pdfHeight]
+                        });
+
+                        const idNumber = document.getElementById('id-number').textContent;
+                        const imgProps = doc.getImageProperties(imgData);
+                        const ratio = Math.min(pdfWidth / imgProps.width, pdfHeight / imgProps.height);
+                        const scaledWidth = imgProps.width * ratio;
+                        const scaledHeight = imgProps.height * ratio;
+                        const x = (pdfWidth - scaledWidth) / 2;
+                        const y = (pdfHeight - scaledHeight) / 2;
+
+                        doc.addImage(imgData, 'PNG', x, y, scaledWidth, scaledHeight);
+                        doc.save(`antister-id-card-${idNumber}.pdf`);
+
+                    } catch (err) {
+                        console.error("导出失败:", err);
+                        alert("身份证导出失败，请检查控制台日志。可能仍有跨域图片阻挡。");
+                    }
                 });
             });
             
