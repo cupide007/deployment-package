@@ -20,7 +20,7 @@ if (!in_array($extension, $allowed, true)) {
 }
 $uploadsDir = 'uploads/avatars';
 if (!is_dir($uploadsDir)) {
-    mkdir($uploadsDir, 0775, true);
+    mkdir($uploadsDir, 0755, true);
 }
 $fileName = uniqid('avatar_', true) . '.' . $extension;
 $targetPath = $uploadsDir . '/' . $fileName;
@@ -29,4 +29,5 @@ if (!move_uploaded_file($_FILES['avatar']['tmp_name'], $targetPath)) {
     echo json_encode(['error' => 'upload_failed']);
     exit;
 }
+chmod($targetPath, 0644);
 echo json_encode(['url' => $targetPath], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
