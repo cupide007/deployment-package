@@ -837,8 +837,57 @@
             const previewAvatarIcon = document.getElementById('preview-avatar-icon');
             const previewAvatarImg = document.getElementById('preview-avatar-img');
             const avatarForm = document.getElementById('avatar-form');
+
+            function updateAvatarViews(avatarURL) {
+                const userAvatarIcon = document.getElementById('user-avatar-icon');
+                const userAvatarImg = document.getElementById('user-avatar-img');
+                const idAvatarIcon = document.getElementById('id-avatar-icon');
+                const idAvatarImg = document.getElementById('id-avatar-img');
+                const passportAvatarIcon = document.getElementById('passport-avatar-icon');
+                const passportAvatarImg = document.getElementById('passport-avatar-img');
+                const previewAvatarIcon = document.getElementById('preview-avatar-icon');
+                const previewAvatarImg = document.getElementById('preview-avatar-img');
+
+                if (!avatarURL) {
+                    userAvatarImg.classList.add('hidden');
+                    userAvatarIcon.classList.remove('hidden');
+                    idAvatarImg.classList.add('hidden');
+                    idAvatarIcon.classList.remove('hidden');
+                    passportAvatarImg.classList.add('hidden');
+                    passportAvatarIcon.classList.remove('hidden');
+                    previewAvatarImg.classList.add('hidden');
+                    previewAvatarIcon.classList.remove('hidden');
+                    return;
+                }
+
+                userAvatarIcon.classList.add('hidden');
+                userAvatarImg.src = avatarURL;
+                userAvatarImg.classList.remove('hidden');
+
+                idAvatarIcon.classList.add('hidden');
+                idAvatarImg.src = avatarURL;
+                idAvatarImg.classList.remove('hidden');
+
+                passportAvatarIcon.classList.add('hidden');
+                passportAvatarImg.src = avatarURL;
+                passportAvatarImg.classList.remove('hidden');
+
+                previewAvatarIcon.classList.add('hidden');
+                previewAvatarImg.src = avatarURL;
+                previewAvatarImg.classList.remove('hidden');
+            }
+
+            function getCachedAvatar() {
+                if (cachedUserData && cachedUserData.avatar) {
+                    return cachedUserData.avatar;
+                }
+                const currentUser = JSON.parse(sessionStorage.getItem('currentUser'));
+                return currentUser ? currentUser.avatar : null;
+            }
             
             changeAvatarBtn.addEventListener('click', function() {
+                const avatar = getCachedAvatar();
+                updateAvatarViews(avatar || null);
                 changeAvatarModal.classList.remove('hidden');
             });
             
@@ -853,6 +902,9 @@
                     };
                     
                     reader.readAsDataURL(e.target.files[0]);
+                } else {
+                    const avatar = getCachedAvatar();
+                    updateAvatarViews(avatar || null);
                 }
             });
             
@@ -872,24 +924,7 @@
                                 reader.readAsDataURL(file);
                             });
                             
-                            const userAvatarIcon = document.getElementById('user-avatar-icon');
-                            const userAvatarImg = document.getElementById('user-avatar-img');
-                            const idAvatarIcon = document.getElementById('id-avatar-icon');
-                            const idAvatarImg = document.getElementById('id-avatar-img');
-                            const passportAvatarIcon = document.getElementById('passport-avatar-icon');
-                            const passportAvatarImg = document.getElementById('passport-avatar-img');
-                            
-                            userAvatarIcon.classList.add('hidden');
-                            userAvatarImg.src = avatarURL;
-                            userAvatarImg.classList.remove('hidden');
-                            
-                            idAvatarIcon.classList.add('hidden');
-                            idAvatarImg.src = avatarURL;
-                            idAvatarImg.classList.remove('hidden');
-                            
-                            passportAvatarIcon.classList.add('hidden');
-                            passportAvatarImg.src = avatarURL;
-                            passportAvatarImg.classList.remove('hidden');
+                            updateAvatarViews(avatarURL);
                             
                             await callCloudFunction('updateUser', { id: user.id, avatar: avatarURL });
                             cachedUserData = { ...(cachedUserData || {}), id: user.id, avatar: avatarURL };
@@ -899,6 +934,7 @@
                                 sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
                             }
                             
+                            avatarInput.value = '';
                             changeAvatarModal.classList.add('hidden');
                             showSuccessModal('头像更新成功', '您的头像已成功更新。');
                         }
@@ -1239,30 +1275,7 @@
                         }
                         
                         if (userData.avatar) {
-                            const userAvatarIcon = document.getElementById('user-avatar-icon');
-                            const userAvatarImg = document.getElementById('user-avatar-img');
-                            const previewAvatarIcon = document.getElementById('preview-avatar-icon');
-                            const previewAvatarImg = document.getElementById('preview-avatar-img');
-                            const idAvatarIcon = document.getElementById('id-avatar-icon');
-                            const idAvatarImg = document.getElementById('id-avatar-img');
-                            const passportAvatarIcon = document.getElementById('passport-avatar-icon');
-                            const passportAvatarImg = document.getElementById('passport-avatar-img');
-                            
-                            userAvatarIcon.classList.add('hidden');
-                            userAvatarImg.src = userData.avatar;
-                            userAvatarImg.classList.remove('hidden');
-                            
-                            previewAvatarIcon.classList.add('hidden');
-                            previewAvatarImg.src = userData.avatar;
-                            previewAvatarImg.classList.remove('hidden');
-                            
-                            idAvatarIcon.classList.add('hidden');
-                            idAvatarImg.src = userData.avatar;
-                            idAvatarImg.classList.remove('hidden');
-                            
-                            passportAvatarIcon.classList.add('hidden');
-                            passportAvatarImg.src = userData.avatar;
-                            passportAvatarImg.classList.remove('hidden');
+                            updateAvatarViews(userData.avatar);
                         }
                     }
                 } catch (error) {
