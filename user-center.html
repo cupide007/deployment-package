@@ -5,15 +5,107 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>用户中心 - 安提斯特虚拟国</title>
     <link rel="icon" href="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f4bb.png">
-    <link rel="stylesheet" href="tailwind.css">
-    <link rel="stylesheet" href="custom.css">
+    <!-- Tailwind CSS v3 -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome -->
     <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
     <!-- Retinbox 配置 -->
     <script src="retinbox-config.js"></script>
+    <!-- 统一的 Tailwind 配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#0A2463', // 深蓝色
+                        secondary: '#E6AF2E', // 金色
+                        accent: '#3E92CC', // 天蓝色
+                        light: '#FFFAFF', // 白色
+                        dark: '#1E1B18', // 深灰色
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        serif: ['Georgia', 'serif'],
+                        medieval: ['Cinzel', 'Georgia', 'serif'],
+                    },
+                    animation: {
+                        'float': 'float 3s ease-in-out infinite',
+                        'fade-in': 'fadeIn 1s ease-in-out',
+                        'slide-up': 'slideUp 0.5s ease-out',
+                        'slide-down': 'slideDown 0.5s ease-out',
+                        'slide-left': 'slideLeft 0.5s ease-out',
+                        'slide-right': 'slideRight 0.5s ease-out',
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        },
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(20px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        },
+                        slideDown: {
+                            '0%': { transform: 'translateY(-20px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        },
+                        slideLeft: {
+                            '0%': { transform: 'translateX(20px)', opacity: '0' },
+                            '100%': { transform: 'translateX(0)', opacity: '1' },
+                        },
+                        slideRight: {
+                            '0%': { transform: 'translateX(-20px)', opacity: '0' },
+                            '100%': { transform: 'translateX(0)', opacity: '1' },
+                        },
+                    },
+                }
+            }
+        }
+    </script>
     <!-- 引入html2canvas和jsPDF库 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .text-shadow {
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            }
+            .text-shadow-sm {
+                text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+            }
+            .bg-gradient-primary {
+                background: linear-gradient(135deg, theme('colors.primary'), theme('colors.accent'));
+            }
+            .border-gradient {
+                border-image: linear-gradient(to right, theme('colors.secondary'), theme('colors.accent')) 1;
+            }
+            .glass-effect {
+                background: rgba(255, 250, 255, 0.1);
+                backdrop-filter: blur(10px);
+                -webkit-backdrop-filter: blur(10px);
+                border: 1px solid rgba(255, 250, 255, 0.2);
+            }
+            .paper-texture {
+                background-color: #f8f5e6;
+                background-image: url("paper-texture.svg");
+            }
+            .gold-border {
+                border: 2px solid #E6AF2E;
+                box-shadow: 0 0 10px rgba(230, 175, 46, 0.3);
+            }
+            .id-card-shadow {
+                box-shadow: 0 0 20px rgba(0, 0, 0, 0.3), 0 0 60px rgba(230, 175, 46, 0.1);
+            }
+            .passport-shadow {
+                box-shadow: 0 0 30px rgba(0, 0, 0, 0.4), 0 0 80px rgba(10, 36, 99, 0.2);
+            }
+        }
+    </style>
     <!-- Google Fonts - Cinzel for medieval feel -->
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;800&display=swap" rel="stylesheet">
 </head>
