@@ -838,6 +838,7 @@
             const previewAvatarImg = document.getElementById('preview-avatar-img');
             const avatarForm = document.getElementById('avatar-form');
             let previewObjectUrl = null;
+            let avatarObjectUrl = null;
 
             function normalizeAvatarUrl(avatarUrl) {
                 if (!avatarUrl) {
@@ -851,6 +852,26 @@
             }
 
             function updateAvatarViews(avatarURL) {
+                if (avatarObjectUrl) {
+                    URL.revokeObjectURL(avatarObjectUrl);
+                    avatarObjectUrl = null;
+                }
+                let resolvedAvatarUrl = avatarURL;
+                if (avatarURL && avatarURL.startsWith('data:')) {
+                    const parts = avatarURL.split(',');
+                    const header = parts[0] || '';
+                    const base64Data = parts[1] || '';
+                    const mimeMatch = header.match(/data:([^;]+)/);
+                    const mimeType = mimeMatch ? mimeMatch[1] : 'application/octet-stream';
+                    const binary = atob(base64Data);
+                    const bytes = new Uint8Array(binary.length);
+                    for (let i = 0; i < binary.length; i += 1) {
+                        bytes[i] = binary.charCodeAt(i);
+                    }
+                    const blob = new Blob([bytes], { type: mimeType });
+                    avatarObjectUrl = URL.createObjectURL(blob);
+                    resolvedAvatarUrl = avatarObjectUrl;
+                }
                 const userAvatarIcon = document.getElementById('user-avatar-icon');
                 const userAvatarImg = document.getElementById('user-avatar-img');
                 const idAvatarIcon = document.getElementById('id-avatar-icon');
@@ -873,19 +894,19 @@
                 }
 
                 userAvatarIcon.classList.add('hidden');
-                userAvatarImg.src = avatarURL;
+                userAvatarImg.src = resolvedAvatarUrl;
                 userAvatarImg.classList.remove('hidden');
-
+                
                 idAvatarIcon.classList.add('hidden');
-                idAvatarImg.src = avatarURL;
+                idAvatarImg.src = resolvedAvatarUrl;
                 idAvatarImg.classList.remove('hidden');
-
+                
                 passportAvatarIcon.classList.add('hidden');
-                passportAvatarImg.src = avatarURL;
+                passportAvatarImg.src = resolvedAvatarUrl;
                 passportAvatarImg.classList.remove('hidden');
-
+                
                 previewAvatarIcon.classList.add('hidden');
-                previewAvatarImg.src = avatarURL;
+                previewAvatarImg.src = resolvedAvatarUrl;
                 previewAvatarImg.classList.remove('hidden');
             }
 
@@ -927,20 +948,12 @@
                         
                         if (user) {
                             const file = avatarInput.files[0];
-                            const formData = new FormData();
-                            formData.append('avatar', file);
-                            const response = await fetch('upload-avatar.php', {
-                                method: 'POST',
-                                body: formData
+                            const avatarURL = await new Promise((resolve, reject) => {
+                                const reader = new FileReader();
+                                reader.onload = () => resolve(reader.result);
+                                reader.onerror = () => reject(new Error('头像读取失败'));
+                                reader.readAsDataURL(file);
                             });
-                            if (!response.ok) {
-                                throw new Error('头像上传失败');
-                            }
-                            const result = await response.json();
-                            if (!result || !result.url) {
-                                throw new Error('头像上传失败');
-                            }
-                            const avatarURL = result.url;
                             updateAvatarViews(avatarURL);
                             await callCloudFunction('updateUser', { id: user.id, avatar: avatarURL });
                             cachedUserData = { ...(cachedUserData || {}), id: user.id, avatar: avatarURL };
