@@ -2284,11 +2284,23 @@
 
     async function loadLibraryData() {
         const users = await getUsers();
-        renderLibraryDocuments(users);
+        let documents = [];
+        if (window.safeGetData) {
+            const remoteDocuments = await window.safeGetData('documents', []);
+            documents = Array.isArray(remoteDocuments)
+                ? remoteDocuments
+                : (remoteDocuments && Array.isArray(remoteDocuments.documents) ? remoteDocuments.documents : []);
+            if (Array.isArray(documents)) {
+                localStorage.setItem('documents', JSON.stringify(documents));
+            }
+        }
+        if (!Array.isArray(documents) || documents.length === 0) {
+            documents = JSON.parse(localStorage.getItem('documents')) || [];
+        }
+        renderLibraryDocuments(users, documents);
     }
 
-    function renderLibraryDocuments(users) {
-        const documents = JSON.parse(localStorage.getItem('documents')) || [];
+    function renderLibraryDocuments(users, documents) {
         const documentsList = document.getElementById('documents-list');
         const filteredDocuments = getFilteredLibraryDocuments(documents);
         const paginatedDocuments = getPaginatedLibraryDocuments(filteredDocuments);
@@ -3207,7 +3219,7 @@
     }
 
     // 处理文献上传
-    function handleDocumentUpload(e) {
+    async function handleDocumentUpload(e) {
         e.preventDefault();
 
         const docId = document.getElementById('document-id').value;
@@ -3217,29 +3229,27 @@
         const description = document.getElementById('document-description').value;
         const fileInput = document.getElementById('document-file');
         const originalFileUrlField = document.getElementById('original-file-url');
+        const originalFileNameField = document.getElementById('original-file-name');
 
         const documents = JSON.parse(localStorage.getItem('documents')) || [];
         const currentUser = JSON.parse(sessionStorage.getItem('currentUser'));
-
-        // 处理文件上传
-        function processFileUpload() {
-            if (fileInput.files.length > 0) {
-                const file = fileInput.files[0];
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    // 使用Base64编码存储文件数据
-                    const fileUrl = e.target.result;
-                    saveDocument(fileUrl);
-                };
-                reader.readAsDataURL(file);
-            } else {
-                // 如果是编辑模式，使用原始fileUrl；否则使用默认值
-                const originalFileUrl = originalFileUrlField ? originalFileUrlField.value : '#';
-                saveDocument(originalFileUrl);
+        let fileUrl = '';
+        let fileName = '';
+        if (fileInput.files.length > 0) {
+            try {
+                const uploadResult = await uploadDocumentFile(fileInput.files[0]);
+                fileUrl = uploadResult.url;
+                fileName = uploadResult.name;
+            } catch (error) {
+                alert('文件上传失败，请稍后重试');
+                return;
             }
+        } else {
+            fileUrl = originalFileUrlField ? originalFileUrlField.value : '#';
+            fileName = originalFileNameField ? originalFileNameField.value : '';
         }
 
-        function saveDocument(fileUrl) {
+        async function saveDocument() {
             if (docId) {
                 // 编辑现有文献
                 const docIndex = documents.findIndex(d => d.id === docId);
@@ -3248,9 +3258,13 @@
                     documents[docIndex].author = author;
                     documents[docIndex].category = category;
                     documents[docIndex].description = description;
-                    documents[docIndex].fileUrl = fileUrl; // 始终使用fileUrl，无论是新文件还是原始文件
+                    documents[docIndex].fileUrl = fileUrl;
+                    documents[docIndex].fileName = fileName;
 
                     localStorage.setItem('documents', JSON.stringify(documents));
+                    if (window.safeSaveData) {
+                        await window.safeSaveData('documents', documents);
+                    }
                     alert('文献更新成功');
 
                     loadLibraryData();
@@ -3267,6 +3281,7 @@
                     category,
                     description,
                     fileUrl,
+                    fileName,
                     uploaderId: currentUser.id,
                     uploaderName: currentUser.username, // 添加上传者名称
                     uploadDate: new Date().toISOString(),
@@ -3275,6 +3290,9 @@
 
                 documents.push(newDocument);
                 localStorage.setItem('documents', JSON.stringify(documents));
+                if (window.safeSaveData) {
+                    await window.safeSaveData('documents', documents);
+                }
                 alert('文献上传成功');
 
                 // 重置表单并显示上传面板
@@ -3286,7 +3304,28 @@
             }
         }
 
-        processFileUpload();
+        await saveDocument();
+    }
+
+    async function uploadDocumentFile(file) {
+        const formData = new FormData();
+        formData.append('document', file);
+        const response = await fetch('upload-document.php', {
+            method: 'POST',
+            body: formData
+        });
+        if (!response.ok) {
+            throw new Error('upload_failed');
+        }
+        const result = await response.json();
+        if (!result || !result.url) {
+            throw new Error('invalid_response');
+        }
+        const name = typeof result.name === 'string' ? result.name : '';
+        return {
+            url: result.url,
+            name
+        };
     }
 
     // 处理编辑文献点击
@@ -3316,14 +3355,23 @@
             originalFileUrlField.id = 'original-file-url';
             document.getElementById('document-upload-form').appendChild(originalFileUrlField);
         }
-        originalFileUrlField.value = doc.fileUrl || '#';
+        let originalFileNameField = document.getElementById('original-file-name');
+        if (!originalFileNameField) {
+            originalFileNameField = document.createElement('input');
+            originalFileNameField.type = 'hidden';
+            originalFileNameField.id = 'original-file-name';
+            document.getElementById('document-upload-form').appendChild(originalFileNameField);
+        }
+        const resolvedFileUrl = doc.fileUrl || (doc.fileName ? `document-file.php?name=${doc.fileName}` : '#');
+        originalFileUrlField.value = resolvedFileUrl;
+        originalFileNameField.value = doc.fileName || '';
 
         const filePreviewContainer = document.getElementById('file-preview-container');
         const filePreview = document.getElementById('file-preview');
 
-        if (doc.fileUrl && doc.fileUrl !== '#') {
+        if (resolvedFileUrl && resolvedFileUrl !== '#') {
             filePreviewContainer.classList.remove('hidden');
-            updateFilePreviewContent(doc.fileUrl);
+            updateFilePreviewContent(resolvedFileUrl);
         } else {
             filePreviewContainer.classList.add('hidden');
             filePreview.innerHTML = '';
