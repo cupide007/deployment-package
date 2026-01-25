@@ -317,6 +317,14 @@
                             <i class="fa fa-eye mr-2"></i>
                             在线阅读
                         </button>
+                        <button id="edit-document-btn" class="bg-accent text-white px-6 py-2 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium flex items-center hidden">
+                            <i class="fa fa-pencil mr-2"></i>
+                            编辑文献
+                        </button>
+                        <button id="delete-document-btn" class="bg-red-500 text-white px-6 py-2 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium flex items-center hidden">
+                            <i class="fa fa-trash mr-2"></i>
+                            删除文献
+                        </button>
                     </div>
                 </div>
             </div>
@@ -327,7 +335,7 @@
     <div id="upload-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
         <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl mx-4 animate-fade-in">
             <div class="bg-primary text-light p-4 flex justify-between items-center">
-                <h2 class="text-xl font-bold">上传文献</h2>
+                <h2 id="upload-modal-title" class="text-xl font-bold">上传文献</h2>
                 <button id="close-upload-modal" class="text-2xl hover:text-secondary transition-colors duration-200">
                     <i class="fa fa-times"></i>
                 </button>
@@ -374,16 +382,18 @@
                                 <p class="text-gray-500 text-sm">支持 PDF, DOC, DOCX, XLS, XLSX, TXT, MD 格式</p>
                             </label>
                         </div>
+                        <p id="document-file-current" class="text-sm text-gray-500 mt-2 hidden"></p>
                     </div>
                     <div class="flex items-center">
                         <input type="checkbox" id="agree-terms" class="mr-2" required>
                         <label for="agree-terms" class="text-gray-700">我已阅读并同意<a href="#" class="text-primary hover:underline">《安提斯特国家图书馆文献上传条款》</a></label>
                     </div>
                     <div class="text-center">
-                        <button type="submit" class="bg-primary text-white px-8 py-3 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium">
+                        <button id="submit-document-btn" type="submit" class="bg-primary text-white px-8 py-3 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium">
                             提交上传
                         </button>
                     </div>
+                    <input type="hidden" id="document-id">
                 </form>
             </div>
         </div>
@@ -508,29 +518,89 @@
                     approved: true
                 }
             ];
-            let documentsData = null;
-            if (window.safeGetData) {
-                documentsData = await window.safeGetData('documents', []);
-            } else {
+            let documentsData = [];
+            let activeDocumentId = null;
+            let lastUploadedId = null;
+            let editingDocumentId = null;
+
+            function extractDocumentsPayload(payload) {
+                if (Array.isArray(payload)) {
+                    return payload;
+                }
+                if (payload && Array.isArray(payload.documents)) {
+                    return payload.documents;
+                }
+                return [];
+            }
+
+            function normalizeDocuments(payload) {
+                return extractDocumentsPayload(payload).filter(doc => doc && typeof doc === 'object');
+            }
+
+            function mergeDocuments(primary, secondary) {
+                const secondaryMap = new Map();
+                secondary.forEach(doc => {
+                    if (doc && doc.id) {
+                        secondaryMap.set(doc.id, doc);
+                    }
+                });
+                const merged = [];
+                primary.forEach(doc => {
+                    if (!doc || !doc.id) {
+                        return;
+                    }
+                    const existing = secondaryMap.get(doc.id);
+                    if (existing) {
+                        secondaryMap.delete(doc.id);
+                        const fileUrl = doc.fileUrl && doc.fileUrl !== '#' ? doc.fileUrl : existing.fileUrl;
+                        merged.push({ ...existing, ...doc, fileUrl });
+                    } else {
+                        merged.push(doc);
+                    }
+                });
+                secondaryMap.forEach(doc => merged.push(doc));
+                return merged;
+            }
+
+            async function loadDocuments() {
+                let remoteData = [];
+                if (window.safeGetData) {
+                    remoteData = await window.safeGetData('documents', []);
+                } else {
+                    const storedDocuments = localStorage.getItem('documents');
+                    remoteData = storedDocuments ? JSON.parse(storedDocuments) : [];
+                }
+                const remoteDocuments = normalizeDocuments(remoteData);
                 const storedDocuments = localStorage.getItem('documents');
-                documentsData = storedDocuments ? JSON.parse(storedDocuments) : [];
+                const parsedStoredDocuments = storedDocuments ? JSON.parse(storedDocuments) : [];
+                const localDocuments = normalizeDocuments(parsedStoredDocuments);
+                let mergedDocuments = remoteDocuments;
+                let shouldPersist = false;
+                if (localDocuments.length > 0 && remoteDocuments.length > 0) {
+                    mergedDocuments = mergeDocuments(remoteDocuments, localDocuments);
+                } else if (localDocuments.length > 0) {
+                    mergedDocuments = localDocuments;
+                    shouldPersist = true;
+                } else if (remoteDocuments.length === 0) {
+                    mergedDocuments = initialDocuments;
+                    shouldPersist = true;
+                }
+                documentsData = mergedDocuments;
+                localStorage.setItem('documents', JSON.stringify(mergedDocuments));
+                if (shouldPersist && window.safeSaveData) {
+                    await window.safeSaveData('documents', mergedDocuments);
+                }
             }
-            if (!Array.isArray(documentsData)) {
-                documentsData = documentsData && Array.isArray(documentsData.documents) ? documentsData.documents : [];
+
+            async function persistDocuments(documents) {
+                documentsData = documents;
+                localStorage.setItem('documents', JSON.stringify(documents));
+                if (window.safeSaveData) {
+                    await window.safeSaveData('documents', documents);
+                }
             }
-            if (!Array.isArray(documentsData)) {
-                documentsData = [];
-            }
-            const storedDocuments = localStorage.getItem('documents');
-            const parsedStoredDocuments = storedDocuments ? JSON.parse(storedDocuments) : [];
-            if (Array.isArray(parsedStoredDocuments) && parsedStoredDocuments.length > 0) {
-                documentsData = parsedStoredDocuments;
-            } else if (documentsData.length === 0) {
-                documentsData = initialDocuments;
-            }
-            if (!storedDocuments || documentsData.length > 0) {
-                localStorage.setItem('documents', JSON.stringify(documentsData));
-            }
+
+            await loadDocuments();
             
             // 移动端菜单切换
             const mobileMenuBtn = document.getElementById('mobile-menu-btn');
@@ -556,6 +626,8 @@
             const closeDocumentModal = document.getElementById('close-document-modal');
             const downloadDocumentBtn = document.getElementById('download-document-btn');
             const viewDocumentBtn = document.getElementById('view-document-btn');
+            const editDocumentBtn = document.getElementById('edit-document-btn');
+            const deleteDocumentBtn = document.getElementById('delete-document-btn');
             
             closeDocumentModal.addEventListener('click', function() {
                 documentModal.classList.add('hidden');
@@ -567,25 +639,96 @@
                     documentModal.classList.add('hidden');
                 }
             });
+
+            editDocumentBtn.addEventListener('click', function() {
+                const doc = getDocumentById(activeDocumentId);
+                if (!doc) {
+                    return;
+                }
+                documentModal.classList.add('hidden');
+                openUploadModalForEdit(doc);
+            });
+
+            deleteDocumentBtn.addEventListener('click', async function() {
+                const doc = getDocumentById(activeDocumentId);
+                if (!doc) {
+                    return;
+                }
+                const confirmed = window.confirm(`确定删除《${doc.title}》吗？`);
+                if (!confirmed) {
+                    return;
+                }
+                const nextDocuments = documentsData.filter(item => item.id !== doc.id);
+                await persistDocuments(nextDocuments);
+                updateDocumentsDisplay();
+                documentModal.classList.add('hidden');
+                activeDocumentId = null;
+            });
             
             // 上传文献模态框
             const uploadModal = document.getElementById('upload-modal');
             const closeUploadModal = document.getElementById('close-upload-modal');
             const uploadDocsBtn = document.getElementById('upload-docs-btn');
             const uploadForm = document.getElementById('upload-form');
+            const uploadModalTitle = document.getElementById('upload-modal-title');
+            const submitDocumentBtn = document.getElementById('submit-document-btn');
+            const documentIdInput = document.getElementById('document-id');
+            const documentFileInput = document.getElementById('document-file');
+            const documentFileCurrent = document.getElementById('document-file-current');
+            const agreeTermsInput = document.getElementById('agree-terms');
+
+            function resetUploadForm() {
+                uploadForm.reset();
+                documentIdInput.value = '';
+                documentFileInput.required = true;
+                uploadModalTitle.textContent = '上传文献';
+                submitDocumentBtn.textContent = '提交上传';
+                documentFileCurrent.textContent = '';
+                documentFileCurrent.classList.add('hidden');
+                agreeTermsInput.required = true;
+                agreeTermsInput.checked = false;
+                editingDocumentId = null;
+            }
+
+            function openUploadModalForCreate() {
+                resetUploadForm();
+                uploadModal.classList.remove('hidden');
+            }
+
+            function openUploadModalForEdit(doc) {
+                resetUploadForm();
+                editingDocumentId = doc.id;
+                documentIdInput.value = doc.id;
+                document.getElementById('document-title').value = doc.title || '';
+                document.getElementById('document-author').value = doc.author || '';
+                document.getElementById('document-category').value = doc.category || '';
+                document.getElementById('document-description').value = doc.description || '';
+                documentFileInput.required = false;
+                uploadModalTitle.textContent = '编辑文献';
+                submitDocumentBtn.textContent = '保存修改';
+                agreeTermsInput.required = false;
+                agreeTermsInput.checked = true;
+                if (doc.fileUrl) {
+                    documentFileCurrent.textContent = `当前文件：${getReadableFileName(doc.fileUrl)}`;
+                    documentFileCurrent.classList.remove('hidden');
+                }
+                uploadModal.classList.remove('hidden');
+            }
             
             uploadDocsBtn.addEventListener('click', function() {
-                uploadModal.classList.remove('hidden');
+                openUploadModalForCreate();
             });
             
             closeUploadModal.addEventListener('click', function() {
                 uploadModal.classList.add('hidden');
+                resetUploadForm();
             });
             
             // 点击模态框外部关闭
             uploadModal.addEventListener('click', function(e) {
                 if (e.target === uploadModal) {
                     uploadModal.classList.add('hidden');
+                    resetUploadForm();
                 }
             });
             
@@ -601,13 +744,14 @@
             
             viewDocumentSuccessBtn.addEventListener('click', function() {
                 uploadSuccessModal.classList.add('hidden');
-                // 这里可以添加查看刚上传文献的逻辑
+                if (lastUploadedId) {
+                    showDocumentDetails(lastUploadedId);
+                }
             });
             
             uploadMoreBtn.addEventListener('click', function() {
                 uploadSuccessModal.classList.add('hidden');
-                uploadForm.reset();
-                uploadModal.classList.remove('hidden');
+                openUploadModalForCreate();
             });
             
             // 点击模态框外部关闭
@@ -617,27 +761,84 @@
                 }
             });
             
-            uploadForm.addEventListener('submit', function(e) {
+            uploadForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
                 
                 const title = document.getElementById('document-title').value;
                 const author = document.getElementById('document-author').value;
                 const category = document.getElementById('document-category').value;
                 const description = document.getElementById('document-description').value;
-                const fileInput = document.getElementById('document-file');
+                const fileInput = documentFileInput;
                 
-                if (!title || !author || !category || !description || !fileInput.files[0]) {
-                    alert('请填写完整的上传信息并选择文件');
+                if (!title || !author || !category || !description) {
+                    alert('请填写完整的文献信息');
                     return;
                 }
-                
+
                 const file = fileInput.files[0];
-                handleDocumentUpload(file, {
+                if (!editingDocumentId && !file) {
+                    alert('请上传文献文件');
+                    return;
+                }
+
+                let fileUrl = '';
+                if (file) {
+                    try {
+                        fileUrl = await uploadDocumentFile(file);
+                    } catch (error) {
+                        alert('文件上传失败，请稍后重试');
+                        return;
+                    }
+                }
+
+                const documents = Array.isArray(documentsData) ? [...documentsData] : [];
+                if (editingDocumentId) {
+                    const index = documents.findIndex(doc => doc.id === editingDocumentId);
+                    if (index === -1) {
+                        alert('未找到要编辑的文献');
+                        return;
+                    }
+                    const existing = documents[index];
+                    documents[index] = {
+                        ...existing,
+                        title,
+                        author,
+                        category,
+                        description,
+                        fileUrl: fileUrl || existing.fileUrl
+                    };
+                    await persistDocuments(documents);
+                    updateDocumentsDisplay();
+                    uploadModal.classList.add('hidden');
+                    showDocumentDetails(editingDocumentId);
+                    return;
+                }
+
+                const newDocument = {
+                    id: Date.now().toString(),
                     title,
                     author,
                     category,
-                    description
-                });
+                    description,
+                    fileUrl,
+                    uploaderId: getCurrentUserId(),
+                    uploaderName: getCurrentUsername(),
+                    uploadDate: new Date().toISOString(),
+                    approved: isCurrentUserAdmin()
+                };
+
+                documents.push(newDocument);
+                await persistDocuments(documents);
+                updateDocumentsDisplay();
+
+                lastUploadedId = newDocument.id;
+                document.getElementById('success-title').textContent = title;
+                document.getElementById('success-author').textContent = author;
+                document.getElementById('success-category').textContent = category;
+                uploadSuccessModal.classList.remove('hidden');
+
+                uploadModal.classList.add('hidden');
+                uploadForm.reset();
             });
 
             async function uploadDocumentFile(file) {
@@ -655,46 +856,6 @@
                     throw new Error('invalid_response');
                 }
                 return result.url;
-            }
-
-            async function handleDocumentUpload(file, meta) {
-                let fileUrl = '';
-                try {
-                    fileUrl = await uploadDocumentFile(file);
-                } catch (error) {
-                    alert('文件上传失败，请稍后重试');
-                    return;
-                }
-
-                const newDocument = {
-                    id: Date.now().toString(),
-                    title: meta.title,
-                    author: meta.author,
-                    category: meta.category,
-                    description: meta.description,
-                    fileUrl,
-                    uploaderId: getCurrentUserId(),
-                    uploaderName: getCurrentUsername(),
-                    uploadDate: new Date().toISOString(),
-                    approved: isCurrentUserAdmin()
-                };
-
-                const documents = JSON.parse(localStorage.getItem('documents')) || [];
-                documents.push(newDocument);
-                localStorage.setItem('documents', JSON.stringify(documents));
-                if (window.safeSaveData) {
-                    await window.safeSaveData('documents', documents);
-                }
-
-                updateDocumentsDisplay();
-
-                document.getElementById('success-title').textContent = meta.title;
-                document.getElementById('success-author').textContent = meta.author;
-                document.getElementById('success-category').textContent = meta.category;
-                uploadSuccessModal.classList.remove('hidden');
-
-                uploadModal.classList.add('hidden');
-                uploadForm.reset();
             }
             
             // 搜索功能
@@ -734,14 +895,14 @@
                 }
                 
                 // 获取所有文献
-                const documents = JSON.parse(localStorage.getItem('documents'));
+                const documents = Array.isArray(documentsData) ? documentsData : [];
                 
                 // 收集所有可能的关键词
                 const keywords = new Set();
                 
                 documents.forEach(doc => {
                     // 从标题中提取关键词
-                    const titleWords = doc.title.split(/\s+/);
+                    const titleWords = (doc.title || '').split(/\s+/);
                     titleWords.forEach(word => {
                         if (word.toLowerCase().includes(searchTerm)) {
                             keywords.add(word);
@@ -749,7 +910,7 @@
                     });
                     
                     // 从作者中提取关键词
-                    const authorWords = doc.author.split(/\s+/);
+                    const authorWords = (doc.author || '').split(/\s+/);
                     authorWords.forEach(word => {
                         if (word.toLowerCase().includes(searchTerm)) {
                             keywords.add(word);
@@ -757,7 +918,7 @@
                     });
                     
                     // 从描述中提取关键词
-                    const descriptionWords = doc.description.split(/\s+/);
+                    const descriptionWords = (doc.description || '').split(/\s+/);
                     descriptionWords.forEach(word => {
                         if (word.length > 2 && word.toLowerCase().includes(searchTerm)) {
                             keywords.add(word);
@@ -765,10 +926,10 @@
                     });
                     
                     // 添加完整的标题和作者作为联想词
-                    if (doc.title.toLowerCase().includes(searchTerm)) {
+                    if ((doc.title || '').toLowerCase().includes(searchTerm)) {
                         keywords.add(doc.title);
                     }
-                    if (doc.author.toLowerCase().includes(searchTerm)) {
+                    if ((doc.author || '').toLowerCase().includes(searchTerm)) {
                         keywords.add(doc.author);
                     }
                 });
@@ -983,13 +1144,52 @@
                     pageNumbers.appendChild(pageBtn);
                 }
             }
+
+            function getDocumentById(docId) {
+                return Array.isArray(documentsData) ? documentsData.find(doc => doc.id === docId) : null;
+            }
+
+            function canManageDocument(doc) {
+                if (!doc) {
+                    return false;
+                }
+                if (isCurrentUserAdmin()) {
+                    return true;
+                }
+                const currentUserId = getCurrentUserId();
+                return currentUserId && doc.uploaderId === currentUserId;
+            }
+
+            function getReadableFileName(fileUrl) {
+                if (!fileUrl) {
+                    return '未上传';
+                }
+                if (fileUrl.startsWith('data:')) {
+                    return '在线文件';
+                }
+                if (fileUrl.startsWith('blob:')) {
+                    return '临时文件';
+                }
+                try {
+                    const resolved = new URL(fileUrl, window.location.href);
+                    const name = resolved.searchParams.get('name');
+                    if (name) {
+                        return decodeURIComponent(name);
+                    }
+                    const segments = resolved.pathname.split('/');
+                    const last = segments[segments.length - 1];
+                    return last || fileUrl;
+                } catch (error) {
+                    return fileUrl;
+                }
+            }
             
             // 显示文献详情
             function showDocumentDetails(docId) {
-                const documents = JSON.parse(localStorage.getItem('documents'));
-                const doc = documents.find(d => d.id === docId);
+                const doc = getDocumentById(docId);
                 
                 if (doc) {
+                    activeDocumentId = docId;
                     document.getElementById('document-modal-title').textContent = doc.title;
                     document.getElementById('document-detail-title').textContent = doc.title;
                     document.getElementById('document-detail-author').textContent = doc.author;
@@ -998,7 +1198,6 @@
                     const date = new Date(doc.uploadDate);
                     const formattedDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
                     
-                    // 设置下载和在线阅读按钮的功能
                     const downloadBtn = document.getElementById('download-document-btn');
                     const viewBtn = document.getElementById('view-document-btn');
                     
@@ -1271,6 +1470,14 @@
                     
                     document.getElementById('document-detail-uploader').textContent = doc.uploaderName;
                     document.getElementById('document-detail-description').textContent = doc.description;
+
+                    if (canManageDocument(doc)) {
+                        editDocumentBtn.classList.remove('hidden');
+                        deleteDocumentBtn.classList.remove('hidden');
+                    } else {
+                        editDocumentBtn.classList.add('hidden');
+                        deleteDocumentBtn.classList.add('hidden');
+                    }
                     
                     documentModal.classList.remove('hidden');
                 }
@@ -1282,7 +1489,7 @@
                 const category = categoryFilter.value;
                 const sort = sortOption.value;
                 
-                let documents = JSON.parse(localStorage.getItem('documents'));
+                let documents = Array.isArray(documentsData) ? [...documentsData] : [];
                 
                 // 筛选已审核的文献，或者管理员可以看到所有文献
                 if (!isCurrentUserAdmin()) {
@@ -1292,9 +1499,9 @@
                 // 筛选搜索词
                 if (searchTerm) {
                     documents = documents.filter(doc => 
-                        doc.title.toLowerCase().includes(searchTerm) || 
-                        doc.author.toLowerCase().includes(searchTerm) || 
-                        doc.description.toLowerCase().includes(searchTerm)
+                        (doc.title || '').toLowerCase().includes(searchTerm) || 
+                        (doc.author || '').toLowerCase().includes(searchTerm) || 
+                        (doc.description || '').toLowerCase().includes(searchTerm)
                     );
                 }
                 
