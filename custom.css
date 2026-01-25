@@ -1,0 +1,42 @@
+.bg-primary{background-color:#0A2463;}
+.text-primary{color:#0A2463;}
+.border-primary{border-color:#0A2463;}
+.bg-secondary{background-color:#E6AF2E;}
+.text-secondary{color:#E6AF2E;}
+.border-secondary{border-color:#E6AF2E;}
+.bg-accent{background-color:#3E92CC;}
+.text-accent{color:#3E92CC;}
+.border-accent{border-color:#3E92CC;}
+.bg-light{background-color:#FFFAFF;}
+.text-light{color:#FFFAFF;}
+.border-light{border-color:#FFFAFF;}
+.bg-dark{background-color:#1E1B18;}
+.text-dark{color:#1E1B18;}
+.border-dark{border-color:#1E1B18;}
+.text-shadow{text-shadow:2px 2px 4px rgba(0,0,0,0.5);}
+.text-shadow-sm{text-shadow:1px 1px 2px rgba(0,0,0,0.3);}
+.bg-gradient-primary{background:linear-gradient(135deg,#0A2463,#3E92CC);}
+.border-gradient{border-image:linear-gradient(to right,#E6AF2E,#3E92CC) 1;}
+.glass-effect{background:rgba(255,250,255,0.1);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(255,250,255,0.2);}
+.paper-texture{background-color:#f8f5e6;background-image:url(\"paper-texture.svg\");}
+.gold-border{border:2px solid #E6AF2E;box-shadow:0 0 10px rgba(230,175,46,0.3);}
+.id-card-shadow{box-shadow:0 0 20px rgba(0,0,0,0.3),0 0 60px rgba(230,175,46,0.1);}
+.passport-shadow{box-shadow:0 0 30px rgba(0,0,0,0.4),0 0 80px rgba(10,36,99,0.2);}
+.font-medieval{font-family:'Cinzel',Georgia,serif;}
+@keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-10px);}}
+@keyframes fadeIn{0%{opacity:0;}100%{opacity:1;}}
+@keyframes slideUp{0%{transform:translateY(20px);opacity:0;}100%{transform:translateY(0);opacity:1;}}
+@keyframes slideDown{0%{transform:translateY(-20px);opacity:0;}100%{transform:translateY(0);opacity:1;}}
+@keyframes slideLeft{0%{transform:translateX(20px);opacity:0;}100%{transform:translateX(0);opacity:1;}}
+@keyframes slideRight{0%{transform:translateX(-20px);opacity:0;}100%{transform:translateX(0);opacity:1;}}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.5;}}
+.animate-float{animation:float 3s ease-in-out infinite;}
+.animate-fade-in{animation:fadeIn 1s ease-in-out;}
+.animate-slide-up{animation:slideUp 0.5s ease-out;}
+.animate-slide-down{animation:slideDown 0.5s ease-out;}
+.animate-slide-left{animation:slideLeft 0.5s ease-out;}
+.animate-slide-right{animation:slideRight 0.5s ease-out;}
+.animate-pulse-slow{animation:pulse 3s cubic-bezier(0.4,0,0.6,1) infinite;}
+.card-shine{position:relative;overflow:hidden;}
+.card-shine::after{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:linear-gradient(to bottom right,rgba(255,255,255,0) 0%,rgba(255,255,255,0.3) 50%,rgba(255,255,255,0) 100%);transform:rotate(45deg);animation:shine 3s infinite;}
+@keyframes shine{0%{transform:translate(-100%,-100%) rotate(45deg);}100%{transform:translate(100%,100%) rotate(45deg);}}
