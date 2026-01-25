@@ -29,4 +29,4 @@ if (!move_uploaded_file($_FILES['document']['tmp_name'], $targetPath)) {
     echo json_encode(['error' => 'upload_failed']);
     exit;
 }
-echo json_encode(['url' => 'document-file.php?name=' . urlencode($fileName)], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+echo json_encode(['url' => 'document-file.php?name=' . urlencode($fileName), 'name' => $fileName], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);

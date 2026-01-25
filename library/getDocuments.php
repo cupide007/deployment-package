@@ -71,6 +71,9 @@ try {
                 if (!is_array($document)) {
                     continue;
                 }
+                if (empty($document['fileUrl']) && !empty($document['fileName'])) {
+                    $document['fileUrl'] = 'document-file.php?name=' . $document['fileName'];
+                }
                 $documentKey = $document['id'] ?? null;
                 if ($documentKey === null || isset($seenDocuments[$documentKey])) {
                     continue;

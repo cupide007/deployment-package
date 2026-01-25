@@ -658,13 +658,20 @@
                 if (!result || !result.url) {
                     throw new Error('invalid_response');
                 }
-                return result.url;
+                const name = typeof result.name === 'string' ? result.name : '';
+                return {
+                    url: result.url,
+                    name
+                };
             }
 
             async function handleDocumentUpload(file, meta) {
                 let fileUrl = '';
+                let fileName = '';
                 try {
-                    fileUrl = await uploadDocumentFile(file);
+                    const uploadResult = await uploadDocumentFile(file);
+                    fileUrl = uploadResult.url;
+                    fileName = uploadResult.name;
                 } catch (error) {
                     alert('文件上传失败，请稍后重试');
                     return;
@@ -677,6 +684,7 @@
                     category: meta.category,
                     description: meta.description,
                     fileUrl,
+                    fileName,
                     uploaderId: getCurrentUserId(),
                     uploaderName: getCurrentUsername(),
                     uploadDate: new Date().toISOString(),

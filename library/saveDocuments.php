@@ -48,6 +48,18 @@ try {
         if (!is_array($documents)) {
             $documents = $documents === null ? [] : [$documents];
         }
+        $normalizedDocuments = [];
+        foreach ($documents as $document) {
+            if (!is_array($document)) {
+                $normalizedDocuments[] = $document;
+                continue;
+            }
+            if (empty($document['fileUrl']) && !empty($document['fileName'])) {
+                $document['fileUrl'] = 'document-file.php?name=' . $document['fileName'];
+            }
+            $normalizedDocuments[] = $document;
+        }
+        $documents = $normalizedDocuments;
         
         $db->set("documents_{$session['userId']}", json_encode($documents));
         
