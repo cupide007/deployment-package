@@ -12,6 +12,16 @@ if (!in_array($extension, $allowed, true)) {
 }
 $filePath = 'uploads/documents/' . $name;
 if (!is_file($filePath) || !is_readable($filePath)) {
+    $rootDir = $_SERVER['DOCUMENT_ROOT'] ?? '';
+    $rootDir = is_string($rootDir) ? rtrim($rootDir, '/') : '';
+    if ($rootDir !== '') {
+        $fallbackPath = $rootDir . '/uploads/documents/' . $name;
+        if (is_file($fallbackPath) && is_readable($fallbackPath)) {
+            $filePath = $fallbackPath;
+        }
+    }
+}
+if (!is_file($filePath) || !is_readable($filePath)) {
     http_response_code(404);
     exit;
 }

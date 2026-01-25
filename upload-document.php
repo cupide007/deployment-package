@@ -19,8 +19,18 @@ if (!in_array($extension, $allowed, true)) {
     exit;
 }
 $uploadsDir = 'uploads/documents';
+$rootDir = $_SERVER['DOCUMENT_ROOT'] ?? '';
+$rootDir = is_string($rootDir) ? rtrim($rootDir, '/') : '';
+$fallbackDir = $rootDir !== '' ? $rootDir . '/uploads/documents' : '';
 if (!is_dir($uploadsDir)) {
-    mkdir($uploadsDir, 0755, true);
+    if ($fallbackDir !== '' && !is_dir($fallbackDir)) {
+        mkdir($fallbackDir, 0755, true);
+    }
+    if ($fallbackDir !== '' && is_dir($fallbackDir)) {
+        $uploadsDir = $fallbackDir;
+    } else {
+        mkdir($uploadsDir, 0755, true);
+    }
 }
 $fileName = uniqid('document_', true) . '.' . $extension;
 $targetPath = $uploadsDir . '/' . $fileName;
