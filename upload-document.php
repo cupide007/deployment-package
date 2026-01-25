@@ -18,19 +18,11 @@ if (!in_array($extension, $allowed, true)) {
     echo json_encode(['error' => 'invalid_type']);
     exit;
 }
-$uploadsDir = 'uploads/documents';
 $rootDir = $_SERVER['DOCUMENT_ROOT'] ?? '';
 $rootDir = is_string($rootDir) ? rtrim($rootDir, '/') : '';
-$fallbackDir = $rootDir !== '' ? $rootDir . '/uploads/documents' : '';
+$uploadsDir = $rootDir !== '' ? $rootDir . '/uploads/documents' : 'uploads/documents';
 if (!is_dir($uploadsDir)) {
-    if ($fallbackDir !== '' && !is_dir($fallbackDir)) {
-        mkdir($fallbackDir, 0755, true);
-    }
-    if ($fallbackDir !== '' && is_dir($fallbackDir)) {
-        $uploadsDir = $fallbackDir;
-    } else {
-        mkdir($uploadsDir, 0755, true);
-    }
+    mkdir($uploadsDir, 0755, true);
 }
 $fileName = uniqid('document_', true) . '.' . $extension;
 $targetPath = $uploadsDir . '/' . $fileName;

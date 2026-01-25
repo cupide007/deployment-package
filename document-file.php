@@ -10,15 +10,13 @@ if (!in_array($extension, $allowed, true)) {
     http_response_code(400);
     exit;
 }
-$filePath = 'uploads/documents/' . $name;
+$rootDir = $_SERVER['DOCUMENT_ROOT'] ?? '';
+$rootDir = is_string($rootDir) ? rtrim($rootDir, '/') : '';
+$filePath = $rootDir !== '' ? $rootDir . '/uploads/documents/' . $name : 'uploads/documents/' . $name;
 if (!is_file($filePath) || !is_readable($filePath)) {
-    $rootDir = $_SERVER['DOCUMENT_ROOT'] ?? '';
-    $rootDir = is_string($rootDir) ? rtrim($rootDir, '/') : '';
-    if ($rootDir !== '') {
-        $fallbackPath = $rootDir . '/uploads/documents/' . $name;
-        if (is_file($fallbackPath) && is_readable($fallbackPath)) {
-            $filePath = $fallbackPath;
-        }
+    $fallbackPath = 'uploads/documents/' . $name;
+    if (is_file($fallbackPath) && is_readable($fallbackPath)) {
+        $filePath = $fallbackPath;
     }
 }
 if (!is_file($filePath) || !is_readable($filePath)) {
