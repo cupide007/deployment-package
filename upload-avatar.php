@@ -29,5 +29,4 @@ if (!move_uploaded_file($_FILES['avatar']['tmp_name'], $targetPath)) {
     echo json_encode(['error' => 'upload_failed']);
     exit;
 }
-chmod($targetPath, 0644);
-echo json_encode(['url' => $targetPath], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+echo json_encode(['url' => 'avatar-file.php?name=' . urlencode($fileName)], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
