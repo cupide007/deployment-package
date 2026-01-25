@@ -523,7 +523,10 @@
             }
             if (documentsData.length === 0) {
                 const storedDocuments = localStorage.getItem('documents');
-                if (!storedDocuments || storedDocuments === '[]') {
+                const parsedStoredDocuments = storedDocuments ? JSON.parse(storedDocuments) : [];
+                if (Array.isArray(parsedStoredDocuments) && parsedStoredDocuments.length > 0) {
+                    documentsData = parsedStoredDocuments;
+                } else if (!storedDocuments || storedDocuments === '[]') {
                     documentsData = initialDocuments;
                 }
             }
@@ -634,7 +637,7 @@
                 
                 // 使用FileReader将文件转换为Base64编码
                 const reader = new FileReader();
-                reader.onload = function(e) {
+                reader.onload = async function(e) {
                     // 使用Base64编码存储文件数据
                     const fileUrl = e.target.result;
                     
@@ -653,9 +656,12 @@
                     };
                     
                     // 保存新文献
-                    const documents = JSON.parse(localStorage.getItem('documents'));
+                    const documents = JSON.parse(localStorage.getItem('documents')) || [];
                     documents.push(newDocument);
                     localStorage.setItem('documents', JSON.stringify(documents));
+                    if (window.safeSaveData) {
+                        await window.safeSaveData('documents', documents);
+                    }
                     
                     // 更新文献列表
                     updateDocumentsDisplay();
