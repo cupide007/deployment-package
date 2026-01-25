@@ -10,7 +10,7 @@ if (!in_array($extension, $allowed, true)) {
     http_response_code(400);
     exit;
 }
-$filePath = '/uploads/documents/' . $name;
+$filePath = __DIR__ . '/uploads/documents/' . $name;
 if (!is_file($filePath) || !is_readable($filePath)) {
     http_response_code(404);
     exit;
