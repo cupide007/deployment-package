@@ -1034,6 +1034,25 @@ function fetchRemoteStorageKey(key) {
         data = null;
     }
     if (data !== undefined && data !== null && !remoteStorageDirty.has(key)) {
+      const existing = originalLocalStorageGetItem(key);
+      let parsedExisting = null;
+      if (existing) {
+        try {
+          parsedExisting = JSON.parse(existing);
+        } catch (error) {
+          parsedExisting = null;
+        }
+      }
+      if (Array.isArray(parsedExisting) && parsedExisting.length > 0 && Array.isArray(data) && data.length === 0) {
+        data = parsedExisting;
+        remoteStorageCache.set(key, data);
+        originalLocalStorageSetItem(key, JSON.stringify(data ?? []));
+        const savePromise = saveRemoteStorageKey(key, data);
+        if (savePromise && typeof savePromise.then === 'function') {
+          savePromise.catch(() => {});
+        }
+        return;
+      }
       remoteStorageCache.set(key, data);
       originalLocalStorageSetItem(key, JSON.stringify(data ?? []));
     }
