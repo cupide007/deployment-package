@@ -1128,7 +1128,16 @@ localStorage.setItem = function(key, value) {
     remoteStorageDirty.add(key);
     remoteStorageCache.set(key, parsedValue);
     originalLocalStorageSetItem(key, JSON.stringify(parsedValue));
-    const savePromise = saveRemoteStorageKey(key, parsedValue);
+    let savePayload = parsedValue;
+    if (key === 'documents' && Array.isArray(parsedValue)) {
+      savePayload = parsedValue.map((doc) => {
+        if (doc && typeof doc === 'object' && doc.fileUrl && typeof doc.fileUrl === 'string' && doc.fileUrl.startsWith('data:')) {
+          return { ...doc, fileUrl: null };
+        }
+        return doc;
+      });
+    }
+    const savePromise = saveRemoteStorageKey(key, savePayload);
     if (savePromise && typeof savePromise.then === 'function') {
       savePromise.then(() => {
         remoteStorageDirty.delete(key);
