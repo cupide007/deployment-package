@@ -321,6 +321,8 @@ class UserDataManager {
     this.cloudFunctions = new RetinboxCloudFunctions();
     this.currentUser = null;
     this.authListeners = [];
+    this.lastLoginCheck = 0;
+    this.loginCheckPromise = null;
     
     // 初始化时检查登录状态
     this.checkLoginStatus();
@@ -350,6 +352,20 @@ class UserDataManager {
   
   // 检查登录状态
   async checkLoginStatus() {
+    const now = Date.now();
+    if (this.loginCheckPromise && now - this.lastLoginCheck < 5000) {
+      return this.loginCheckPromise;
+    }
+    this.lastLoginCheck = now;
+    this.loginCheckPromise = this._performLoginStatusCheck();
+    try {
+      return await this.loginCheckPromise;
+    } finally {
+      this.loginCheckPromise = null;
+    }
+  }
+
+  async _performLoginStatusCheck() {
     try {
       // 首先检查sessionStorage中的本地登录状态
       const localUser = sessionStorage.getItem('currentUser');
