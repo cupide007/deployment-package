@@ -839,6 +839,17 @@
             const avatarForm = document.getElementById('avatar-form');
             let previewObjectUrl = null;
 
+            function normalizeAvatarUrl(avatarUrl) {
+                if (!avatarUrl) {
+                    return null;
+                }
+                const match = avatarUrl.match(/uploads\/avatars\/([^/?#]+)/);
+                if (match && match[1]) {
+                    return `avatar-file.php?name=${encodeURIComponent(match[1])}`;
+                }
+                return avatarUrl;
+            }
+
             function updateAvatarViews(avatarURL) {
                 const userAvatarIcon = document.getElementById('user-avatar-icon');
                 const userAvatarImg = document.getElementById('user-avatar-img');
@@ -880,10 +891,10 @@
 
             function getCachedAvatar() {
                 if (cachedUserData && cachedUserData.avatar) {
-                    return cachedUserData.avatar;
+                    return normalizeAvatarUrl(cachedUserData.avatar);
                 }
                 const currentUser = JSON.parse(sessionStorage.getItem('currentUser'));
-                return currentUser ? currentUser.avatar : null;
+                return normalizeAvatarUrl(currentUser ? currentUser.avatar : null);
             }
             
             changeAvatarBtn.addEventListener('click', function() {
@@ -1283,7 +1294,16 @@
                         }
                         
                         if (userData.avatar) {
-                            updateAvatarViews(userData.avatar);
+                            const normalizedAvatar = normalizeAvatarUrl(userData.avatar);
+                            updateAvatarViews(normalizedAvatar);
+                            if (normalizedAvatar !== userData.avatar) {
+                                cachedUserData = { ...(cachedUserData || userData), avatar: normalizedAvatar };
+                                const currentUser = JSON.parse(sessionStorage.getItem('currentUser'));
+                                if (currentUser) {
+                                    currentUser.avatar = normalizedAvatar;
+                                    sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
+                                }
+                            }
                         }
                     }
                 } catch (error) {
