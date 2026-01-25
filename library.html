@@ -1070,14 +1070,24 @@
                             return payload;
                         }
                     }
+
+                    function addDownloadParam(fileUrl) {
+                        if (!fileUrl || fileUrl.startsWith('data:') || fileUrl.startsWith('blob:')) {
+                            return fileUrl;
+                        }
+                        const joiner = fileUrl.includes('?') ? '&' : '?';
+                        if (fileUrl.includes('download=')) {
+                            return fileUrl;
+                        }
+                        return `${fileUrl}${joiner}download=1`;
+                    }
                     
                     downloadBtn.onclick = function() {
                         if (doc.fileUrl && doc.fileUrl !== '#') {
-                            // 创建一个临时链接来下载文件
                             const link = document.createElement('a');
-                            link.href = doc.fileUrl;
+                            link.href = addDownloadParam(doc.fileUrl);
                             const extension = getFileExtension(doc.fileUrl);
-                            link.download = doc.title + extension; // 使用正确的文件扩展名
+                            link.download = doc.title + extension;
                             document.body.appendChild(link);
                             link.click();
                             document.body.removeChild(link);
@@ -1160,7 +1170,7 @@
                                                     <hr>
                                                     <h2>在线阅读</h2>
                                                     <pre>${textContent}</pre>
-                                                    <a href="${doc.fileUrl}" class="download-link" download="${doc.title}${extension}">
+                                                    <a href="${addDownloadParam(doc.fileUrl)}" class="download-link" download="${doc.title}${extension}">
                                                         <i class="fa fa-download"></i> 下载文献
                                                     </a>
                                                 </div>
@@ -1249,7 +1259,7 @@
                                                         title="${doc.title}" 
                                                         onload="document.querySelector('.message').style.display='none'"
                                                     ></iframe>
-                                                    <a href="${doc.fileUrl}" class="download-link" download="${doc.title}${extension}">
+                                                    <a href="${addDownloadParam(doc.fileUrl)}" class="download-link" download="${doc.title}${extension}">
                                                         <i class="fa fa-download"></i> 下载文献
                                                     </a>
                                                 </div>
@@ -1265,7 +1275,7 @@
                                 console.error('在线阅读失败:', error);
                                 alert('在线阅读失败，请尝试下载文献');
                                 const link = document.createElement('a');
-                                link.href = doc.fileUrl;
+                                link.href = addDownloadParam(doc.fileUrl);
                                 const extension = getFileExtension(doc.fileUrl);
                                 link.download = doc.title + extension;
                                 document.body.appendChild(link);

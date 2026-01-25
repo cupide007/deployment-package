@@ -28,6 +28,10 @@ $contentType = $mimeTypes[$extension] ?? 'application/octet-stream';
 header('Content-Type: ' . $contentType);
 header('X-Content-Type-Options: nosniff');
 header('Cache-Control: public, max-age=31536000');
+if (isset($_GET['download'])) {
+    $safeName = str_replace('"', '', $name);
+    header('Content-Disposition: attachment; filename="' . $safeName . '"');
+}
 clearstatcache(true, $filePath);
 $fileSize = filesize($filePath);
 if ($fileSize === false) {
