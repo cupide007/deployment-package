@@ -734,7 +734,7 @@
                 }
                 
                 // 获取所有文献
-                const documents = JSON.parse(localStorage.getItem('documents'));
+                const documents = getDocumentsFromStorage();
                 
                 // 收集所有可能的关键词
                 const keywords = new Set();
@@ -986,7 +986,7 @@
             
             // 显示文献详情
             function showDocumentDetails(docId) {
-                const documents = JSON.parse(localStorage.getItem('documents'));
+                const documents = getDocumentsFromStorage();
                 const doc = documents.find(d => d.id === docId);
                 
                 if (doc) {
@@ -1282,7 +1282,7 @@
                 const category = categoryFilter.value;
                 const sort = sortOption.value;
                 
-                let documents = JSON.parse(localStorage.getItem('documents'));
+                let documents = getDocumentsFromStorage();
                 
                 // 筛选已审核的文献，或者管理员可以看到所有文献
                 if (!isCurrentUserAdmin()) {
@@ -1337,6 +1337,25 @@
                 } else {
                     adminElements.forEach(el => el.classList.add('hidden'));
                 }
+            }
+
+            function getDocumentsFromStorage() {
+                const storedDocuments = localStorage.getItem('documents');
+                if (!storedDocuments) {
+                    return [];
+                }
+                try {
+                    const parsed = JSON.parse(storedDocuments);
+                    if (Array.isArray(parsed)) {
+                        return parsed;
+                    }
+                    if (parsed && Array.isArray(parsed.documents)) {
+                        return parsed.documents;
+                    }
+                } catch (error) {
+                    return [];
+                }
+                return [];
             }
             
             // 获取当前用户ID
