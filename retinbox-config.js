@@ -1121,7 +1121,30 @@ localStorage.getItem = function(key) {
       fetchRemoteStorageKey(key);
       return JSON.stringify([]);
     }
-    const value = remoteStorageCache.get(key);
+    let value = remoteStorageCache.get(key);
+    if (key === 'documents' && Array.isArray(value)) {
+      const existing = originalLocalStorageGetItem(key);
+      if (existing) {
+        try {
+          const parsedExisting = JSON.parse(existing);
+          if (Array.isArray(parsedExisting)) {
+            const existingById = new Map(parsedExisting.filter(Boolean).map((doc) => [doc.id, doc]));
+            const merged = value.map((doc) => {
+              const existingDoc = doc && doc.id ? existingById.get(doc.id) : null;
+              if (!existingDoc) return doc;
+              if (doc && typeof doc === 'object' && (!doc.fileUrl || doc.fileUrl === '#') && existingDoc.fileUrl && existingDoc.fileUrl !== '#') {
+                return { ...doc, fileUrl: existingDoc.fileUrl };
+              }
+              return doc;
+            });
+            const mergedIds = new Set(merged.filter(Boolean).map((doc) => doc.id));
+            const additional = parsedExisting.filter((doc) => doc && !mergedIds.has(doc.id));
+            value = merged.concat(additional);
+          }
+        } catch (error) {
+        }
+      }
+    }
     if (value === undefined || value === null) return null;
     return JSON.stringify(value);
   }
