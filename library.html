@@ -521,16 +521,16 @@
             if (!Array.isArray(documentsData)) {
                 documentsData = [];
             }
-            if (documentsData.length === 0) {
-                const storedDocuments = localStorage.getItem('documents');
-                const parsedStoredDocuments = storedDocuments ? JSON.parse(storedDocuments) : [];
-                if (Array.isArray(parsedStoredDocuments) && parsedStoredDocuments.length > 0) {
-                    documentsData = parsedStoredDocuments;
-                } else if (!storedDocuments || storedDocuments === '[]') {
-                    documentsData = initialDocuments;
-                }
+            const storedDocuments = localStorage.getItem('documents');
+            const parsedStoredDocuments = storedDocuments ? JSON.parse(storedDocuments) : [];
+            if (Array.isArray(parsedStoredDocuments) && parsedStoredDocuments.length > 0) {
+                documentsData = parsedStoredDocuments;
+            } else if (documentsData.length === 0) {
+                documentsData = initialDocuments;
             }
-            localStorage.setItem('documents', JSON.stringify(documentsData));
+            if (!storedDocuments || documentsData.length > 0) {
+                localStorage.setItem('documents', JSON.stringify(documentsData));
+            }
             
             // 移动端菜单切换
             const mobileMenuBtn = document.getElementById('mobile-menu-btn');
