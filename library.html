@@ -1055,6 +1055,20 @@
                         return match ? '.' + match[1] : '.pdf';
                     }
 
+                    function normalizeFileUrl(fileUrl) {
+                        if (!fileUrl || fileUrl === '#') {
+                            return '';
+                        }
+                        if (fileUrl.startsWith('data:') || fileUrl.startsWith('blob:')) {
+                            return fileUrl;
+                        }
+                        if (/^https?:\/\//i.test(fileUrl)) {
+                            return fileUrl;
+                        }
+                        const trimmed = fileUrl.replace(/^\/+/, '');
+                        return `${window.location.origin}/${trimmed}`;
+                    }
+
                     function getDataUrlTextContent(fileUrl) {
                         if (!fileUrl || !fileUrl.startsWith('data:')) {
                             return fileUrl || '';
@@ -1091,10 +1105,11 @@
                     }
                     
                     downloadBtn.onclick = function() {
-                        if (doc.fileUrl && doc.fileUrl !== '#') {
+                        const resolvedUrl = normalizeFileUrl(doc.fileUrl || (doc.fileName ? `document-file.php?name=${doc.fileName}` : ''));
+                        if (resolvedUrl) {
                             const link = document.createElement('a');
-                            link.href = addDownloadParam(doc.fileUrl);
-                            const extension = getFileExtension(doc.fileUrl);
+                            link.href = addDownloadParam(resolvedUrl);
+                            const extension = getFileExtension(resolvedUrl);
                             link.download = doc.title + extension;
                             document.body.appendChild(link);
                             link.click();
@@ -1105,15 +1120,16 @@
                     };
                     
                     viewBtn.onclick = async function() {
-                        if (doc.fileUrl && doc.fileUrl !== '#') {
+                        const resolvedUrl = normalizeFileUrl(doc.fileUrl || (doc.fileName ? `document-file.php?name=${doc.fileName}` : ''));
+                        if (resolvedUrl) {
                             try {
-                                const extension = getFileExtension(doc.fileUrl).toLowerCase();
+                                const extension = getFileExtension(resolvedUrl).toLowerCase();
                                 if (extension === '.txt' || extension === '.md') {
                                     let textContent = '';
-                                    if (doc.fileUrl.startsWith('data:')) {
-                                        textContent = getDataUrlTextContent(doc.fileUrl);
+                                    if (resolvedUrl.startsWith('data:')) {
+                                        textContent = getDataUrlTextContent(resolvedUrl);
                                     } else {
-                                        const textResponse = await fetch(doc.fileUrl);
+                                        const textResponse = await fetch(resolvedUrl);
                                         if (!textResponse.ok) {
                                             throw new Error('fetch_failed');
                                         }
@@ -1178,7 +1194,7 @@
                                                     <hr>
                                                     <h2>在线阅读</h2>
                                                     <pre>${textContent}</pre>
-                                                    <a href="${addDownloadParam(doc.fileUrl)}" class="download-link" download="${doc.title}${extension}">
+                                                    <a href="${addDownloadParam(resolvedUrl)}" class="download-link" download="${doc.title}${extension}">
                                                         <i class="fa fa-download"></i> 下载文献
                                                     </a>
                                                 </div>
@@ -1194,10 +1210,10 @@
                                     
                                     if (newWindow) {
                                         const isOffice = ['.doc', '.docx', '.xls', '.xlsx'].includes(extension);
-                                        const isHttp = /^https?:\/\//i.test(doc.fileUrl);
+                                        const isHttp = /^https?:\/\//i.test(resolvedUrl);
                                         const viewerUrl = isOffice && isHttp
-                                            ? `https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(doc.fileUrl)}`
-                                            : doc.fileUrl;
+                                            ? `https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(resolvedUrl)}`
+                                            : resolvedUrl;
                                         newWindow.document.write(`
                                             <html>
                                             <head>
@@ -1267,7 +1283,7 @@
                                                         title="${doc.title}" 
                                                         onload="document.querySelector('.message').style.display='none'"
                                                     ></iframe>
-                                                    <a href="${addDownloadParam(doc.fileUrl)}" class="download-link" download="${doc.title}${extension}">
+                                                    <a href="${addDownloadParam(resolvedUrl)}" class="download-link" download="${doc.title}${extension}">
                                                         <i class="fa fa-download"></i> 下载文献
                                                     </a>
                                                 </div>
@@ -1283,8 +1299,8 @@
                                 console.error('在线阅读失败:', error);
                                 alert('在线阅读失败，请尝试下载文献');
                                 const link = document.createElement('a');
-                                link.href = addDownloadParam(doc.fileUrl);
-                                const extension = getFileExtension(doc.fileUrl);
+                                link.href = addDownloadParam(resolvedUrl);
+                                const extension = getFileExtension(resolvedUrl);
                                 link.download = doc.title + extension;
                                 document.body.appendChild(link);
                                 link.click();
