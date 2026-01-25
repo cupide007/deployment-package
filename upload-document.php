@@ -18,9 +18,7 @@ if (!in_array($extension, $allowed, true)) {
     echo json_encode(['error' => 'invalid_type']);
     exit;
 }
-$rootDir = $_SERVER['DOCUMENT_ROOT'] ?? '';
-$rootDir = is_string($rootDir) ? rtrim($rootDir, '/') : '';
-$uploadsDir = $rootDir !== '' ? $rootDir . '/uploads/documents' : 'uploads/documents';
+$uploadsDir = '/uploads/documents';
 if (!is_dir($uploadsDir)) {
     mkdir($uploadsDir, 0755, true);
 }
