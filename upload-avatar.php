@@ -18,7 +18,8 @@ if (!in_array($extension, $allowed, true)) {
     echo json_encode(['error' => 'invalid_type']);
     exit;
 }
-$uploadsDir = 'uploads/avatars';
+$documentRoot = rtrim($_SERVER['DOCUMENT_ROOT'] ?? '', '/');
+$uploadsDir = $documentRoot . '/uploads/avatars';
 if (!is_dir($uploadsDir)) {
     mkdir($uploadsDir, 0755, true);
 }

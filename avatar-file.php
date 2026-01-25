@@ -10,7 +10,8 @@ if (!in_array($extension, $allowed, true)) {
     http_response_code(400);
     exit;
 }
-$filePath = 'uploads/avatars/' . $name;
+$documentRoot = rtrim($_SERVER['DOCUMENT_ROOT'] ?? '', '/');
+$filePath = $documentRoot . '/uploads/avatars/' . $name;
 if (!is_file($filePath) || !is_readable($filePath)) {
     http_response_code(404);
     exit;
