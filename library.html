@@ -365,13 +365,13 @@
                     <div>
                         <label for="document-file" class="block text-gray-700 mb-2">上传文件 <span class="text-red-500">*</span></label>
                         <div class="border-2 border-dashed border-gray-300 rounded-md p-6 text-center hover:border-primary transition-colors duration-200">
-                            <input type="file" id="document-file" class="hidden" accept=".pdf,.doc,.docx,.txt,.md">
+                            <input type="file" id="document-file" class="hidden" accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.md">
                             <label for="document-file" class="cursor-pointer">
                                 <div class="text-4xl text-gray-400 mb-2">
                                     <i class="fa fa-cloud-upload"></i>
                                 </div>
                                 <p class="text-gray-600 mb-1">点击或拖拽文件到此处上传</p>
-                                <p class="text-gray-500 text-sm">支持 PDF, DOC, DOCX, TXT, MD 格式</p>
+                                <p class="text-gray-500 text-sm">支持 PDF, DOC, DOCX, XLS, XLSX, TXT, MD 格式</p>
                             </label>
                         </div>
                     </div>
@@ -1058,192 +1058,186 @@
                     };
                     
                     viewBtn.onclick = function() {
-                if (doc.fileUrl && doc.fileUrl !== '#') {
-
-
-
-                    
-                    // 在线阅读功能 - 改进版本
-                    try {
-                        // 对于不同的文件类型，使用不同的处理方式
-                        const extension = getFileExtension(doc.fileUrl).toLowerCase();
-                        
-                        // 如果是文本文件，直接显示内容
-                        if (extension === '.txt' || extension === '.md') {
-                            const textContent = getDataUrlTextContent(doc.fileUrl);
-                            
-                            const newWindow = window.open('', '_blank');
-                            if (newWindow) {
-                                newWindow.document.write(`
-                                    <html>
-                                    <head>
-                                        <title>${doc.title}</title>
-                                        <style>
-                                            body {
-                                                font-family: Arial, sans-serif;
-                                                padding: 20px;
-                                                max-width: 100%;
-                                                margin: 0;
-                                                background-color: #f5f5f5;
-                                            }
-                                            .container {
-                                                max-width: 800px;
-                                                margin: 0 auto;
-                                                background-color: white;
-                                                padding: 20px;
-                                                border-radius: 8px;
-                                                box-shadow: 0 0 10px rgba(0,0,0,0.1);
-                                            }
-                                            h1 {
-                                                color: #0A2463;
-                                                margin-bottom: 20px;
-                                            }
-                                            pre {
-                                                background-color: #f0f0f0;
-                                                padding: 15px;
-                                                border-radius: 4px;
-                                                overflow-x: auto;
-                                                white-space: pre-wrap;
-                                                word-wrap: break-word;
-                                            }
-                                            .download-link {
-                                                display: block;
-                                                margin-top: 20px;
-                                                text-align: center;
-                                                padding: 10px;
-                                                background-color: #0A2463;
-                                                color: white;
-                                                text-decoration: none;
-                                                border-radius: 4px;
-                                            }
-                                            .download-link:hover {
-                                                background-color: #081c4a;
-                                            }
-                                        </style>
-                                    </head>
-                                    <body>
-                                        <div class="container">
-                                            <h1>${doc.title}</h1>
-                                            <p><strong>作者:</strong> ${doc.author}</p>
-                                            <p><strong>分类:</strong> ${doc.category}</p>
-                                            <p><strong>上传日期:</strong> ${formattedDate}</p>
-                                            <hr>
-                                            <h2>在线阅读</h2>
-                                            <pre>${textContent}</pre>
-                                            <a href="${doc.fileUrl}" class="download-link" download="${doc.title}${extension}">
-                                                <i class="fa fa-download"></i> 下载文献
-                                            </a>
-                                        </div>
-                                    </body>
-                                    </html>
-                                `);
-                                newWindow.document.close();
-                            } else {
-                                alert('无法打开新窗口，请检查浏览器设置');
+                        if (doc.fileUrl && doc.fileUrl !== '#') {
+                            try {
+                                const extension = getFileExtension(doc.fileUrl).toLowerCase();
+                                if (extension === '.txt' || extension === '.md') {
+                                    const textContent = getDataUrlTextContent(doc.fileUrl);
+                                    
+                                    const newWindow = window.open('', '_blank');
+                                    if (newWindow) {
+                                        newWindow.document.write(`
+                                            <html>
+                                            <head>
+                                                <title>${doc.title}</title>
+                                                <style>
+                                                    body {
+                                                        font-family: Arial, sans-serif;
+                                                        padding: 20px;
+                                                        max-width: 100%;
+                                                        margin: 0;
+                                                        background-color: #f5f5f5;
+                                                    }
+                                                    .container {
+                                                        max-width: 800px;
+                                                        margin: 0 auto;
+                                                        background-color: white;
+                                                        padding: 20px;
+                                                        border-radius: 8px;
+                                                        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+                                                    }
+                                                    h1 {
+                                                        color: #0A2463;
+                                                        margin-bottom: 20px;
+                                                    }
+                                                    pre {
+                                                        background-color: #f0f0f0;
+                                                        padding: 15px;
+                                                        border-radius: 4px;
+                                                        overflow-x: auto;
+                                                        white-space: pre-wrap;
+                                                        word-wrap: break-word;
+                                                    }
+                                                    .download-link {
+                                                        display: block;
+                                                        margin-top: 20px;
+                                                        text-align: center;
+                                                        padding: 10px;
+                                                        background-color: #0A2463;
+                                                        color: white;
+                                                        text-decoration: none;
+                                                        border-radius: 4px;
+                                                    }
+                                                    .download-link:hover {
+                                                        background-color: #081c4a;
+                                                    }
+                                                </style>
+                                            </head>
+                                            <body>
+                                                <div class="container">
+                                                    <h1>${doc.title}</h1>
+                                                    <p><strong>作者:</strong> ${doc.author}</p>
+                                                    <p><strong>分类:</strong> ${doc.category}</p>
+                                                    <p><strong>上传日期:</strong> ${formattedDate}</p>
+                                                    <hr>
+                                                    <h2>在线阅读</h2>
+                                                    <pre>${textContent}</pre>
+                                                    <a href="${doc.fileUrl}" class="download-link" download="${doc.title}${extension}">
+                                                        <i class="fa fa-download"></i> 下载文献
+                                                    </a>
+                                                </div>
+                                            </body>
+                                            </html>
+                                        `);
+                                        newWindow.document.close();
+                                    } else {
+                                        alert('无法打开新窗口，请检查浏览器设置');
+                                    }
+                                } else {
+                                    const newWindow = window.open('', '_blank');
+                                    
+                                    if (newWindow) {
+                                        const isOffice = ['.doc', '.docx', '.xls', '.xlsx'].includes(extension);
+                                        const isHttp = /^https?:\/\//i.test(doc.fileUrl);
+                                        const viewerUrl = isOffice && isHttp
+                                            ? `https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(doc.fileUrl)}`
+                                            : doc.fileUrl;
+                                        newWindow.document.write(`
+                                            <html>
+                                            <head>
+                                                <title>${doc.title}</title>
+                                                <style>
+                                                    body {
+                                                        font-family: Arial, sans-serif;
+                                                        padding: 20px;
+                                                        max-width: 100%;
+                                                        margin: 0;
+                                                        background-color: #f5f5f5;
+                                                    }
+                                                    .container {
+                                                        max-width: 1000px;
+                                                        margin: 0 auto;
+                                                        background-color: white;
+                                                        padding: 20px;
+                                                        border-radius: 8px;
+                                                        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+                                                    }
+                                                    h1 {
+                                                        color: #0A2463;
+                                                        margin-bottom: 20px;
+                                                    }
+                                                    iframe {
+                                                        width: 100%;
+                                                        height: 700px;
+                                                        border: 1px solid #ddd;
+                                                        border-radius: 4px;
+                                                    }
+                                                    .download-link {
+                                                        display: block;
+                                                        margin-top: 20px;
+                                                        text-align: center;
+                                                        padding: 10px;
+                                                        background-color: #0A2463;
+                                                        color: white;
+                                                        text-decoration: none;
+                                                        border-radius: 4px;
+                                                    }
+                                                    .download-link:hover {
+                                                        background-color: #081c4a;
+                                                    }
+                                                    .message {
+                                                        text-align: center;
+                                                        padding: 20px;
+                                                        background-color: #e3f2fd;
+                                                        color: #1976d2;
+                                                        border-radius: 4px;
+                                                        margin: 20px 0;
+                                                    }
+                                                </style>
+                                            </head>
+                                            <body>
+                                                <div class="container">
+                                                    <h1>${doc.title}</h1>
+                                                    <p><strong>作者:</strong> ${doc.author}</p>
+                                                    <p><strong>分类:</strong> ${doc.category}</p>
+                                                    <p><strong>上传日期:</strong> ${formattedDate}</p>
+                                                    <hr>
+                                                    <h2>在线阅读</h2>
+                                                    <div class="message">
+                                                        <i class="fa fa-info-circle"></i> 正在加载文献，请稍候...
+                                                    </div>
+                                                    <iframe 
+                                                        src="${viewerUrl}" 
+                                                        title="${doc.title}" 
+                                                        onload="document.querySelector('.message').style.display='none'"
+                                                    ></iframe>
+                                                    <a href="${doc.fileUrl}" class="download-link" download="${doc.title}${extension}">
+                                                        <i class="fa fa-download"></i> 下载文献
+                                                    </a>
+                                                </div>
+                                            </body>
+                                            </html>
+                                        `);
+                                        newWindow.document.close();
+                                    } else {
+                                        alert('无法打开新窗口，请检查浏览器设置');
+                                    }
+                                }
+                            } catch (error) {
+                                console.error('在线阅读失败:', error);
+                                alert('在线阅读失败，请尝试下载文献');
+                                const link = document.createElement('a');
+                                link.href = doc.fileUrl;
+                                const extension = getFileExtension(doc.fileUrl);
+                                link.download = doc.title + extension;
+                                document.body.appendChild(link);
+                                link.click();
+                                document.body.removeChild(link);
                             }
                         } else {
-                            // 对于PDF等其他文件类型，尝试在iframe中打开
-                            const newWindow = window.open('', '_blank');
-                            
-                            if (newWindow) {
-                                // 创建一个包含文件的HTML页面
-                                newWindow.document.write(`
-                                    <html>
-                                    <head>
-                                        <title>${doc.title}</title>
-                                        <style>
-                                            body {
-                                                font-family: Arial, sans-serif;
-                                                padding: 20px;
-                                                max-width: 100%;
-                                                margin: 0;
-                                                background-color: #f5f5f5;
-                                            }
-                                            .container {
-                                                max-width: 1000px;
-                                                margin: 0 auto;
-                                                background-color: white;
-                                                padding: 20px;
-                                                border-radius: 8px;
-                                                box-shadow: 0 0 10px rgba(0,0,0,0.1);
-                                            }
-                                            h1 {
-                                                color: #0A2463;
-                                                margin-bottom: 20px;
-                                            }
-                                            iframe {
-                                                width: 100%;
-                                                height: 700px;
-                                                border: 1px solid #ddd;
-                                                border-radius: 4px;
-                                            }
-                                            .download-link {
-                                                display: block;
-                                                margin-top: 20px;
-                                                text-align: center;
-                                                padding: 10px;
-                                                background-color: #0A2463;
-                                                color: white;
-                                                text-decoration: none;
-                                                border-radius: 4px;
-                                            }
-                                            .download-link:hover {
-                                                background-color: #081c4a;
-                                            }
-                                            .message {
-                                                text-align: center;
-                                                padding: 20px;
-                                                background-color: #e3f2fd;
-                                                color: #1976d2;
-                                                border-radius: 4px;
-                                                margin: 20px 0;
-                                            }
-                                        </style>
-                                    </head>
-                                    <body>
-                                        <div class="container">
-                                            <h1>${doc.title}</h1>
-                                            <p><strong>作者:</strong> ${doc.author}</p>
-                                            <p><strong>分类:</strong> ${doc.category}</p>
-                                            <p><strong>上传日期:</strong> ${formattedDate}</p>
-                                            <hr>
-                                            <h2>在线阅读</h2>
-                                            <div class="message">
-                                                <i class="fa fa-info-circle"></i> 正在加载文献，请稍候...
-                                            </div>
-                                            <iframe 
-                                                src="${doc.fileUrl}" 
-                                                title="${doc.title}" 
-                                                onload="document.querySelector('.message').style.display='none'"
-                                            ></iframe>
-                                            <a href="${doc.fileUrl}" class="download-link" download="${doc.title}${extension}">
-                                                <i class="fa fa-download"></i> 下载文献
-                                            </a>
-                                        </div>
-                                    </body>
-                                    </html>
-                                `);
-                                newWindow.document.close();
-                            } else {
-                                alert('无法打开新窗口，请检查浏览器设置');
-                            }
+                            alert('该文献暂不提供在线阅读');
                         }
-                    } catch (error) {
-                        console.error('在线阅读失败:', error);
-                        alert('在线阅读失败，请尝试下载文献');
-                        // 失败时回退到下载
-                        const link = document.createElement('a');
-                        link.href = doc.fileUrl;
-                        const extension = getFileExtension(doc.fileUrl);
-                        link.download = doc.title + extension;
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-                    }
-                } else {
-                    alert('该文献暂不提供在线阅读');
-                }
-            };
+                    };
                     document.getElementById('document-detail-date').textContent = formattedDate;
                     
                     document.getElementById('document-detail-uploader').textContent = doc.uploaderName;
