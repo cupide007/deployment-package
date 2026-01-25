@@ -890,8 +890,13 @@
                             passportAvatarImg.src = avatarURL;
                             passportAvatarImg.classList.remove('hidden');
                             
-                            await callCloudFunction('updateUser', { avatar: avatarURL });
-                            cachedUserData = { ...(cachedUserData || {}), avatar: avatarURL };
+                            await callCloudFunction('updateUser', { id: user.id, avatar: avatarURL });
+                            cachedUserData = { ...(cachedUserData || {}), id: user.id, avatar: avatarURL };
+                            const currentUser = JSON.parse(sessionStorage.getItem('currentUser'));
+                            if (currentUser) {
+                                currentUser.avatar = avatarURL;
+                                sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
+                            }
                             
                             changeAvatarModal.classList.add('hidden');
                             showSuccessModal('头像更新成功', '您的头像已成功更新。');
