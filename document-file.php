@@ -11,7 +11,6 @@ if (!preg_match('/^[a-f0-9]+$/', $docId)) {
 
 try {
     if (!class_exists('Database')) {
-        // 平台环境通常会自动加载，但如果未加载也不会导致 500，因为我们使用了 try-catch
     }
 
     $db = new Database('antister_virtual_country');
@@ -61,7 +60,8 @@ try {
         'jpg' => 'image/jpeg',
         'jpeg' => 'image/jpeg',
         'png' => 'image/png',
-        'gif' => 'image/gif'
+        'gif' => 'image/gif',
+        'webp' => 'image/webp'
     ];
 
     if (isset($mimeTypes[$ext])) {
