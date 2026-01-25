@@ -1053,6 +1053,20 @@ function fetchRemoteStorageKey(key) {
         }
         return;
       }
+      if (key === 'documents' && Array.isArray(data) && Array.isArray(parsedExisting)) {
+        const existingById = new Map(parsedExisting.filter(Boolean).map((doc) => [doc.id, doc]));
+        const merged = data.map((doc) => {
+          const existingDoc = doc && doc.id ? existingById.get(doc.id) : null;
+          if (!existingDoc) return doc;
+          if (doc && typeof doc === 'object' && (!doc.fileUrl || doc.fileUrl === '#') && existingDoc.fileUrl && existingDoc.fileUrl !== '#') {
+            return { ...doc, fileUrl: existingDoc.fileUrl };
+          }
+          return doc;
+        });
+        const mergedIds = new Set(merged.filter(Boolean).map((doc) => doc.id));
+        const additional = parsedExisting.filter((doc) => doc && !mergedIds.has(doc.id));
+        data = merged.concat(additional);
+      }
       remoteStorageCache.set(key, data);
       originalLocalStorageSetItem(key, JSON.stringify(data ?? []));
     }
