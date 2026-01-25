@@ -1,18 +1,18 @@
-.bg-primary{background-color:#0A2463;}
-.text-primary{color:#0A2463;}
-.border-primary{border-color:#0A2463;}
-.bg-secondary{background-color:#E6AF2E;}
-.text-secondary{color:#E6AF2E;}
-.border-secondary{border-color:#E6AF2E;}
-.bg-accent{background-color:#3E92CC;}
-.text-accent{color:#3E92CC;}
-.border-accent{border-color:#3E92CC;}
-.bg-light{background-color:#FFFAFF;}
-.text-light{color:#FFFAFF;}
-.border-light{border-color:#FFFAFF;}
-.bg-dark{background-color:#1E1B18;}
-.text-dark{color:#1E1B18;}
-.border-dark{border-color:#1E1B18;}
+.bg-primary{--tw-bg-opacity:1;background-color:rgb(10 36 99 / var(--tw-bg-opacity));}
+.text-primary{--tw-text-opacity:1;color:rgb(10 36 99 / var(--tw-text-opacity));}
+.border-primary{--tw-border-opacity:1;border-color:rgb(10 36 99 / var(--tw-border-opacity));}
+.bg-secondary{--tw-bg-opacity:1;background-color:rgb(230 175 46 / var(--tw-bg-opacity));}
+.text-secondary{--tw-text-opacity:1;color:rgb(230 175 46 / var(--tw-text-opacity));}
+.border-secondary{--tw-border-opacity:1;border-color:rgb(230 175 46 / var(--tw-border-opacity));}
+.bg-accent{--tw-bg-opacity:1;background-color:rgb(62 146 204 / var(--tw-bg-opacity));}
+.text-accent{--tw-text-opacity:1;color:rgb(62 146 204 / var(--tw-text-opacity));}
+.border-accent{--tw-border-opacity:1;border-color:rgb(62 146 204 / var(--tw-border-opacity));}
+.bg-light{--tw-bg-opacity:1;background-color:rgb(255 250 255 / var(--tw-bg-opacity));}
+.text-light{--tw-text-opacity:1;color:rgb(255 250 255 / var(--tw-text-opacity));}
+.border-light{--tw-border-opacity:1;border-color:rgb(255 250 255 / var(--tw-border-opacity));}
+.bg-dark{--tw-bg-opacity:1;background-color:rgb(30 27 24 / var(--tw-bg-opacity));}
+.text-dark{--tw-text-opacity:1;color:rgb(30 27 24 / var(--tw-text-opacity));}
+.border-dark{--tw-border-opacity:1;border-color:rgb(30 27 24 / var(--tw-border-opacity));}
 .text-shadow{text-shadow:2px 2px 4px rgba(0,0,0,0.5);}
 .text-shadow-sm{text-shadow:1px 1px 2px rgba(0,0,0,0.3);}
 .bg-gradient-primary{background:linear-gradient(135deg,#0A2463,#3E92CC);}
