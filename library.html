@@ -660,7 +660,13 @@
                     documents.push(newDocument);
                     localStorage.setItem('documents', JSON.stringify(documents));
                     if (window.safeSaveData) {
-                        await window.safeSaveData('documents', documents);
+                        const remoteDocuments = documents.map((doc) => {
+                            if (doc.fileUrl && doc.fileUrl.startsWith('data:')) {
+                                return { ...doc, fileUrl: null };
+                            }
+                            return doc;
+                        });
+                        await window.safeSaveData('documents', remoteDocuments);
                     }
                     
                     // 更新文献列表
