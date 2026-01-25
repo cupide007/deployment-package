@@ -617,7 +617,6 @@
                 }
             });
             
-            // 提交上传表单
             uploadForm.addEventListener('submit', function(e) {
                 e.preventDefault();
                 
@@ -632,62 +631,71 @@
                     return;
                 }
                 
-                // 处理文件上传
                 const file = fileInput.files[0];
-                
-                // 使用FileReader将文件转换为Base64编码
-                const reader = new FileReader();
-                reader.onload = async function(e) {
-                    // 使用Base64编码存储文件数据
-                    const fileUrl = e.target.result;
-                    
-                    // 创建新文献
-                    const newDocument = {
-                        id: Date.now().toString(),
-                        title,
-                        author,
-                        category,
-                        description,
-                        fileUrl,
-                        uploaderId: getCurrentUserId(),
-                        uploaderName: getCurrentUsername(),
-                        uploadDate: new Date().toISOString(),
-                        approved: isCurrentUserAdmin() // 管理员上传的文献自动通过审核
-                    };
-                    
-                    // 保存新文献
-                    const documents = JSON.parse(localStorage.getItem('documents')) || [];
-                    documents.push(newDocument);
-                    localStorage.setItem('documents', JSON.stringify(documents));
-                    if (window.safeSaveData) {
-                        const remoteDocuments = documents.map((doc) => {
-                            if (doc.fileUrl && doc.fileUrl.startsWith('data:')) {
-                                return { ...doc, fileUrl: null };
-                            }
-                            return doc;
-                        });
-                        await window.safeSaveData('documents', remoteDocuments);
-                    }
-                    
-                    // 更新文献列表
-                    updateDocumentsDisplay();
-                    
-                    // 显示成功模态框
-                    document.getElementById('success-title').textContent = title;
-                    document.getElementById('success-author').textContent = author;
-                    document.getElementById('success-category').textContent = category;
-                    uploadSuccessModal.classList.remove('hidden');
-                    
-                    // 关闭上传模态框
-                    uploadModal.classList.add('hidden');
-                    
-                    // 重置表单
-                    uploadForm.reset();
-                };
-                
-                // 读取文件为Base64编码
-                reader.readAsDataURL(file);
+                handleDocumentUpload(file, {
+                    title,
+                    author,
+                    category,
+                    description
+                });
             });
+
+            async function uploadDocumentFile(file) {
+                const formData = new FormData();
+                formData.append('document', file);
+                const response = await fetch('upload-document.php', {
+                    method: 'POST',
+                    body: formData
+                });
+                if (!response.ok) {
+                    throw new Error('upload_failed');
+                }
+                const result = await response.json();
+                if (!result || !result.url) {
+                    throw new Error('invalid_response');
+                }
+                return result.url;
+            }
+
+            async function handleDocumentUpload(file, meta) {
+                let fileUrl = '';
+                try {
+                    fileUrl = await uploadDocumentFile(file);
+                } catch (error) {
+                    alert('文件上传失败，请稍后重试');
+                    return;
+                }
+
+                const newDocument = {
+                    id: Date.now().toString(),
+                    title: meta.title,
+                    author: meta.author,
+                    category: meta.category,
+                    description: meta.description,
+                    fileUrl,
+                    uploaderId: getCurrentUserId(),
+                    uploaderName: getCurrentUsername(),
+                    uploadDate: new Date().toISOString(),
+                    approved: isCurrentUserAdmin()
+                };
+
+                const documents = JSON.parse(localStorage.getItem('documents')) || [];
+                documents.push(newDocument);
+                localStorage.setItem('documents', JSON.stringify(documents));
+                if (window.safeSaveData) {
+                    await window.safeSaveData('documents', documents);
+                }
+
+                updateDocumentsDisplay();
+
+                document.getElementById('success-title').textContent = meta.title;
+                document.getElementById('success-author').textContent = meta.author;
+                document.getElementById('success-category').textContent = meta.category;
+                uploadSuccessModal.classList.remove('hidden');
+
+                uploadModal.classList.add('hidden');
+                uploadForm.reset();
+            }
             
             // 搜索功能
             const searchInput = document.getElementById('search-input');
@@ -1069,12 +1077,21 @@
                         }
                     };
                     
-                    viewBtn.onclick = function() {
+                    viewBtn.onclick = async function() {
                         if (doc.fileUrl && doc.fileUrl !== '#') {
                             try {
                                 const extension = getFileExtension(doc.fileUrl).toLowerCase();
                                 if (extension === '.txt' || extension === '.md') {
-                                    const textContent = getDataUrlTextContent(doc.fileUrl);
+                                    let textContent = '';
+                                    if (doc.fileUrl.startsWith('data:')) {
+                                        textContent = getDataUrlTextContent(doc.fileUrl);
+                                    } else {
+                                        const textResponse = await fetch(doc.fileUrl);
+                                        if (!textResponse.ok) {
+                                            throw new Error('fetch_failed');
+                                        }
+                                        textContent = await textResponse.text();
+                                    }
                                     
                                     const newWindow = window.open('', '_blank');
                                     if (newWindow) {
