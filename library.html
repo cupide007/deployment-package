@@ -509,6 +509,7 @@
                 }
             ];
             let documentsData = null;
+            let documentsCache = [];
             if (window.safeGetData) {
                 documentsData = await window.safeGetData('documents', []);
             } else {
@@ -530,6 +531,9 @@
             }
             if (!storedDocuments || documentsData.length > 0) {
                 localStorage.setItem('documents', JSON.stringify(documentsData));
+            }
+            if (Array.isArray(documentsData)) {
+                documentsCache = documentsData.slice();
             }
             
             // 移动端菜单切换
@@ -679,9 +683,10 @@
                     approved: isCurrentUserAdmin()
                 };
 
-                const documents = JSON.parse(localStorage.getItem('documents')) || [];
+                const documents = getDocumentsFromStorage();
                 documents.push(newDocument);
                 localStorage.setItem('documents', JSON.stringify(documents));
+                documentsCache = documents.slice();
                 if (window.safeSaveData) {
                     await window.safeSaveData('documents', documents);
                 }
@@ -985,9 +990,13 @@
             }
             
             // 显示文献详情
-            function showDocumentDetails(docId) {
-                const documents = getDocumentsFromStorage();
-                const doc = documents.find(d => d.id === docId);
+            async function showDocumentDetails(docId) {
+                let documents = getDocumentsFromStorage();
+                let doc = documents.find(d => d.id === docId);
+                if (!doc || !doc.fileUrl) {
+                    documents = await refreshDocumentsCache();
+                    doc = documents.find(d => d.id === docId);
+                }
                 
                 if (doc) {
                     document.getElementById('document-modal-title').textContent = doc.title;
@@ -1340,6 +1349,9 @@
             }
 
             function getDocumentsFromStorage() {
+                if (Array.isArray(documentsCache) && documentsCache.length > 0) {
+                    return documentsCache.slice();
+                }
                 const storedDocuments = localStorage.getItem('documents');
                 if (!storedDocuments) {
                     return [];
@@ -1356,6 +1368,22 @@
                     return [];
                 }
                 return [];
+            }
+
+            async function refreshDocumentsCache() {
+                if (window.safeGetData) {
+                    const fresh = await window.safeGetData('documents', []);
+                    let normalized = fresh;
+                    if (!Array.isArray(normalized)) {
+                        normalized = normalized && Array.isArray(normalized.documents) ? normalized.documents : [];
+                    }
+                    if (Array.isArray(normalized)) {
+                        documentsCache = normalized.slice();
+                        localStorage.setItem('documents', JSON.stringify(documentsCache));
+                        return documentsCache.slice();
+                    }
+                }
+                return getDocumentsFromStorage();
             }
             
             // 获取当前用户ID
