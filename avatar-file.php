@@ -10,15 +10,7 @@ if (!in_array($extension, $allowed, true)) {
     http_response_code(400);
     exit;
 }
-$scriptPath = $_SERVER['SCRIPT_FILENAME'] ?? '';
-$baseDir = rtrim(dirname($scriptPath), '/');
-if ($baseDir === '' || $baseDir === '.') {
-    $baseDir = rtrim($_SERVER['DOCUMENT_ROOT'] ?? '', '/');
-}
-if ($baseDir === '' || $baseDir === '.') {
-    $baseDir = getcwd();
-}
-$filePath = rtrim($baseDir, '/') . '/uploads/avatars/' . $name;
+$filePath = 'uploads/avatars/' . $name;
 if (!is_file($filePath) || !is_readable($filePath)) {
     http_response_code(404);
     exit;

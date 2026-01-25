@@ -18,15 +18,7 @@ if (!in_array($extension, $allowed, true)) {
     echo json_encode(['error' => 'invalid_type']);
     exit;
 }
-$scriptPath = $_SERVER['SCRIPT_FILENAME'] ?? '';
-$baseDir = rtrim(dirname($scriptPath), '/');
-if ($baseDir === '' || $baseDir === '.') {
-    $baseDir = rtrim($_SERVER['DOCUMENT_ROOT'] ?? '', '/');
-}
-if ($baseDir === '' || $baseDir === '.') {
-    $baseDir = getcwd();
-}
-$uploadsDir = rtrim($baseDir, '/') . '/uploads/avatars';
+$uploadsDir = 'uploads/avatars';
 if (!is_dir($uploadsDir)) {
     mkdir($uploadsDir, 0755, true);
 }
