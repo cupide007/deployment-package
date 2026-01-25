@@ -3,1381 +3,295 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data: blob:; img-src 'self' data: blob: https:; script-src 'self' https: 'unsafe-inline' 'unsafe-eval'; style-src 'self' https: 'unsafe-inline'; font-src 'self' https: data:;">
     <title>安提斯特国家图书馆 - 安提斯特虚拟国</title>
     <link rel="icon" href="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f4bb.png">
-    <!-- Tailwind CSS v3 -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome -->
     <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
-    <!-- Retinbox 配置 -->
     <script src="retinbox-config.js"></script>
-    <!-- 统一的 Tailwind 配置 -->
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        primary: '#0A2463', // 深蓝色
-                        secondary: '#E6AF2E', // 金色
-                        accent: '#3E92CC', // 天蓝色
-                        light: '#FFFAFF', // 白色
-                        dark: '#1E1B18', // 深灰色
+                        primary: '#0A2463',
+                        secondary: '#E6AF2E',
+                        accent: '#3E92CC',
+                        light: '#FFFAFF',
+                        dark: '#1E1B18',
                     },
                     fontFamily: {
                         sans: ['Inter', 'system-ui', 'sans-serif'],
                         serif: ['Georgia', 'serif'],
-                    },
-                    animation: {
-                        'float': 'float 3s ease-in-out infinite',
-                        'fade-in': 'fadeIn 1s ease-in-out',
-                        'slide-up': 'slideUp 0.5s ease-out',
-                        'slide-down': 'slideDown 0.5s ease-out',
-                        'slide-left': 'slideLeft 0.5s ease-out',
-                        'slide-right': 'slideRight 0.5s ease-out',
-                    },
-                    keyframes: {
-                        float: {
-                            '0%, 100%': { transform: 'translateY(0)' },
-                            '50%': { transform: 'translateY(-10px)' },
-                        },
-                        fadeIn: {
-                            '0%': { opacity: '0' },
-                            '100%': { opacity: '1' },
-                        },
-                        slideUp: {
-                            '0%': { transform: 'translateY(20px)', opacity: '0' },
-                            '100%': { transform: 'translateY(0)', opacity: '1' },
-                        },
-                        slideDown: {
-                            '0%': { transform: 'translateY(-20px)', opacity: '0' },
-                            '100%': { transform: 'translateY(0)', opacity: '1' },
-                        },
-                        slideLeft: {
-                            '0%': { transform: 'translateX(20px)', opacity: '0' },
-                            '100%': { transform: 'translateX(0)', opacity: '1' },
-                        },
-                        slideRight: {
-                            '0%': { transform: 'translateX(-20px)', opacity: '0' },
-                            '100%': { transform: 'translateX(0)', opacity: '1' },
-                        },
-                    },
+                    }
                 }
             }
         }
     </script>
-    <style type="text/tailwindcss">
-        @layer utilities {
-            .text-shadow {
-                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-            }
-            .text-shadow-sm {
-                text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
-            }
-            .bg-gradient-primary {
-                background: linear-gradient(135deg, theme('colors.primary'), theme('colors.accent'));
-            }
-            .border-gradient {
-                border-image: linear-gradient(to right, theme('colors.secondary'), theme('colors.accent')) 1;
-            }
-            .glass-effect {
-                background: rgba(255, 250, 255, 0.1);
-                backdrop-filter: blur(10px);
-                -webkit-backdrop-filter: blur(10px);
-                border: 1px solid rgba(255, 250, 255, 0.2);
-            }
-        }
-    </style>
 </head>
 <body class="bg-gray-100 font-sans">
-    <!-- 顶部导航栏 -->
-    <nav id="main-nav" class="bg-primary text-light shadow-lg fixed w-full z-50 transition-all duration-300">
-        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
-            <div class="flex items-center space-x-2">
-                <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/d8ddf5e8d8c84316a653dcb93cf61629~tplv-a9rns2rl98-image.image?lk3s=8e244e95&rcl=202601202312037748F98E243C1F231D4E&rrcfp=f06b921b&x-expires=1771513966&x-signature=gxZfK%2BBdsU1IDbMR4LFDmEH2PhA%3D" alt="安提斯特国旗" class="h-10 w-10 rounded-full">
-                <span class="text-xl font-bold">安提斯特虚拟国</span>
-            </div>
-            <div class="hidden md:flex space-x-6">
-                <a href="index.html" class="hover:text-secondary transition-colors duration-200">首页</a>
-                <a href="bank.html" class="hover:text-secondary transition-colors duration-200">国家银行</a>
-                <a href="#" class="text-secondary font-medium">国家图书馆</a>
-            </div>
-            <div class="flex items-center space-x-4">
-                <span id="welcome-user" class="hidden">欢迎，<span id="current-username"></span></span>
-                <button id="logout-btn" class="bg-gray-700 text-light px-4 py-2 rounded-md hover:bg-gray-600 transition-all duration-200 font-medium">
-                    出国
-                </button>
-                <button id="mobile-menu-btn" class="md:hidden text-2xl">
-                    <i class="fa fa-bars"></i>
-                </button>
-            </div>
+<nav id="main-nav" class="bg-primary text-light shadow-lg fixed w-full z-50">
+    <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+        <div class="flex items-center space-x-2">
+            <span class="text-xl font-bold">安提斯特虚拟国</span>
         </div>
-        <!-- 移动端菜单 -->
-        <div id="mobile-menu" class="hidden md:hidden bg-primary border-t border-gray-700 animate-slide-down">
-            <div class="container mx-auto px-4 py-2 flex flex-col space-y-3">
-                <a href="index.html" class="py-2 hover:text-secondary transition-colors duration-200">首页</a>
-                <a href="bank.html" class="py-2 hover:text-secondary transition-colors duration-200">国家银行</a>
-                <a href="#" class="py-2 text-secondary font-medium">国家图书馆</a>
-            </div>
+        <div class="flex items-center space-x-4">
+            <span id="welcome-user" class="hidden">欢迎，<span id="current-username"></span></span>
+            <button id="logout-btn" class="bg-gray-700 text-light px-4 py-2 rounded-md hover:bg-gray-600 font-medium">出国</button>
         </div>
-    </nav>
+    </div>
+</nav>
 
-    <!-- 主内容 -->
-    <main class="pt-16">
-        <!-- 图书馆顶部横幅 -->
-        <section class="bg-gradient-primary py-16 relative overflow-hidden">
-            <div class="absolute inset-0 opacity-10">
-                <div class="absolute top-10 left-10 w-40 h-40 rounded-full bg-secondary"></div>
-                <div class="absolute bottom-10 right-10 w-60 h-60 rounded-full bg-accent"></div>
-            </div>
-            <div class="container mx-auto px-4 relative z-10">
-                <div class="flex flex-col md:flex-row items-center justify-between">
-                    <div class="md:w-1/2 text-light mb-10 md:mb-0 animate-slide-up">
-                        <h1 class="text-4xl md:text-5xl font-bold mb-4 text-shadow">
-                            安提斯特国家图书馆
-                        </h1>
-                        <p class="text-xl mb-6 max-w-lg">
-                            收藏安提斯特虚拟国的珍贵史料文献，为公民提供知识获取和文化交流的平台。
-                        </p>
-                        <div class="flex flex-wrap gap-4">
-                            <button id="search-docs-btn" class="bg-secondary text-primary px-6 py-3 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium text-lg">
-                                搜索文献
-                            </button>
-                            <button id="upload-docs-btn" class="admin-only bg-transparent border-2 border-light text-light px-6 py-3 rounded-md hover:bg-light hover:text-primary transition-all duration-200 font-medium text-lg">
-                                上传文献
-                            </button>
-                        </div>
-                    </div>
-                    <div class="md:w-1/2 flex justify-center animate-float">
-                        <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/50bc333bc9814412b8ccde647d09da6b~tplv-a9rns2rl98-image.image?lk3s=8e244e95&rcl=202601202312037748F98E243C1F231D4E&rrcfp=f06b921b&x-expires=1771513966&x-signature=ao62S%2BcQ5dWBFcCT7JNEC9htN3A%3D" alt="安提斯特国家图书馆" class="w-64 h-64 md:w-80 md:h-80 object-cover rounded-lg shadow-2xl">
-                    </div>
-                </div>
-            </div>
-        </section>
+<main class="pt-16">
+    <section class="bg-primary py-12 text-light text-center">
+        <h1 class="text-4xl font-bold mb-4">国家图书馆</h1>
+        <p class="text-xl mb-6">珍贵史料与知识的殿堂</p>
+        <div class="flex justify-center gap-4">
+            <button id="upload-docs-btn" class="bg-secondary text-primary px-6 py-3 rounded-md font-bold">上传文献</button>
+        </div>
+    </section>
 
-        <!-- 搜索和筛选区域 -->
-        <section class="py-8 bg-white shadow-md">
-            <div class="container mx-auto px-4">
-                <div class="flex flex-col md:flex-row gap-4">
-                    <div class="flex-grow">
-                        <div class="relative">
-                            <input type="text" id="search-input" class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" placeholder="搜索文献标题、作者或关键词...">
-                            <div class="absolute left-4 top-3 text-gray-400">
-                                <i class="fa fa-search text-lg"></i>
-                            </div>
-                            <!-- 关键词联想下拉框 -->
-                            <div id="suggestions-container" class="absolute left-0 right-0 mt-1 bg-white rounded-md shadow-lg z-10 hidden">
-                                <ul id="suggestions-list" class="py-1 max-h-60 overflow-y-auto">
-                                    <!-- 联想词将通过JavaScript动态添加 -->
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="flex gap-4">
-                        <select id="category-filter" class="px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
-                            <option value="all">全部分类</option>
-                            <option value="法律">法律</option>
-                            <option value="历史">历史</option>
-                            <option value="经济">经济</option>
-                            <option value="文化">文化</option>
-                            <option value="政治">政治</option>
-                            <option value="科技">科技</option>
-                            <option value="教育">教育</option>
-                            <option value="其他">其他</option>
-                        </select>
-                        <button id="search-btn" class="bg-primary text-white px-6 py-3 rounded-md hover:bg-opacity-90 transition-all duration-200">
-                            搜索
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </section>
+    <section class="py-8 bg-white shadow-md sticky top-16 z-40">
+        <div class="container mx-auto px-4 flex gap-4">
+            <input type="text" id="search-input" class="flex-grow px-4 py-2 border rounded-md" placeholder="搜索文献...">
+            <button id="search-btn" class="bg-primary text-white px-6 py-2 rounded-md">搜索</button>
+        </div>
+    </section>
 
-        <!-- 文献列表 -->
-        <section class="py-12 bg-gray-50">
-            <div class="container mx-auto px-4">
-                <div class="flex justify-between items-center mb-8">
-                    <h2 class="text-2xl font-bold text-primary">文献列表</h2>
-                    <div class="flex items-center gap-4">
-                        <span class="text-gray-600">排序方式：</span>
-                        <select id="sort-option" class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
-                            <option value="date-desc">最新上传</option>
-                            <option value="date-asc">最早上传</option>
-                            <option value="title-asc">标题 A-Z</option>
-                            <option value="title-desc">标题 Z-A</option>
-                            <option value="author-asc">作者 A-Z</option>
-                            <option value="author-desc">作者 Z-A</option>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- 文献卡片列表 -->
-                <div id="documents-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <!-- 文献卡片将通过JavaScript动态添加 -->
-                    <div class="col-span-full text-center py-12">
-                        <div class="text-6xl text-gray-300 mb-4">
-                            <i class="fa fa-book"></i>
-                        </div>
-                        <h3 class="text-xl font-medium text-gray-500 mb-2">正在加载文献...</h3>
-                        <p class="text-gray-400">请稍候，或尝试调整搜索条件</p>
-                    </div>
-                </div>
-
-                <!-- 分页 -->
-                <div class="flex justify-between items-center mt-12">
-                    <div class="text-sm text-gray-600">
-                        显示 <span id="showing-records">0</span> 条记录，共 <span id="total-records">0</span> 条
-                    </div>
-                    <div class="flex space-x-2">
-                        <button id="prev-page" class="px-4 py-2 border border-gray-300 rounded-md bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
-                            上一页
-                        </button>
-                        <div id="page-numbers" class="flex space-x-1">
-                            <!-- 页码将通过JavaScript动态添加 -->
-                        </div>
-                        <button id="next-page" class="px-4 py-2 border border-gray-300 rounded-md bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
-                            下一页
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <!-- 页脚 -->
-    <footer class="bg-primary text-light py-8">
+    <section class="py-12 bg-gray-50">
         <div class="container mx-auto px-4">
-            <div class="flex flex-col md:flex-row justify-between items-center">
-                <div class="mb-4 md:mb-0">
-                    <div class="flex items-center space-x-2">
-                        <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/d8ddf5e8d8c84316a653dcb93cf61629~tplv-a9rns2rl98-image.image?lk3s=8e244e95&rcl=202601202312037748F98E243C1F231D4E&rrcfp=f06b921b&x-expires=1771513966&x-signature=gxZfK%2BBdsU1IDbMR4LFDmEH2PhA%3D" alt="安提斯特国旗" class="h-8 w-8 rounded-full">
-                        <span class="text-lg font-bold">安提斯特虚拟国</span>
-                    </div>
-                    <p class="text-sm text-gray-300 mt-2">
-                        © 2025 安提斯特国家图书馆. 保留所有权利.
-                    </p>
-                </div>
-                <div class="flex space-x-6">
-                    <a href="#" class="hover:text-secondary transition-colors duration-200">
-                        <i class="fa fa-qq text-2xl"></i>
-                    </a>
-                    <a href="#" class="hover:text-secondary transition-colors duration-200">
-                        <i class="fa fa-weixin text-2xl"></i>
-                    </a>
-                    <a href="#" class="hover:text-secondary transition-colors duration-200">
-                        <i class="fa fa-weibo text-2xl"></i>
-                    </a>
-                </div>
-            </div>
-            <div class="mt-6 pt-6 border-t border-gray-700 text-center text-sm text-gray-400">
-                <p>安提斯特国家图书馆是安提斯特虚拟国的官方文化机构，致力于保存和传播国家的知识和文化。</p>
+            <div id="documents-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             </div>
         </div>
-    </footer>
+    </section>
+</main>
 
-    <!-- 文献详情模态框 -->
-    <div id="document-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
-        <div class="bg-white rounded-lg shadow-xl w-full max-w-4xl mx-4 max-h-[90vh] overflow-y-auto animate-fade-in">
-            <div class="bg-primary text-light p-4 flex justify-between items-center sticky top-0 z-10">
-                <h2 id="document-modal-title" class="text-xl font-bold">文献详情</h2>
-                <button id="close-document-modal" class="text-2xl hover:text-secondary transition-colors duration-200">
-                    <i class="fa fa-times"></i>
-                </button>
-            </div>
-            <div class="p-6">
-                <div class="mb-6">
-                    <h3 id="document-detail-title" class="text-2xl font-bold text-primary mb-2"></h3>
-                    <div class="flex flex-wrap gap-4 text-sm text-gray-600 mb-4">
-                        <div>
-                            <span class="font-medium">作者：</span>
-                            <span id="document-detail-author"></span>
-                        </div>
-                        <div>
-                            <span class="font-medium">分类：</span>
-                            <span id="document-detail-category"></span>
-                        </div>
-                        <div>
-                            <span class="font-medium">上传日期：</span>
-                            <span id="document-detail-date"></span>
-                        </div>
-                        <div>
-                            <span class="font-medium">上传者：</span>
-                            <span id="document-detail-uploader"></span>
-                        </div>
-                    </div>
-                    <div class="bg-gray-50 p-4 rounded-lg mb-6">
-                        <h4 class="font-medium text-gray-800 mb-2">摘要</h4>
-                        <p id="document-detail-description" class="text-gray-700"></p>
-                    </div>
-                    <div class="flex flex-wrap gap-4">
-                        <button id="download-document-btn" class="bg-primary text-white px-6 py-2 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium flex items-center">
-                            <i class="fa fa-download mr-2"></i>
-                            下载文献
-                        </button>
-                        <button id="view-document-btn" class="bg-secondary text-primary px-6 py-2 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium flex items-center">
-                            <i class="fa fa-eye mr-2"></i>
-                            在线阅读
-                        </button>
-                    </div>
-                </div>
-            </div>
+<div id="document-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-4xl mx-4 max-h-[90vh] overflow-y-auto p-6 relative">
+        <button id="close-document-modal" class="absolute top-4 right-4 text-2xl text-gray-500">&times;</button>
+        <h2 id="document-detail-title" class="text-2xl font-bold text-primary mb-4"></h2>
+        <div class="grid grid-cols-2 gap-4 text-sm text-gray-600 mb-6">
+            <p>作者：<span id="document-detail-author"></span></p>
+            <p>分类：<span id="document-detail-category"></span></p>
+            <p>上传者：<span id="document-detail-uploader"></span></p>
+            <p>日期：<span id="document-detail-date"></span></p>
+        </div>
+        <div class="bg-gray-50 p-4 rounded-lg mb-6">
+            <h4 class="font-bold mb-2">摘要</h4>
+            <p id="document-detail-description"></p>
+        </div>
+        <div class="flex gap-4">
+            <button id="download-document-btn" class="bg-primary text-white px-6 py-2 rounded-md flex items-center gap-2">
+                <i class="fa fa-download"></i> 下载
+            </button>
+            <button id="view-document-btn" class="bg-secondary text-primary px-6 py-2 rounded-md flex items-center gap-2">
+                <i class="fa fa-eye"></i> 在线阅读
+            </button>
         </div>
     </div>
+</div>
 
-    <!-- 上传文献模态框 -->
-    <div id="upload-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
-        <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl mx-4 animate-fade-in">
-            <div class="bg-primary text-light p-4 flex justify-between items-center">
-                <h2 class="text-xl font-bold">上传文献</h2>
-                <button id="close-upload-modal" class="text-2xl hover:text-secondary transition-colors duration-200">
-                    <i class="fa fa-times"></i>
-                </button>
+<div id="upload-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl mx-4 p-6">
+        <h2 class="text-xl font-bold mb-4">上传文献</h2>
+        <form id="upload-form" class="space-y-4">
+            <input type="text" id="document-title" placeholder="标题" class="w-full border p-2 rounded" required>
+            <div class="grid grid-cols-2 gap-4">
+                <input type="text" id="document-author" placeholder="作者" class="w-full border p-2 rounded" required>
+                <select id="document-category" class="w-full border p-2 rounded" required>
+                    <option value="其他">其他</option>
+                    <option value="法律">法律</option>
+                    <option value="历史">历史</option>
+                    <option value="经济">经济</option>
+                    <option value="文化">文化</option>
+                    <option value="政治">政治</option>
+                    <option value="科技">科技</option>
+                    <option value="教育">教育</option>
+                </select>
             </div>
-            <div class="p-6">
-                <form id="upload-form" class="space-y-6">
-                    <div>
-                        <label for="document-title" class="block text-gray-700 mb-2">文献标题 <span class="text-red-500">*</span></label>
-                        <input type="text" id="document-title" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <label for="document-author" class="block text-gray-700 mb-2">作者 <span class="text-red-500">*</span></label>
-                            <input type="text" id="document-author" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required>
-                        </div>
-                        <div>
-                            <label for="document-category" class="block text-gray-700 mb-2">分类 <span class="text-red-500">*</span></label>
-                            <select id="document-category" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required>
-                                <option value="">请选择分类</option>
-                                <option value="法律">法律</option>
-                                <option value="历史">历史</option>
-                                <option value="经济">经济</option>
-                                <option value="文化">文化</option>
-                                <option value="政治">政治</option>
-                                <option value="科技">科技</option>
-                                <option value="教育">教育</option>
-                                <option value="其他">其他</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div>
-                        <label for="document-description" class="block text-gray-700 mb-2">摘要描述 <span class="text-red-500">*</span></label>
-                        <textarea id="document-description" rows="4" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required></textarea>
-                    </div>
-                    <div>
-                        <label for="document-file" class="block text-gray-700 mb-2">上传文件 <span class="text-red-500">*</span></label>
-                        <div class="border-2 border-dashed border-gray-300 rounded-md p-6 text-center hover:border-primary transition-colors duration-200">
-                            <input type="file" id="document-file" class="hidden" accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.md">
-                            <label for="document-file" class="cursor-pointer">
-                                <div class="text-4xl text-gray-400 mb-2">
-                                    <i class="fa fa-cloud-upload"></i>
-                                </div>
-                                <p class="text-gray-600 mb-1">点击或拖拽文件到此处上传</p>
-                                <p class="text-gray-500 text-sm">支持 PDF, DOC, DOCX, XLS, XLSX, TXT, MD 格式</p>
-                            </label>
-                        </div>
-                    </div>
-                    <div class="flex items-center">
-                        <input type="checkbox" id="agree-terms" class="mr-2" required>
-                        <label for="agree-terms" class="text-gray-700">我已阅读并同意<a href="#" class="text-primary hover:underline">《安提斯特国家图书馆文献上传条款》</a></label>
-                    </div>
-                    <div class="text-center">
-                        <button type="submit" class="bg-primary text-white px-8 py-3 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium">
-                            提交上传
-                        </button>
-                    </div>
-                </form>
+            <textarea id="document-description" rows="3" placeholder="摘要" class="w-full border p-2 rounded" required></textarea>
+            <input type="file" id="document-file" class="w-full border p-2 rounded" required>
+            <div class="flex justify-end gap-4 mt-4">
+                <button type="button" id="close-upload-modal" class="px-4 py-2 border rounded text-gray-600">取消</button>
+                <button type="submit" class="bg-primary text-white px-6 py-2 rounded">上传</button>
             </div>
-        </div>
+        </form>
     </div>
+</div>
 
-    <!-- 上传成功模态框 -->
-    <div id="upload-success-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
-        <div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 overflow-hidden animate-fade-in">
-            <div class="bg-green-500 text-white p-4 flex justify-between items-center">
-                <h2 class="text-xl font-bold">上传成功</h2>
-                <button id="close-success-modal" class="text-2xl hover:text-gray-200 transition-colors duration-200">
-                    <i class="fa fa-times"></i>
-                </button>
-            </div>
-            <div class="p-6 text-center">
-                <div class="text-6xl text-green-500 mb-4">
-                    <i class="fa fa-check-circle"></i>
-                </div>
-                <h3 class="text-2xl font-bold text-gray-800 mb-2">您的文献已成功上传！</h3>
-                <p class="text-gray-600 mb-6">文献将在审核通过后显示在文献列表中。</p>
-                <div class="bg-gray-100 p-4 rounded-lg mb-6 text-left">
-                    <p class="font-medium text-gray-800 mb-2">上传信息</p>
-                    <p class="text-gray-600 mb-1"><span class="font-medium">标题：</span><span id="success-title">文献标题</span></p>
-                    <p class="text-gray-600 mb-1"><span class="font-medium">作者：</span><span id="success-author">作者</span></p>
-                    <p class="text-gray-600"><span class="font-medium">分类：</span><span id="success-category">分类</span></p>
-                </div>
-                <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                    <button id="view-document-success-btn" class="bg-primary text-white px-6 py-3 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium">
-                        查看文献
-                    </button>
-                    <button id="upload-more-btn" class="bg-white border border-primary text-primary px-6 py-3 rounded-md hover:bg-gray-50 transition-all duration-200 font-medium">
-                        继续上传
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- JavaScript -->
-    <script>
-        // 页面加载完成后执行
-        document.addEventListener('DOMContentLoaded', async function() {
-            // 引入统一的数据初始化脚本
-            const initScript = document.createElement('script');
-            initScript.src = 'init-data.js';
-            document.head.appendChild(initScript);
-            
-            // 检查用户是否已登录
-            checkLoginStatus();
-            
-            const initialDocuments = [
-                {
-                    id: '1',
-                    title: '安提斯特虚拟国宪法',
-                    author: '开国元勋',
-                    category: '法律',
-                    description: '安提斯特虚拟国的根本大法，规定了国家的基本制度和公民的权利义务。本宪法确立了安提斯特虚拟国的政治体制、经济制度、文化政策等基本原则，是国家治理的基础。',
-                    fileUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
-                    uploaderId: '1',
-                    uploaderName: 'admin',
-                    uploadDate: new Date().toISOString(),
-                    approved: true
-                },
-                {
-                    id: '2',
-                    title: '安提斯特虚拟国历史',
-                    author: '国家历史研究院',
-                    category: '历史',
-                    description: '记录了安提斯特虚拟国从创建到现在的重要历史事件和发展历程。本书详细介绍了安提斯特虚拟国的起源、发展阶段、重要里程碑以及对虚拟国世界的贡献。',
-                    fileUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
-                    uploaderId: '1',
-                    uploaderName: 'admin',
-                    uploadDate: new Date(Date.now() - 86400000).toISOString(),
-                    approved: true
-                },
-                {
-                    id: '3',
-                    title: '安提斯特虚拟国经济政策',
-                    author: '经济部长',
-                    category: '经济',
-                    description: '阐述了安提斯特虚拟国的经济发展战略和各项经济政策。本文档详细说明了国家的货币政策、财政政策、产业政策以及对外经济关系，为公民了解国家经济发展提供参考。',
-                    fileUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
-                    uploaderId: '1',
-                    uploaderName: 'admin',
-                    uploadDate: new Date(Date.now() - 172800000).toISOString(),
-                    approved: true
-                },
-                {
-                    id: '4',
-                    title: '安提斯特虚拟国文化概览',
-                    author: '文化部长',
-                    category: '文化',
-                    description: '介绍了安提斯特虚拟国的文化传统、艺术成就和价值观念。本书探讨了国家的语言、文学、艺术、音乐、节日等文化元素，展示了安提斯特独特的文化魅力。',
-                    fileUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
-                    uploaderId: '1',
-                    uploaderName: 'admin',
-                    uploadDate: new Date(Date.now() - 259200000).toISOString(),
-                    approved: true
-                },
-                {
-                    id: '5',
-                    title: '安提斯特虚拟国政治制度',
-                    author: '政治学院',
-                    category: '政治',
-                    description: '详细介绍了安提斯特虚拟国的政治体制、政府结构和选举制度。本文档解析了国家的权力分配、决策机制、政党制度以及公民参与政治的方式，帮助公民理解国家政治运作。',
-                    fileUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
-                    uploaderId: '1',
-                    uploaderName: 'admin',
-                    uploadDate: new Date(Date.now() - 345600000).toISOString(),
-                    approved: true
-                },
-                {
-                    id: '6',
-                    title: '安提斯特虚拟国科技发展报告',
-                    author: '科技部',
-                    category: '科技',
-                    description: '概述了安提斯特虚拟国在科技领域的发展现状和未来规划。本报告介绍了国家在人工智能、虚拟现实、区块链等前沿技术领域的研究成果和应用案例，展示了安提斯特的科技实力。',
-                    fileUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
-                    uploaderId: '1',
-                    uploaderName: 'admin',
-                    uploadDate: new Date(Date.now() - 432000000).toISOString(),
-                    approved: true
-                }
-            ];
-            let documentsData = null;
+<script src="init-data.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', async function() {
+        checkLoginStatus();
+        let documentsData = [];
+        try {
             if (window.safeGetData) {
-                documentsData = await window.safeGetData('documents', []);
+                const res = await window.safeGetData('documents', []);
+                documentsData = Array.isArray(res) ? res : (res.documents || []);
             } else {
-                const storedDocuments = localStorage.getItem('documents');
-                documentsData = storedDocuments ? JSON.parse(storedDocuments) : [];
+                documentsData = JSON.parse(localStorage.getItem('documents') || '[]');
             }
-            if (!Array.isArray(documentsData)) {
-                documentsData = documentsData && Array.isArray(documentsData.documents) ? documentsData.documents : [];
+        } catch(e) { console.error(e); }
+
+        const container = document.getElementById('documents-container');
+        function renderDocs() {
+            container.innerHTML = '';
+            const list = [...documentsData].reverse();
+            if (list.length === 0) {
+                container.innerHTML = '<div class="col-span-full text-center py-10 text-gray-400">暂无文献</div>';
+                return;
             }
-            if (!Array.isArray(documentsData)) {
-                documentsData = [];
-            }
-            const storedDocuments = localStorage.getItem('documents');
-            const parsedStoredDocuments = storedDocuments ? JSON.parse(storedDocuments) : [];
-            if (Array.isArray(parsedStoredDocuments) && parsedStoredDocuments.length > 0) {
-                documentsData = parsedStoredDocuments;
-            } else if (documentsData.length === 0) {
-                documentsData = initialDocuments;
-            }
-            if (!storedDocuments || documentsData.length > 0) {
-                localStorage.setItem('documents', JSON.stringify(documentsData));
-            }
-            
-            // 移动端菜单切换
-            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-            const mobileMenu = document.getElementById('mobile-menu');
-            
-            mobileMenuBtn.addEventListener('click', function() {
-                mobileMenu.classList.toggle('hidden');
-            });
-            
-            // 退出登录
-            const logoutBtn = document.getElementById('logout-btn');
-            
-            logoutBtn.addEventListener('click', function() {
-                // 清除登录状态
-                sessionStorage.removeItem('currentUser');
-                
-                // 跳转到首页
-                window.location.href = 'index.html';
-            });
-            
-            // 文献详情模态框
-            const documentModal = document.getElementById('document-modal');
-            const closeDocumentModal = document.getElementById('close-document-modal');
-            const downloadDocumentBtn = document.getElementById('download-document-btn');
-            const viewDocumentBtn = document.getElementById('view-document-btn');
-            
-            closeDocumentModal.addEventListener('click', function() {
-                documentModal.classList.add('hidden');
-            });
-            
-            // 点击模态框外部关闭
-            documentModal.addEventListener('click', function(e) {
-                if (e.target === documentModal) {
-                    documentModal.classList.add('hidden');
-                }
-            });
-            
-            // 上传文献模态框
-            const uploadModal = document.getElementById('upload-modal');
-            const closeUploadModal = document.getElementById('close-upload-modal');
-            const uploadDocsBtn = document.getElementById('upload-docs-btn');
-            const uploadForm = document.getElementById('upload-form');
-            
-            uploadDocsBtn.addEventListener('click', function() {
-                uploadModal.classList.remove('hidden');
-            });
-            
-            closeUploadModal.addEventListener('click', function() {
-                uploadModal.classList.add('hidden');
-            });
-            
-            // 点击模态框外部关闭
-            uploadModal.addEventListener('click', function(e) {
-                if (e.target === uploadModal) {
-                    uploadModal.classList.add('hidden');
-                }
-            });
-            
-            // 上传成功模态框
-            const uploadSuccessModal = document.getElementById('upload-success-modal');
-            const closeSuccessModal = document.getElementById('close-success-modal');
-            const viewDocumentSuccessBtn = document.getElementById('view-document-success-btn');
-            const uploadMoreBtn = document.getElementById('upload-more-btn');
-            
-            closeSuccessModal.addEventListener('click', function() {
-                uploadSuccessModal.classList.add('hidden');
-            });
-            
-            viewDocumentSuccessBtn.addEventListener('click', function() {
-                uploadSuccessModal.classList.add('hidden');
-                // 这里可以添加查看刚上传文献的逻辑
-            });
-            
-            uploadMoreBtn.addEventListener('click', function() {
-                uploadSuccessModal.classList.add('hidden');
-                uploadForm.reset();
-                uploadModal.classList.remove('hidden');
-            });
-            
-            // 点击模态框外部关闭
-            uploadSuccessModal.addEventListener('click', function(e) {
-                if (e.target === uploadSuccessModal) {
-                    uploadSuccessModal.classList.add('hidden');
-                }
-            });
-            
-            uploadForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-                
-                const title = document.getElementById('document-title').value;
-                const author = document.getElementById('document-author').value;
-                const category = document.getElementById('document-category').value;
-                const description = document.getElementById('document-description').value;
-                const fileInput = document.getElementById('document-file');
-                
-                if (!title || !author || !category || !description || !fileInput.files[0]) {
-                    alert('请填写完整的上传信息并选择文件');
-                    return;
-                }
-                
-                const file = fileInput.files[0];
-                handleDocumentUpload(file, {
-                    title,
-                    author,
-                    category,
-                    description
-                });
-            });
-
-            async function uploadDocumentFile(file) {
-                const formData = new FormData();
-                formData.append('document', file);
-                const response = await fetch('upload-document.php', {
-                    method: 'POST',
-                    body: formData
-                });
-                if (!response.ok) {
-                    throw new Error('upload_failed');
-                }
-                const result = await response.json();
-                if (!result || !result.url) {
-                    throw new Error('invalid_response');
-                }
-                return result.url;
-            }
-
-            async function handleDocumentUpload(file, meta) {
-                let fileUrl = '';
-                try {
-                    fileUrl = await uploadDocumentFile(file);
-                } catch (error) {
-                    alert('文件上传失败，请稍后重试');
-                    return;
-                }
-
-                const newDocument = {
-                    id: Date.now().toString(),
-                    title: meta.title,
-                    author: meta.author,
-                    category: meta.category,
-                    description: meta.description,
-                    fileUrl,
-                    uploaderId: getCurrentUserId(),
-                    uploaderName: getCurrentUsername(),
-                    uploadDate: new Date().toISOString(),
-                    approved: isCurrentUserAdmin()
-                };
-
-                const documents = JSON.parse(localStorage.getItem('documents')) || [];
-                documents.push(newDocument);
-                localStorage.setItem('documents', JSON.stringify(documents));
-                if (window.safeSaveData) {
-                    await window.safeSaveData('documents', documents);
-                }
-
-                updateDocumentsDisplay();
-
-                document.getElementById('success-title').textContent = meta.title;
-                document.getElementById('success-author').textContent = meta.author;
-                document.getElementById('success-category').textContent = meta.category;
-                uploadSuccessModal.classList.remove('hidden');
-
-                uploadModal.classList.add('hidden');
-                uploadForm.reset();
-            }
-            
-            // 搜索功能
-            const searchInput = document.getElementById('search-input');
-            const categoryFilter = document.getElementById('category-filter');
-            const sortOption = document.getElementById('sort-option');
-            const searchBtn = document.getElementById('search-btn');
-            const searchDocsBtn = document.getElementById('search-docs-btn');
-            
-            searchBtn.addEventListener('click', function() {
-                currentPage = 1;
-                updateDocumentsDisplay();
-            });
-            
-            searchDocsBtn.addEventListener('click', function() {
-                searchInput.focus();
-            });
-            
-            searchInput.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    currentPage = 1;
-                    updateDocumentsDisplay();
-                    // 隐藏联想框
-                    document.getElementById('suggestions-container').classList.add('hidden');
-                }
-            });
-
-            // 关键词联想功能
-            searchInput.addEventListener('input', function() {
-                const searchTerm = this.value.toLowerCase().trim();
-                const suggestionsContainer = document.getElementById('suggestions-container');
-                const suggestionsList = document.getElementById('suggestions-list');
-                
-                if (searchTerm.length < 2) {
-                    suggestionsContainer.classList.add('hidden');
-                    return;
-                }
-                
-                // 获取所有文献
-                const documents = JSON.parse(localStorage.getItem('documents'));
-                
-                // 收集所有可能的关键词
-                const keywords = new Set();
-                
-                documents.forEach(doc => {
-                    // 从标题中提取关键词
-                    const titleWords = doc.title.split(/\s+/);
-                    titleWords.forEach(word => {
-                        if (word.toLowerCase().includes(searchTerm)) {
-                            keywords.add(word);
-                        }
-                    });
-                    
-                    // 从作者中提取关键词
-                    const authorWords = doc.author.split(/\s+/);
-                    authorWords.forEach(word => {
-                        if (word.toLowerCase().includes(searchTerm)) {
-                            keywords.add(word);
-                        }
-                    });
-                    
-                    // 从描述中提取关键词
-                    const descriptionWords = doc.description.split(/\s+/);
-                    descriptionWords.forEach(word => {
-                        if (word.length > 2 && word.toLowerCase().includes(searchTerm)) {
-                            keywords.add(word);
-                        }
-                    });
-                    
-                    // 添加完整的标题和作者作为联想词
-                    if (doc.title.toLowerCase().includes(searchTerm)) {
-                        keywords.add(doc.title);
-                    }
-                    if (doc.author.toLowerCase().includes(searchTerm)) {
-                        keywords.add(doc.author);
-                    }
-                });
-                
-                // 清空联想列表
-                suggestionsList.innerHTML = '';
-                
-                // 添加联想词到列表
-                const suggestions = Array.from(keywords).slice(0, 10); // 最多显示10个联想词
-                
-                if (suggestions.length > 0) {
-                    suggestions.forEach(keyword => {
-                        const li = document.createElement('li');
-                        li.className = 'px-4 py-2 hover:bg-gray-100 cursor-pointer';
-                        
-                        // 高亮显示匹配的部分
-                        const highlightedKeyword = keyword.replace(
-                            new RegExp(`(${searchTerm})`, 'gi'),
-                            '<span class="bg-yellow-200">$1</span>'
-                        );
-                        
-                        li.innerHTML = highlightedKeyword;
-                        
-                        // 点击联想词时填充到搜索框并执行搜索
-                        li.addEventListener('click', function() {
-                            searchInput.value = keyword;
-                            suggestionsContainer.classList.add('hidden');
-                            currentPage = 1;
-                            updateDocumentsDisplay();
-                        });
-                        
-                        suggestionsList.appendChild(li);
-                    });
-                    
-                    suggestionsContainer.classList.remove('hidden');
-                } else {
-                    suggestionsContainer.classList.add('hidden');
-                }
-            });
-
-            // 点击页面其他地方隐藏联想框
-            document.addEventListener('click', function(e) {
-                const searchContainer = document.querySelector('.relative');
-                const suggestionsContainer = document.getElementById('suggestions-container');
-                
-                if (!searchContainer.contains(e.target)) {
-                    suggestionsContainer.classList.add('hidden');
-                }
-            });
-            
-            categoryFilter.addEventListener('change', function() {
-                currentPage = 1;
-                updateDocumentsDisplay();
-            });
-            
-            sortOption.addEventListener('change', function() {
-                updateDocumentsDisplay();
-            });
-            
-            // 分页功能
-            const prevPageBtn = document.getElementById('prev-page');
-            const nextPageBtn = document.getElementById('next-page');
-            const pageNumbers = document.getElementById('page-numbers');
-            
-            let currentPage = 1;
-            const recordsPerPage = 6;
-            
-            prevPageBtn.addEventListener('click', function() {
-                if (currentPage > 1) {
-                    currentPage--;
-                    updateDocumentsDisplay();
-                }
-            });
-            
-            nextPageBtn.addEventListener('click', function() {
-                const documents = getFilteredDocuments();
-                const totalPages = Math.ceil(documents.length / recordsPerPage);
-                
-                if (currentPage < totalPages) {
-                    currentPage++;
-                    updateDocumentsDisplay();
-                }
-            });
-            
-            // 初始化页面
-            updateDocumentsDisplay();
-            
-            // 更新管理员专用元素的显示
-            updateAdminElements();
-            
-            // 更新文献列表
-            function updateDocumentsDisplay() {
-                const documentsContainer = document.getElementById('documents-container');
-                const documents = getFilteredDocuments();
-                
-                // 计算分页
-                const startIndex = (currentPage - 1) * recordsPerPage;
-                const endIndex = startIndex + recordsPerPage;
-                const paginatedDocuments = documents.slice(startIndex, endIndex);
-                
-                // 更新分页信息
-                document.getElementById('showing-records').textContent = paginatedDocuments.length;
-                document.getElementById('total-records').textContent = documents.length;
-                
-                // 更新分页按钮状态
-                prevPageBtn.disabled = currentPage === 1;
-                nextPageBtn.disabled = endIndex >= documents.length;
-                
-                // 更新页码
-                updatePageNumbers(documents.length);
-                
-                // 清空容器
-                documentsContainer.innerHTML = '';
-                
-                // 添加文献卡片
-                if (paginatedDocuments.length === 0) {
-                    documentsContainer.innerHTML = `
-                        <div class="col-span-full text-center py-12">
-                            <div class="text-6xl text-gray-300 mb-4">
-                                <i class="fa fa-search"></i>
-                            </div>
-                            <h3 class="text-xl font-medium text-gray-500 mb-2">未找到匹配的文献</h3>
-                            <p class="text-gray-400">请尝试调整搜索条件</p>
+            list.forEach(doc => {
+                const div = document.createElement('div');
+                div.className = 'bg-white p-6 rounded-lg shadow hover:shadow-lg transition';
+                div.innerHTML = `
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="text-lg font-bold text-primary truncate w-3/4">${doc.title}</h3>
+                            <span class="text-xs bg-gray-100 px-2 py-1 rounded text-gray-600">${doc.category}</span>
                         </div>
+                        <p class="text-sm text-gray-500 mb-4">作者：${doc.author}</p>
+                        <p class="text-gray-600 text-sm line-clamp-2 mb-4 h-10">${doc.description}</p>
+                        <button class="w-full bg-primary text-white py-2 rounded hover:bg-opacity-90 view-btn" data-id="${doc.id}">查看详情</button>
                     `;
-                } else {
-                    paginatedDocuments.forEach(doc => {
-                        const card = document.createElement('div');
-                        card.className = 'bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300';
-                        
-                        const date = new Date(doc.uploadDate);
-                        const formattedDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-                        
-                        let categoryClass = '';
-                        switch (doc.category) {
-                            case '法律':
-                                categoryClass = 'bg-blue-100 text-blue-800';
-                                break;
-                            case '历史':
-                                categoryClass = 'bg-amber-100 text-amber-800';
-                                break;
-                            case '经济':
-                                categoryClass = 'bg-green-100 text-green-800';
-                                break;
-                            case '文化':
-                                categoryClass = 'bg-purple-100 text-purple-800';
-                                break;
-                            case '政治':
-                                categoryClass = 'bg-red-100 text-red-800';
-                                break;
-                            case '科技':
-                                categoryClass = 'bg-cyan-100 text-cyan-800';
-                                break;
-                            case '教育':
-                                categoryClass = 'bg-indigo-100 text-indigo-800';
-                                break;
-                            default:
-                                categoryClass = 'bg-gray-100 text-gray-800';
-                        }
-                        
-                        card.innerHTML = `
-                            <div class="p-6">
-                                <div class="flex justify-between items-start mb-4">
-                                    <h3 class="text-xl font-bold text-primary mb-2">${doc.title}</h3>
-                                    <span class="px-2 py-1 rounded-full text-xs font-medium ${categoryClass}">${doc.category}</span>
-                                </div>
-                                <p class="text-gray-600 mb-4 line-clamp-3">${doc.description}</p>
-                                <div class="flex justify-between items-center text-sm text-gray-500 mb-4">
-                                    <span>作者：${doc.author}</span>
-                                    <span>${formattedDate}</span>
-                                </div>
-                                <button class="view-document-btn w-full bg-primary text-white py-2 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium" data-id="${doc.id}">
-                                    查看详情
-                                </button>
-                            </div>
-                        `;
-                        
-                        documentsContainer.appendChild(card);
-                        
-                        // 添加点击事件
-                        card.querySelector('.view-document-btn').addEventListener('click', function() {
-                            showDocumentDetails(doc.id);
-                        });
-                    });
-                }
-            }
-            
-            // 更新页码
-            function updatePageNumbers(totalRecords) {
-                pageNumbers.innerHTML = '';
-                
-                const totalPages = Math.ceil(totalRecords / recordsPerPage);
-                const maxVisiblePages = 5;
-                
-                let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
-                let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-                
-                if (endPage - startPage + 1 < maxVisiblePages) {
-                    startPage = Math.max(1, endPage - maxVisiblePages + 1);
-                }
-                
-                for (let i = startPage; i <= endPage; i++) {
-                    const pageBtn = document.createElement('button');
-                    pageBtn.className = `px-3 py-1 rounded-md ${i === currentPage ? 'bg-primary text-white' : 'bg-white text-gray-700 hover:bg-gray-50'}`;
-                    pageBtn.textContent = i;
-                    
-                    pageBtn.addEventListener('click', function() {
-                        currentPage = i;
-                        updateDocumentsDisplay();
-                    });
-                    
-                    pageNumbers.appendChild(pageBtn);
-                }
-            }
-            
-            // 显示文献详情
-            function showDocumentDetails(docId) {
-                const documents = JSON.parse(localStorage.getItem('documents'));
-                const doc = documents.find(d => d.id === docId);
-                
-                if (doc) {
-                    document.getElementById('document-modal-title').textContent = doc.title;
-                    document.getElementById('document-detail-title').textContent = doc.title;
-                    document.getElementById('document-detail-author').textContent = doc.author;
-                    document.getElementById('document-detail-category').textContent = doc.category;
-                    
-                    const date = new Date(doc.uploadDate);
-                    const formattedDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-                    
-                    // 设置下载和在线阅读按钮的功能
-                    const downloadBtn = document.getElementById('download-document-btn');
-                    const viewBtn = document.getElementById('view-document-btn');
-                    
-                    // 从fileUrl中获取文件扩展名
-                    function getFileExtension(fileUrl) {
-                        if (!fileUrl || fileUrl === '#') return '.pdf';
-                        
-                        // 检查是否是Base64编码的URL
-                        if (fileUrl.startsWith('data:')) {
-                            // 从Base64 URL中提取媒体类型
-                            const match = fileUrl.match(/^data:([^;]+);/);
-                            if (match) {
-                                const mimeType = match[1];
-                                // 根据MIME类型映射到文件扩展名
-                                const mimeToExt = {
-                                    'text/plain': '.txt',
-                                    'text/markdown': '.md',
-                                    'application/pdf': '.pdf',
-                                    'application/msword': '.doc',
-                                    'application/vnd.openxmlformats-officedocument.wordprocessingml.document': '.docx',
-                                    'application/vnd.ms-excel': '.xls',
-                                    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': '.xlsx'
-                                };
-                                return mimeToExt[mimeType] || '.pdf';
-                            }
-                            return '.pdf';
-                        }
-                        
-                        // 检查是否是Blob URL
-                        if (fileUrl.startsWith('blob:')) {
-                            // 对于Blob URL，使用默认扩展名
-                            return '.pdf';
-                        }
-                        
-                        // 从普通URL中提取扩展名
-                        const match = fileUrl.match(/\.([^.]+)$/);
-                        return match ? '.' + match[1] : '.pdf';
-                    }
+                container.appendChild(div);
+            });
+            document.querySelectorAll('.view-btn').forEach(btn => btn.onclick = () => showDetails(btn.dataset.id));
+        }
+        renderDocs();
 
-                    function getDataUrlTextContent(fileUrl) {
-                        if (!fileUrl || !fileUrl.startsWith('data:')) {
-                            return fileUrl || '';
-                        }
-                        const commaIndex = fileUrl.indexOf(',');
-                        if (commaIndex === -1) {
-                            return '';
-                        }
-                        const meta = fileUrl.slice(0, commaIndex);
-                        const payload = fileUrl.slice(commaIndex + 1);
-                        if (meta.includes(';base64')) {
-                            try {
-                                return decodeURIComponent(escape(window.atob(payload)));
-                            } catch (error) {
-                                return window.atob(payload);
-                            }
-                        }
-                        try {
-                            return decodeURIComponent(payload);
-                        } catch (error) {
-                            return payload;
-                        }
-                    }
-                    
-                    downloadBtn.onclick = function() {
-                        if (doc.fileUrl && doc.fileUrl !== '#') {
-                            // 创建一个临时链接来下载文件
-                            const link = document.createElement('a');
-                            link.href = doc.fileUrl;
-                            const extension = getFileExtension(doc.fileUrl);
-                            link.download = doc.title + extension; // 使用正确的文件扩展名
-                            document.body.appendChild(link);
-                            link.click();
-                            document.body.removeChild(link);
-                        } else {
-                            alert('该文献暂不提供下载');
-                        }
-                    };
-                    
-                    viewBtn.onclick = async function() {
-                        if (doc.fileUrl && doc.fileUrl !== '#') {
-                            try {
-                                const extension = getFileExtension(doc.fileUrl).toLowerCase();
-                                if (extension === '.txt' || extension === '.md') {
-                                    let textContent = '';
-                                    if (doc.fileUrl.startsWith('data:')) {
-                                        textContent = getDataUrlTextContent(doc.fileUrl);
-                                    } else {
-                                        const textResponse = await fetch(doc.fileUrl);
-                                        if (!textResponse.ok) {
-                                            throw new Error('fetch_failed');
-                                        }
-                                        textContent = await textResponse.text();
-                                    }
-                                    
-                                    const newWindow = window.open('', '_blank');
-                                    if (newWindow) {
-                                        newWindow.document.write(`
-                                            <html>
-                                            <head>
-                                                <title>${doc.title}</title>
-                                                <style>
-                                                    body {
-                                                        font-family: Arial, sans-serif;
-                                                        padding: 20px;
-                                                        max-width: 100%;
-                                                        margin: 0;
-                                                        background-color: #f5f5f5;
-                                                    }
-                                                    .container {
-                                                        max-width: 800px;
-                                                        margin: 0 auto;
-                                                        background-color: white;
-                                                        padding: 20px;
-                                                        border-radius: 8px;
-                                                        box-shadow: 0 0 10px rgba(0,0,0,0.1);
-                                                    }
-                                                    h1 {
-                                                        color: #0A2463;
-                                                        margin-bottom: 20px;
-                                                    }
-                                                    pre {
-                                                        background-color: #f0f0f0;
-                                                        padding: 15px;
-                                                        border-radius: 4px;
-                                                        overflow-x: auto;
-                                                        white-space: pre-wrap;
-                                                        word-wrap: break-word;
-                                                    }
-                                                    .download-link {
-                                                        display: block;
-                                                        margin-top: 20px;
-                                                        text-align: center;
-                                                        padding: 10px;
-                                                        background-color: #0A2463;
-                                                        color: white;
-                                                        text-decoration: none;
-                                                        border-radius: 4px;
-                                                    }
-                                                    .download-link:hover {
-                                                        background-color: #081c4a;
-                                                    }
-                                                </style>
-                                            </head>
-                                            <body>
-                                                <div class="container">
-                                                    <h1>${doc.title}</h1>
-                                                    <p><strong>作者:</strong> ${doc.author}</p>
-                                                    <p><strong>分类:</strong> ${doc.category}</p>
-                                                    <p><strong>上传日期:</strong> ${formattedDate}</p>
-                                                    <hr>
-                                                    <h2>在线阅读</h2>
-                                                    <pre>${textContent}</pre>
-                                                    <a href="${doc.fileUrl}" class="download-link" download="${doc.title}${extension}">
-                                                        <i class="fa fa-download"></i> 下载文献
-                                                    </a>
-                                                </div>
-                                            </body>
-                                            </html>
-                                        `);
-                                        newWindow.document.close();
-                                    } else {
-                                        alert('无法打开新窗口，请检查浏览器设置');
-                                    }
-                                } else {
-                                    const newWindow = window.open('', '_blank');
-                                    
-                                    if (newWindow) {
-                                        const isOffice = ['.doc', '.docx', '.xls', '.xlsx'].includes(extension);
-                                        const isHttp = /^https?:\/\//i.test(doc.fileUrl);
-                                        const viewerUrl = isOffice && isHttp
-                                            ? `https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(doc.fileUrl)}`
-                                            : doc.fileUrl;
-                                        newWindow.document.write(`
-                                            <html>
-                                            <head>
-                                                <title>${doc.title}</title>
-                                                <style>
-                                                    body {
-                                                        font-family: Arial, sans-serif;
-                                                        padding: 20px;
-                                                        max-width: 100%;
-                                                        margin: 0;
-                                                        background-color: #f5f5f5;
-                                                    }
-                                                    .container {
-                                                        max-width: 1000px;
-                                                        margin: 0 auto;
-                                                        background-color: white;
-                                                        padding: 20px;
-                                                        border-radius: 8px;
-                                                        box-shadow: 0 0 10px rgba(0,0,0,0.1);
-                                                    }
-                                                    h1 {
-                                                        color: #0A2463;
-                                                        margin-bottom: 20px;
-                                                    }
-                                                    iframe {
-                                                        width: 100%;
-                                                        height: 700px;
-                                                        border: 1px solid #ddd;
-                                                        border-radius: 4px;
-                                                    }
-                                                    .download-link {
-                                                        display: block;
-                                                        margin-top: 20px;
-                                                        text-align: center;
-                                                        padding: 10px;
-                                                        background-color: #0A2463;
-                                                        color: white;
-                                                        text-decoration: none;
-                                                        border-radius: 4px;
-                                                    }
-                                                    .download-link:hover {
-                                                        background-color: #081c4a;
-                                                    }
-                                                    .message {
-                                                        text-align: center;
-                                                        padding: 20px;
-                                                        background-color: #e3f2fd;
-                                                        color: #1976d2;
-                                                        border-radius: 4px;
-                                                        margin: 20px 0;
-                                                    }
-                                                </style>
-                                            </head>
-                                            <body>
-                                                <div class="container">
-                                                    <h1>${doc.title}</h1>
-                                                    <p><strong>作者:</strong> ${doc.author}</p>
-                                                    <p><strong>分类:</strong> ${doc.category}</p>
-                                                    <p><strong>上传日期:</strong> ${formattedDate}</p>
-                                                    <hr>
-                                                    <h2>在线阅读</h2>
-                                                    <div class="message">
-                                                        <i class="fa fa-info-circle"></i> 正在加载文献，请稍候...
-                                                    </div>
-                                                    <iframe 
-                                                        src="${viewerUrl}" 
-                                                        title="${doc.title}" 
-                                                        onload="document.querySelector('.message').style.display='none'"
-                                                    ></iframe>
-                                                    <a href="${doc.fileUrl}" class="download-link" download="${doc.title}${extension}">
-                                                        <i class="fa fa-download"></i> 下载文献
-                                                    </a>
-                                                </div>
-                                            </body>
-                                            </html>
-                                        `);
-                                        newWindow.document.close();
-                                    } else {
-                                        alert('无法打开新窗口，请检查浏览器设置');
-                                    }
-                                }
-                            } catch (error) {
-                                console.error('在线阅读失败:', error);
-                                alert('在线阅读失败，请尝试下载文献');
-                                const link = document.createElement('a');
-                                link.href = doc.fileUrl;
-                                const extension = getFileExtension(doc.fileUrl);
-                                link.download = doc.title + extension;
-                                document.body.appendChild(link);
-                                link.click();
-                                document.body.removeChild(link);
-                            }
-                        } else {
-                            alert('该文献暂不提供在线阅读');
-                        }
-                    };
-                    document.getElementById('document-detail-date').textContent = formattedDate;
-                    
-                    document.getElementById('document-detail-uploader').textContent = doc.uploaderName;
-                    document.getElementById('document-detail-description').textContent = doc.description;
-                    
-                    documentModal.classList.remove('hidden');
-                }
+        const modal = document.getElementById('document-modal');
+
+        function getAbsoluteUrl(url) {
+            if (!url) return '';
+            try {
+                return new URL(url, window.location.href).href;
+            } catch (e) {
+                return url;
             }
-            
-            // 获取筛选后的文献
-            function getFilteredDocuments() {
-                const searchTerm = searchInput.value.toLowerCase();
-                const category = categoryFilter.value;
-                const sort = sortOption.value;
-                
-                let documents = JSON.parse(localStorage.getItem('documents'));
-                
-                // 筛选已审核的文献，或者管理员可以看到所有文献
-                if (!isCurrentUserAdmin()) {
-                    documents = documents.filter(doc => doc.approved);
+        }
+
+        function getFileExtension(fileUrl) {
+            if (!fileUrl) return '.pdf';
+            try {
+                const u = new URL(fileUrl, window.location.href);
+                const nameParam = u.searchParams.get('name');
+                if (nameParam) {
+                    const parts = nameParam.split('.');
+                    if (parts.length > 1) return '.' + parts.pop().toLowerCase();
                 }
-                
-                // 筛选搜索词
-                if (searchTerm) {
-                    documents = documents.filter(doc => 
-                        doc.title.toLowerCase().includes(searchTerm) || 
-                        doc.author.toLowerCase().includes(searchTerm) || 
-                        doc.description.toLowerCase().includes(searchTerm)
-                    );
+                if (fileUrl.startsWith('data:')) {
+                    return '.pdf';
                 }
-                
-                // 筛选分类
-                if (category !== 'all') {
-                    documents = documents.filter(doc => doc.category === category);
+            } catch(e) {}
+            return '.pdf';
+        }
+
+        function showDetails(id) {
+            const doc = documentsData.find(d => d.id === id);
+            if (!doc) return;
+
+            document.getElementById('document-detail-title').textContent = doc.title;
+            document.getElementById('document-detail-author').textContent = doc.author;
+            document.getElementById('document-detail-category').textContent = doc.category;
+            document.getElementById('document-detail-uploader').textContent = doc.uploaderName || '未知';
+            document.getElementById('document-detail-date').textContent = new Date(doc.uploadDate).toLocaleDateString();
+            document.getElementById('document-detail-description').textContent = doc.description;
+
+            const absUrl = getAbsoluteUrl(doc.fileUrl);
+            const extension = getFileExtension(doc.fileUrl);
+
+            const downloadBtn = document.getElementById('download-document-btn');
+            downloadBtn.onclick = () => {
+                const link = document.createElement('a');
+                link.href = absUrl;
+                const name = new URL(absUrl).searchParams.get('name') || (doc.title + extension);
+                link.download = name;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            };
+
+            const viewBtn = document.getElementById('view-document-btn');
+            viewBtn.onclick = async () => {
+                if (['.txt', '.md'].includes(extension)) {
+                    try {
+                        const res = await fetch(absUrl);
+                        const text = await res.text();
+                        const w = window.open('', '_blank');
+                        w.document.write(`<pre style="padding:20px;white-space:pre-wrap;font-family:monospace">${text}</pre>`);
+                    } catch(e) { alert('读取失败'); }
                 }
-                
-                // 排序
-                switch (sort) {
-                    case 'date-desc':
-                        documents.sort((a, b) => new Date(b.uploadDate) - new Date(a.uploadDate));
-                        break;
-                    case 'date-asc':
-                        documents.sort((a, b) => new Date(a.uploadDate) - new Date(b.uploadDate));
-                        break;
-                    case 'title-asc':
-                        documents.sort((a, b) => a.title.localeCompare(b.title));
-                        break;
-                    case 'title-desc':
-                        documents.sort((a, b) => b.title.localeCompare(a.title));
-                        break;
-                    case 'author-asc':
-                        documents.sort((a, b) => a.author.localeCompare(b.author));
-                        break;
-                    case 'author-desc':
-                        documents.sort((a, b) => b.author.localeCompare(a.author));
-                        break;
+                else if (['.jpg', '.jpeg', '.png', '.gif', '.webp'].includes(extension)) {
+                    window.open(absUrl, '_blank');
                 }
-                
-                return documents;
-            }
-            
-            // 更新管理员专用元素的显示
-            function updateAdminElements() {
-                const adminElements = document.querySelectorAll('.admin-only');
-                
-                if (isCurrentUserAdmin()) {
-                    adminElements.forEach(el => el.classList.remove('hidden'));
-                } else {
-                    adminElements.forEach(el => el.classList.add('hidden'));
+                else if (extension === '.pdf') {
+                    window.open(absUrl, '_blank');
                 }
-            }
-            
-            // 获取当前用户ID
-            function getCurrentUserId() {
-                const currentUser = JSON.parse(sessionStorage.getItem('currentUser'));
-                return currentUser ? currentUser.id : null;
-            }
-            
-            // 获取当前用户名
-            function getCurrentUsername() {
-                const currentUser = JSON.parse(sessionStorage.getItem('currentUser'));
-                return currentUser ? currentUser.username : null;
-            }
-            
-            // 检查当前用户是否为管理员
-            function isCurrentUserAdmin() {
-                const currentUser = JSON.parse(sessionStorage.getItem('currentUser'));
-                return currentUser && currentUser.role === 'admin';
-            }
-            
-            // 检查用户是否已登录
-            async function checkLoginStatus() {
-                try {
-                    // 使用安全的登录状态检查函数
-                    const currentUser = await window.checkLoginStatusSafely();
-                    
-                    if (!currentUser) {
-                        // 重定向到登录页面
-                        window.location.href = 'index.html';
-                    } else {
-                        // 更新欢迎信息
-                        document.getElementById('welcome-user').classList.remove('hidden');
-                        document.getElementById('current-username').textContent = currentUser.username || getCurrentUsername();
-                    }
-                } catch (error) {
-                    console.error('检查登录状态失败:', error);
-                    // 发生严重错误，重定向到首页
-                    window.location.href = 'index.html';
+                else if (['.doc','.docx','.xls','.xlsx','.ppt','.pptx'].includes(extension)) {
+                    // 微软预览服务
+                    window.open(`https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(absUrl)}`, '_blank');
                 }
+                else {
+                    // 其他格式尝试直接打开（浏览器可能会触发下载）
+                    window.open(absUrl, '_blank');
+                }
+            };
+
+            modal.classList.remove('hidden');
+        }
+
+        document.getElementById('close-document-modal').onclick = () => modal.classList.add('hidden');
+        const uploadModal = document.getElementById('upload-modal');
+        document.getElementById('upload-docs-btn').onclick = () => uploadModal.classList.remove('hidden');
+        document.getElementById('close-upload-modal').onclick = () => uploadModal.classList.add('hidden');
+
+        document.getElementById('upload-form').onsubmit = async (e) => {
+            e.preventDefault();
+            const file = document.getElementById('document-file').files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('document', file);
+
+            try {
+                const res = await fetch('upload-document.php', { method: 'POST', body: formData });
+                const json = await res.json();
+                if (!res.ok) throw new Error(json.message || json.error || '上传失败');
+
+                const newDoc = {
+                    id: Date.now().toString(),
+                    title: document.getElementById('document-title').value,
+                    author: document.getElementById('document-author').value,
+                    category: document.getElementById('document-category').value,
+                    description: document.getElementById('document-description').value,
+                    fileUrl: json.url,
+                    uploaderName: JSON.parse(sessionStorage.getItem('currentUser')||'{}').username || 'Guest',
+                    uploadDate: new Date().toISOString(),
+                    approved: true
+                };
+                documentsData.push(newDoc);
+                if (window.safeSaveData) await window.safeSaveData('documents', documentsData);
+                else localStorage.setItem('documents', JSON.stringify(documentsData));
+                renderDocs();
+                uploadModal.classList.add('hidden');
+                alert('上传成功！');
+                document.getElementById('upload-form').reset();
+            } catch (e) {
+                alert('上传失败: ' + e.message);
             }
-        });
-    </script>
+        };
+
+        function checkLoginStatus() {
+            const u = JSON.parse(sessionStorage.getItem('currentUser'));
+            if (!u) window.location.href = 'index.html';
+            document.getElementById('welcome-user').classList.remove('hidden');
+            document.getElementById('current-username').textContent = u.username;
+            document.getElementById('logout-btn').onclick = () => {
+                sessionStorage.removeItem('currentUser');
+                window.location.href = 'index.html';
+            };
+        }
+    });
+</script>
 </body>
 </html>
