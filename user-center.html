@@ -837,6 +837,7 @@
             const previewAvatarIcon = document.getElementById('preview-avatar-icon');
             const previewAvatarImg = document.getElementById('preview-avatar-img');
             const avatarForm = document.getElementById('avatar-form');
+            let previewObjectUrl = null;
 
             function updateAvatarViews(avatarURL) {
                 const userAvatarIcon = document.getElementById('user-avatar-icon');
@@ -893,15 +894,13 @@
             
             avatarInput.addEventListener('change', function(e) {
                 if (e.target.files && e.target.files[0]) {
-                    const reader = new FileReader();
-                    
-                    reader.onload = function(e) {
-                        previewAvatarIcon.classList.add('hidden');
-                        previewAvatarImg.src = e.target.result;
-                        previewAvatarImg.classList.remove('hidden');
-                    };
-                    
-                    reader.readAsDataURL(e.target.files[0]);
+                    if (previewObjectUrl) {
+                        URL.revokeObjectURL(previewObjectUrl);
+                    }
+                    previewObjectUrl = URL.createObjectURL(e.target.files[0]);
+                    previewAvatarIcon.classList.add('hidden');
+                    previewAvatarImg.src = previewObjectUrl;
+                    previewAvatarImg.classList.remove('hidden');
                 } else {
                     const avatar = getCachedAvatar();
                     updateAvatarViews(avatar || null);
@@ -917,15 +916,21 @@
                         
                         if (user) {
                             const file = avatarInput.files[0];
-                            const avatarURL = await new Promise((resolve, reject) => {
-                                const reader = new FileReader();
-                                reader.onload = () => resolve(reader.result);
-                                reader.onerror = () => reject(new Error('头像读取失败'));
-                                reader.readAsDataURL(file);
+                            const formData = new FormData();
+                            formData.append('avatar', file);
+                            const response = await fetch('upload-avatar.php', {
+                                method: 'POST',
+                                body: formData
                             });
-                            
+                            if (!response.ok) {
+                                throw new Error('头像上传失败');
+                            }
+                            const result = await response.json();
+                            if (!result || !result.url) {
+                                throw new Error('头像上传失败');
+                            }
+                            const avatarURL = result.url;
                             updateAvatarViews(avatarURL);
-                            
                             await callCloudFunction('updateUser', { id: user.id, avatar: avatarURL });
                             cachedUserData = { ...(cachedUserData || {}), id: user.id, avatar: avatarURL };
                             const currentUser = JSON.parse(sessionStorage.getItem('currentUser'));
@@ -933,8 +938,11 @@
                                 currentUser.avatar = avatarURL;
                                 sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
                             }
-                            
                             avatarInput.value = '';
+                            if (previewObjectUrl) {
+                                URL.revokeObjectURL(previewObjectUrl);
+                                previewObjectUrl = null;
+                            }
                             changeAvatarModal.classList.add('hidden');
                             showSuccessModal('头像更新成功', '您的头像已成功更新。');
                         }
