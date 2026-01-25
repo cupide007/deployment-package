@@ -11,7 +11,7 @@ if (!in_array($extension, $allowed, true)) {
     exit;
 }
 $filePath = 'uploads/avatars/' . $name;
-if (!is_file($filePath)) {
+if (!is_file($filePath) || !is_readable($filePath)) {
     http_response_code(404);
     exit;
 }
@@ -24,5 +24,16 @@ $mimeTypes = [
 ];
 $contentType = $mimeTypes[$extension] ?? 'application/octet-stream';
 header('Content-Type: ' . $contentType);
+header('X-Content-Type-Options: nosniff');
 header('Cache-Control: public, max-age=31536000');
-readfile($filePath);
+clearstatcache(true, $filePath);
+$fileSize = filesize($filePath);
+if ($fileSize === false) {
+    http_response_code(500);
+    exit;
+}
+header('Content-Length: ' . $fileSize);
+$result = readfile($filePath);
+if ($result === false) {
+    http_response_code(500);
+}
