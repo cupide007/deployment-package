@@ -29,4 +29,3 @@ function getJsonInput() {
 if (!class_exists('Database')) {
     jsonError('严重错误：未找到平台数据库类，请在热铁盒环境中运行。', 500);
 }
-?>
