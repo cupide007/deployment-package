@@ -1,4 +1,5 @@
 <?php
+ob_start();
 require_once '../common.php';
 $db = new Database('retinbox-main');
 
@@ -11,14 +12,11 @@ $session = json_decode($sessionData, true);
 $userId = $session['userId'];
 
 $userRaw = $db->get($userId);
-if (!$userRaw) jsonError('用户数据不存在', 401);
-$user = json_decode($userRaw, true);
-$username = $user['username'];
+$user = json_decode($userRaw ?: '[]', true);
+$username = $user['username'] ?? '未知用户';
 
-$input = json_decode(file_get_contents('php://input'), true);
-$cardType = $input['cardType'] ?? 'debit';
-$inputHolder = trim($input['holderName'] ?? '');
-$holderName = $inputHolder ?: $username;
+$cardType = $_GET['cardType'] ?? 'debit';
+$holderName = trim($_GET['holderName'] ?? '') ?: $username;
 
 do {
     $cardNumber = '4' . rand(100, 999) . rand(1000, 9999) . rand(1000, 9999) . rand(1000, 9999);
@@ -39,13 +37,12 @@ $newCard = [
 $key = "bank_account_" . $userId;
 $accountRaw = $db->get($key);
 $account = $accountRaw ? json_decode($accountRaw, true) : ['cards' => []];
-
-if (!isset($account['cards'])) $account['cards'] = [];
 $account['cards'][] = $newCard;
 
 $db->set($key, json_encode($account));
-
 $db->set('idx_card_' . $cardNumber, $userId);
 
-jsonResponse(['success' => true, 'card' => $newCard]);
-?>
+ob_clean();
+header('Content-Type: application/json; charset=utf-8');
+echo json_encode(['success' => true, 'card' => $newCard], JSON_UNESCAPED_UNICODE);
+exit;

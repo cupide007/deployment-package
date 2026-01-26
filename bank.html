@@ -1065,7 +1065,8 @@
                         });
                         this.classList.add('border-primary', 'shadow-md');
                         this.classList.remove('border-gray-200');
-                        const type = this.dataset.type;
+
+                        const type = this.getAttribute('data-type');
                         document.getElementById('card-type').value = type === 'debit' ? '借记卡' : '信用卡';
                         document.getElementById('card-type').dataset.value = type;
                     });
@@ -1077,13 +1078,19 @@
                         e.preventDefault();
                         const type = document.getElementById('card-type').dataset.value;
                         const holder = document.getElementById('card-holder').value;
-                        if (!type) return alert('请选择卡类型');
+                        if (!type) {
+                            alert('请先选择卡片类型');
+                            return;
+                        }
 
-                        const data = await apiCall('bank/createCard.php', 'POST', { cardType: type, holderName: holder });
+                        const url = `bank/createCard.php?cardType=${encodeURIComponent(type)}&holderName=${encodeURIComponent(holder)}`;
+                        const data = await apiCall(url, 'GET');
+
                         if (data.success) {
                             const modal = document.getElementById('card-success-modal');
                             document.getElementById('new-card-number').textContent = formatCardNumber(data.card.cardNumber);
                             document.getElementById('new-card-holder').textContent = data.card.holderName;
+                            document.getElementById('new-card-type').textContent = type === 'debit' ? '借记卡' : '信用卡';
                             if(modal) modal.classList.remove('hidden');
                             fetchCards();
                         } else {
