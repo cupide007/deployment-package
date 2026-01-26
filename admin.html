@@ -1654,11 +1654,6 @@
             documentStatusFilter.addEventListener('change', filterDocuments);
         }
 
-        const documentFileInput = document.getElementById('document-file');
-        if (documentFileInput) {
-            documentFileInput.addEventListener('change', handleDocumentFilePreview);
-        }
-
         const permissionSearchInput = document.getElementById('permission-search');
         if (permissionSearchInput) {
             permissionSearchInput.addEventListener('input', filterPermissions);
@@ -3047,23 +3042,6 @@
             }
         }
     }
-    // 删除文献
-    function deleteDocument(docId) {
-        const documents = JSON.parse(localStorage.getItem('documents')) || [];
-        const filteredDocuments = documents.filter(d => d.id !== docId);
-
-        localStorage.setItem('documents', JSON.stringify(filteredDocuments));
-
-        loadLibraryData();
-
-        if (currentLibraryDetailId === docId) {
-            currentLibraryDetailId = null;
-            document.getElementById('document-detail-panel').classList.add('hidden');
-            document.getElementById('document-upload-panel').classList.remove('hidden');
-        }
-
-        alert('文献删除成功');
-    }
 
     // 处理账户操作
     async function handleAccountAction(e) {
@@ -3422,6 +3400,19 @@
     function handleEditDocumentClick() {
         const docId = this.dataset.id;
         openDocumentEditor(docId);
+    }
+    function handleDeleteDocumentClick() {
+        const docId = this.dataset.id;
+        const docName = this.dataset.name;
+
+        const modal = document.getElementById('confirm-delete-modal');
+        if (modal) {
+            document.getElementById('delete-target').textContent = docName;
+            modal.dataset.type = 'document';
+            modal.dataset.id = docId;
+
+            modal.classList.remove('hidden');
+        }
     }
 
     function openDocumentEditor(docId) {
