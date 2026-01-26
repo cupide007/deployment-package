@@ -51,14 +51,15 @@
             }
         }
     </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style type="text/tailwindcss">
         @layer utilities {
             .text-shadow { text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); }
             .bg-gradient-primary { background: linear-gradient(135deg, theme('colors.primary'), theme('colors.accent')); }
-            .paper-texture { background-color: #f8f5e6; background-image: url("paper-texture.svg"); }
+            /*.paper-texture { background-color: #f8f5e6; background-image: url("paper-texture.svg"); }*/
             .gold-border { border: 2px solid #E6AF2E; box-shadow: 0 0 10px rgba(230, 175, 46, 0.3); }
+            .paper-texture { background-color: #f8f5e6; }
             .id-card-shadow { box-shadow: 0 0 20px rgba(0, 0, 0, 0.3), 0 0 60px rgba(230, 175, 46, 0.1); }
             .passport-shadow { box-shadow: 0 0 30px rgba(0, 0, 0, 0.4), 0 0 80px rgba(10, 36, 99, 0.2); }
         }
@@ -69,7 +70,7 @@
 <nav id="main-nav" class="bg-primary text-light shadow-lg fixed w-full z-50 transition-all duration-300">
     <div class="container mx-auto px-4 py-3 flex justify-between items-center">
         <div class="flex items-center space-x-2">
-            <img src="flag.png" alt="安提斯特国旗" class="h-10 w-10 rounded-full">
+            <img src="flag.png" crossorigin="anonymous" alt="安提斯特国旗" class="h-10 w-10 rounded-full">
             <span class="text-xl font-bold">安提斯特虚拟国</span>
         </div>
         <div class="hidden md:flex space-x-6">
@@ -127,8 +128,7 @@
                         <div class="w-48 h-48 md:w-64 md:h-64 rounded-full bg-white p-2 shadow-2xl">
                             <div class="w-full h-full rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
                                 <i class="fa fa-user-circle text-9xl text-gray-400" id="user-avatar-icon"></i>
-                                <img id="user-avatar-img" class="w-full h-full object-cover hidden" alt="用户头像">
-                            </div>
+                                <img id="user-avatar-img" crossorigin="anonymous" class="w-full h-full object-cover hidden" alt="用户头像">                            </div>
                         </div>
                         <div class="absolute -bottom-4 -right-4 bg-secondary text-primary rounded-full w-16 h-16 flex items-center justify-center shadow-lg cursor-pointer hover:bg-opacity-90 transition-all duration-200" id="change-avatar-btn">
                             <i class="fa fa-camera text-2xl"></i>
@@ -317,7 +317,7 @@
                                         <div class="flex flex-1">
                                             <div class="w-24 h-32 bg-gray-200 rounded border border-gray-300 overflow-hidden mr-4 flex-shrink-0">
                                                 <i class="fa fa-user text-4xl text-gray-400 flex items-center justify-center h-full" id="id-avatar-icon"></i>
-                                                <img id="id-avatar-img" class="w-full h-full object-cover hidden" alt="用户头像">
+                                                <img id="id-avatar-img" crossorigin="anonymous" class="w-full h-full object-cover hidden" alt="用户头像">
                                             </div>
 
                                             <div class="flex-1">
@@ -388,7 +388,7 @@
                                             <div class="flex mb-6">
                                                 <div class="w-28 h-36 bg-gray-200 rounded border border-gray-300 overflow-hidden mr-6 flex-shrink-0">
                                                     <i class="fa fa-user text-5xl text-gray-400 flex items-center justify-center h-full" id="passport-avatar-icon"></i>
-                                                    <img id="passport-avatar-img" class="w-full h-full object-cover hidden" alt="用户头像">
+                                                    <img id="passport-avatar-img" crossorigin="anonymous" class="w-full h-full object-cover hidden" alt="用户头像">
                                                 </div>
 
                                                 <div class="flex-1">
@@ -516,7 +516,7 @@
         <div class="flex flex-col md:flex-row justify-between items-center">
             <div class="mb-4 md:mb-0">
                 <div class="flex items-center space-x-2">
-                    <img src="flag.png" alt="安提斯特国旗" class="h-8 w-8 rounded-full">
+                    <img src="flag.png" crossorigin="anonymous" alt="安提斯特国旗" class="h-8 w-8 rounded-full">
                     <span class="text-lg font-bold">安提斯特虚拟国</span>
                 </div>
                 <p class="text-sm text-gray-300 mt-2">
@@ -650,17 +650,20 @@
         }
 
         function updateAvatarViews(avatarURL) {
-            const els = [
-                'user-avatar', 'id-avatar', 'passport-avatar', 'preview-avatar'
-            ];
-
+            const els = ['user-avatar', 'id-avatar', 'passport-avatar', 'preview-avatar'];
             els.forEach(prefix => {
                 const icon = document.getElementById(prefix + '-icon');
                 const img = document.getElementById(prefix + '-img');
 
                 if (avatarURL) {
                     icon.classList.add('hidden');
-                    img.src = avatarURL;
+                    // 关键点1：先设置跨域许可
+                    img.setAttribute('crossorigin', 'anonymous');
+                    // 关键点2：加时间戳，强制刷新图片缓存
+                    const cleanURL = avatarURL.includes('?')
+                        ? `${avatarURL}&t=${new Date().getTime()}`
+                        : `${avatarURL}?t=${new Date().getTime()}`;
+                    img.src = cleanURL;
                     img.classList.remove('hidden');
                 } else {
                     img.classList.add('hidden');
@@ -928,28 +931,90 @@
             }
         });
 
-        // 下载身份证 (保持不变)
+        // 下载身份证
         document.getElementById('download-id-card-btn').addEventListener('click', function() {
-            const idCardElement = document.getElementById('id-card-front');
-            html2canvas(idCardElement, { scale: 4, useCORS: true, backgroundColor: '#f8f5e6' }).then(canvas => {
-                const imgData = canvas.toDataURL('image/png', 1.0);
-                const { jsPDF } = window.jspdf;
-                const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: [85.6, 54] });
-                doc.addImage(imgData, 'PNG', 0, 0, 85.6, 54);
-                doc.save(`antister-id-card-${document.getElementById('id-number').textContent}.pdf`);
+            const btn = this;
+            const originalText = btn.innerHTML;
+            const element = document.getElementById('id-card-front');
+
+            // 1. 按钮变 loading 防止重复点击
+            btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> 生成中...';
+            btn.disabled = true;
+
+            // 2. 截图配置
+            html2canvas(element, {
+                scale: 3,                // 稍微降低清晰度提高成功率
+                useCORS: true,           // 必须开启，为了下头像
+                allowTaint: false,       // 禁止污染
+                backgroundColor: '#f8f5e6',
+                logging: false
+            }).then(canvas => {
+                try {
+                    // 3. 生成 PDF
+                    const imgData = canvas.toDataURL('image/png', 0.9);
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: [85.6, 54] });
+                    doc.addImage(imgData, 'PNG', 0, 0, 85.6, 54);
+                    doc.save('my-id-card.pdf');
+                } catch (e) {
+                    alert('生成失败: ' + e.message);
+                }
+            }).catch(e => {
+                // 4. 错误拦截
+                if(e.message.includes('Tainted')) {
+                    alert('错误：头像跨域失败。请尝试刷新页面再试。');
+                } else {
+                    alert('下载出错：' + e.message);
+                }
+            }).finally(() => {
+                // 5. 恢复按钮
+                btn.innerHTML = originalText;
+                btn.disabled = false;
             });
         });
 
-        // 下载护照 (保持不变)
         document.getElementById('download-passport-btn').addEventListener('click', function() {
+            if (!window.jspdf) {
+                alert('错误：jsPDF 库未加载，请检查网络或更换 CDN 源。');
+                return;
+            }
+
             const passportElement = document.getElementById('passport-page');
-            html2canvas(passportElement, { scale: 4, useCORS: true, backgroundColor: '#ffffff' }).then(canvas => {
-                const imgData = canvas.toDataURL('image/png', 1.0);
-                const { jsPDF } = window.jspdf;
-                const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: [88, 125] });
-                const ratio = Math.min(88 / (canvas.width / 4), 125 / (canvas.height / 4)); // 简化的比例计算
-                doc.addImage(imgData, 'PNG', 0, 0, 88, 125);
-                doc.save(`antister-passport.pdf`);
+
+            const btn = this;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fa fa-spinner fa-spin mr-2"></i>生成中...';
+            btn.disabled = true;
+
+            html2canvas(passportElement, {
+                scale: 4,
+                useCORS: true,
+                backgroundColor: '#ffffff'
+            }).then(canvas => {
+                try {
+                    const imgData = canvas.toDataURL('image/png', 1.0);
+                    const { jsPDF } = window.jspdf;
+
+                    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: [88, 125] });
+
+                    doc.addImage(imgData, 'PNG', 0, 0, 88, 125);
+
+                    doc.save('antister-passport.pdf');
+                } catch (err) {
+                    console.error('PDF 生成错误:', err);
+                    alert('生成 PDF 文件时出错: ' + err.message);
+                }
+            }).catch(err => {
+                console.error('截图失败:', err);
+                if (err.message && err.message.includes('Tainted')) {
+                    alert('错误：图片跨域导致无法生成截图，请确保头像服务器允许 CORS。');
+                } else {
+                    alert('生成护照截图失败: ' + err.message);
+                }
+            }).finally(() => {
+                // 恢复按钮状态
+                btn.innerHTML = originalText;
+                btn.disabled = false;
             });
         });
 
