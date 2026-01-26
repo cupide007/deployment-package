@@ -8,7 +8,6 @@
     <link rel="icon" href="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f4bb.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
-    <script src="retinbox-config.js"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -96,8 +95,10 @@
         </div>
         <div class="hidden md:flex space-x-6">
             <a href="index.html" class="hover:text-secondary transition-colors duration-200">首页</a>
+            <a href="index.html#about" class="hover:text-secondary transition-colors duration-200">国家介绍</a>
             <a href="bank.html" class="hover:text-secondary transition-colors duration-200">国家银行</a>
             <a href="#" class="text-secondary font-medium">国家图书馆</a>
+            <a href="user-center.html" class="nav-user-center hidden hover:text-secondary transition-colors duration-200">用户中心</a>
         </div>
         <div class="flex items-center space-x-4">
             <span id="welcome-user" class="hidden">欢迎，<span id="current-username"></span></span>
@@ -112,8 +113,10 @@
     <div id="mobile-menu" class="hidden md:hidden bg-primary border-t border-gray-700 animate-slide-down">
         <div class="container mx-auto px-4 py-2 flex flex-col space-y-3">
             <a href="index.html" class="py-2 hover:text-secondary transition-colors duration-200">首页</a>
+            <a href="index.html#about" class="py-2 hover:text-secondary transition-colors duration-200">国家介绍</a>
             <a href="bank.html" class="py-2 hover:text-secondary transition-colors duration-200">国家银行</a>
             <a href="#" class="py-2 text-secondary font-medium">国家图书馆</a>
+            <a href="user-center.html" class="nav-user-center hidden py-2 hover:text-secondary transition-colors duration-200">用户中心</a>
         </div>
     </div>
 </nav>
@@ -407,36 +410,10 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', async function() {
-        const initScript = document.createElement('script');
-        initScript.src = 'init-data.js';
-        document.head.appendChild(initScript);
+        let documentsData = [];
 
-        checkLoginStatus();
-
-        const initialDocuments = [];
-        let documentsData = null;
-        if (window.safeGetData) {
-            documentsData = await window.safeGetData('documents', []);
-        } else {
-            const storedDocuments = localStorage.getItem('documents');
-            documentsData = storedDocuments ? JSON.parse(storedDocuments) : [];
-        }
-        if (!Array.isArray(documentsData)) {
-            documentsData = documentsData && Array.isArray(documentsData.documents) ? documentsData.documents : [];
-        }
-        if (!Array.isArray(documentsData)) {
-            documentsData = [];
-        }
-        const storedDocuments = localStorage.getItem('documents');
-        const parsedStoredDocuments = storedDocuments ? JSON.parse(storedDocuments) : [];
-        if (Array.isArray(parsedStoredDocuments) && parsedStoredDocuments.length > 0) {
-            documentsData = parsedStoredDocuments;
-        } else if (documentsData.length === 0) {
-            documentsData = initialDocuments;
-        }
-        if (!storedDocuments || documentsData.length > 0) {
-            localStorage.setItem('documents', JSON.stringify(documentsData));
-        }
+        await checkLoginStatus();
+        await loadDocuments();
 
         const mobileMenuBtn = document.getElementById('mobile-menu-btn');
         const mobileMenu = document.getElementById('mobile-menu');
@@ -447,7 +424,8 @@
 
         const logoutBtn = document.getElementById('logout-btn');
 
-        logoutBtn.addEventListener('click', function() {
+        logoutBtn.addEventListener('click', async function() {
+            await fetch('auth/logout.php');
             sessionStorage.removeItem('currentUser');
             window.location.href = 'index.html';
         });
@@ -534,62 +512,39 @@
             });
         });
 
-        async function uploadDocumentFile(file) {
+        async function handleDocumentUpload(file, meta) {
             const formData = new FormData();
             formData.append('document', file);
-            const response = await fetch('upload-document.php', {
-                method: 'POST',
-                body: formData
-            });
-            if (!response.ok) {
-                const json = await response.json();
-                throw new Error(json.message || json.error || 'upload_failed');
-            }
-            const result = await response.json();
-            if (!result || !result.url) {
-                throw new Error('invalid_response');
-            }
-            return result.url;
-        }
+            formData.append('title', meta.title);
+            formData.append('author', meta.author);
+            formData.append('category', meta.category);
+            formData.append('description', meta.description);
 
-        async function handleDocumentUpload(file, meta) {
-            let fileUrl = '';
             try {
-                fileUrl = await uploadDocumentFile(file);
+                const response = await fetch('library/upload-document.php', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (!result.success) {
+                    throw new Error(result.error || '上传失败');
+                }
+
+                documentsData.unshift(result.document);
+                updateDocumentsDisplay();
+
+                document.getElementById('success-title').textContent = meta.title;
+                document.getElementById('success-author').textContent = meta.author;
+                document.getElementById('success-category').textContent = meta.category;
+                uploadSuccessModal.classList.remove('hidden');
+
+                uploadModal.classList.add('hidden');
+                uploadForm.reset();
             } catch (error) {
                 alert('文件上传失败: ' + error.message);
-                return;
             }
-
-            const newDocument = {
-                id: Date.now().toString(),
-                title: meta.title,
-                author: meta.author,
-                category: meta.category,
-                description: meta.description,
-                fileUrl,
-                uploaderId: getCurrentUserId(),
-                uploaderName: getCurrentUsername(),
-                uploadDate: new Date().toISOString(),
-                approved: isCurrentUserAdmin()
-            };
-
-            const documents = JSON.parse(localStorage.getItem('documents')) || [];
-            documents.push(newDocument);
-            localStorage.setItem('documents', JSON.stringify(documents));
-            if (window.safeSaveData) {
-                await window.safeSaveData('documents', documents);
-            }
-
-            updateDocumentsDisplay();
-
-            document.getElementById('success-title').textContent = meta.title;
-            document.getElementById('success-author').textContent = meta.author;
-            document.getElementById('success-category').textContent = meta.category;
-            uploadSuccessModal.classList.remove('hidden');
-
-            uploadModal.classList.add('hidden');
-            uploadForm.reset();
         }
 
         const searchInput = document.getElementById('search-input');
@@ -625,11 +580,9 @@
                 return;
             }
 
-            const documents = JSON.parse(localStorage.getItem('documents'));
-
             const keywords = new Set();
 
-            documents.forEach(doc => {
+            documentsData.forEach(doc => {
                 const titleWords = doc.title.split(/\s+/);
                 titleWords.forEach(word => {
                     if (word.toLowerCase().includes(searchTerm)) {
@@ -734,7 +687,6 @@
         });
 
         updateDocumentsDisplay();
-
         updateAdminElements();
 
         function updateDocumentsDisplay() {
@@ -866,21 +818,18 @@
             if (!fileUrl) return '.pdf';
             try {
                 const u = new URL(fileUrl, window.location.href);
-                const nameParam = u.searchParams.get('name');
-                if (nameParam) {
-                    const parts = nameParam.split('.');
-                    if (parts.length > 1) return '.' + parts.pop().toLowerCase();
-                }
-                if (fileUrl.startsWith('data:')) {
-                    return '.pdf';
+                const nameParam = u.searchParams.get('id');
+                const doc = documentsData.find(d => d.id === nameParam);
+                if(doc && doc.name) {
+                    const parts = doc.name.split('.');
+                    if(parts.length > 1) return '.' + parts.pop().toLowerCase();
                 }
             } catch(e) {}
             return '.pdf';
         }
 
         function showDocumentDetails(docId) {
-            const documents = JSON.parse(localStorage.getItem('documents'));
-            const doc = documents.find(d => d.id === docId);
+            const doc = documentsData.find(d => d.id === docId);
 
             if (doc) {
                 document.getElementById('document-modal-title').textContent = doc.title;
@@ -901,8 +850,7 @@
                     if (doc.fileUrl && doc.fileUrl !== '#') {
                         const link = document.createElement('a');
                         link.href = absUrl;
-                        const name = new URL(absUrl).searchParams.get('name') || (doc.title + extension);
-                        link.download = name;
+                        link.download = doc.name || 'document';
                         document.body.appendChild(link);
                         link.click();
                         document.body.removeChild(link);
@@ -916,16 +864,11 @@
                         try {
                             if (['.txt', '.md'].includes(extension)) {
                                 let textContent = '';
-                                if (doc.fileUrl.startsWith('data:')) {
-                                    const parts = doc.fileUrl.split(',');
-                                    textContent = decodeURIComponent(escape(window.atob(parts[1])));
-                                } else {
-                                    const textResponse = await fetch(absUrl);
-                                    if (!textResponse.ok) {
-                                        throw new Error('fetch_failed');
-                                    }
-                                    textContent = await textResponse.text();
+                                const textResponse = await fetch(absUrl);
+                                if (!textResponse.ok) {
+                                    throw new Error('fetch_failed');
                                 }
+                                textContent = await textResponse.text();
 
                                 const safeText = textContent
                                     .replace(/&/g, "&amp;")
@@ -974,7 +917,7 @@
             const category = categoryFilter.value;
             const sort = sortOption.value;
 
-            let documents = JSON.parse(localStorage.getItem('documents'));
+            let documents = documentsData;
 
             if (!isCurrentUserAdmin()) {
                 documents = documents.filter(doc => doc.approved);
@@ -1026,16 +969,6 @@
             }
         }
 
-        function getCurrentUserId() {
-            const currentUser = JSON.parse(sessionStorage.getItem('currentUser'));
-            return currentUser ? currentUser.id : null;
-        }
-
-        function getCurrentUsername() {
-            const currentUser = JSON.parse(sessionStorage.getItem('currentUser'));
-            return currentUser ? currentUser.username : null;
-        }
-
         function isCurrentUserAdmin() {
             const currentUser = JSON.parse(sessionStorage.getItem('currentUser'));
             return currentUser && currentUser.role === 'admin';
@@ -1043,17 +976,33 @@
 
         async function checkLoginStatus() {
             try {
-                const currentUser = await window.checkLoginStatusSafely();
+                const response = await fetch('auth/getCurrentUser.php');
+                const result = await response.json();
 
-                if (!currentUser) {
+                if (!result.success || !result.user) {
                     window.location.href = 'index.html';
                 } else {
+                    const currentUser = result.user;
+                    sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
                     document.getElementById('welcome-user').classList.remove('hidden');
-                    document.getElementById('current-username').textContent = currentUser.username || getCurrentUsername();
+                    document.getElementById('current-username').textContent = currentUser.username;
                 }
             } catch (error) {
-                console.error('检查登录状态失败:', error);
                 window.location.href = 'index.html';
+            }
+        }
+
+        async function loadDocuments() {
+            try {
+                const response = await fetch('library/getDocuments.php');
+                const result = await response.json();
+
+                if (result.success && Array.isArray(result.documents)) {
+                    documentsData = result.documents;
+                    updateDocumentsDisplay();
+                }
+            } catch (error) {
+                console.error(error);
             }
         }
     });
