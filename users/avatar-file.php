@@ -1,17 +1,34 @@
 <?php
-$name = basename($_GET['name'] ?? 'default.png');
-$filePath = __DIR__ . '/../uploads/avatars/' . $name;
+require_once '../common.php';
+$db = new Database('retinbox-main');
 
-if (!file_exists($filePath)) {
-    http_response_code(404);
-    exit('Not Found');
+header("Access-Control-Allow-Origin: *");
+
+$name = $_GET['name'] ?? '';
+
+if (strpos($name, 'DB:') === 0) {
+    $userId = substr($name, 3);
+    $metaRaw = $db->get('avatar_meta_' . $userId);
+
+    if (!$metaRaw) {
+        http_response_code(404);
+        exit;
+    }
+
+    $meta = json_decode($metaRaw, true);
+    header('Content-Type: ' . $meta['mime']);
+
+    for ($i = 0; $i < $meta['count']; $i++) {
+        echo base64_decode($db->get('avatar_chunk_' . $userId . '_' . $i));
+    }
+} else {
+    $file = __DIR__ . '/../uploads/avatars/' . basename($name);
+    if (file_exists($file)) {
+        $info = getimagesize($file);
+        header('Content-Type: ' . $info['mime']);
+        readfile($file);
+    } else {
+        http_response_code(404);
+    }
 }
-
-$ext = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
-$mimeTypes = [
-    'jpg' => 'image/jpeg', 'jpeg' => 'image/jpeg',
-    'png' => 'image/png', 'gif' => 'image/gif', 'webp' => 'image/webp'
-];
-header('Content-Type: ' . ($mimeTypes[$ext] ?? 'application/octet-stream'));
-readfile($filePath);
 ?>

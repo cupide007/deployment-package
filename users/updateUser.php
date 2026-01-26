@@ -15,8 +15,10 @@ if (!$userRaw) jsonError('用户不存在');
 
 $user = json_decode($userRaw, true);
 
+// 修改用户名
 if (isset($data['username']) && $data['username'] !== $user['username']) {
     $newUsername = trim($data['username']);
+    if (empty($newUsername)) jsonError('用户名不能为空');
     if ($db->get("idx_username_" . md5($newUsername))) {
         jsonError('用户名已存在');
     }
@@ -25,8 +27,13 @@ if (isset($data['username']) && $data['username'] !== $user['username']) {
     $db->set("idx_username_" . md5($newUsername), $userId);
 }
 
-if (isset($data['bio'])) $user['bio'] = strip_tags($data['bio']);
-if (isset($data['gender'])) $user['gender'] = $data['gender'];
+// 批量处理普通字段
+$fields = ['bio', 'gender', 'qq', 'race', 'age', 'residence'];
+foreach ($fields as $field) {
+    if (isset($data[$field])) {
+        $user[$field] = trim($data[$field]);
+    }
+}
 
 $db->set($userId, json_encode($user));
 
