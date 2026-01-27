@@ -19,6 +19,9 @@ if ($amount <= 0) jsonError('金额必须大于0');
 $sessionData = $db->get('sess_' . $sessionId);
 $senderId = json_decode($sessionData, true)['userId'];
 
+$senderUserRaw = $db->get($senderId);
+$senderUsername = $senderUserRaw ? json_decode($senderUserRaw, true)['username'] : $senderId;
+
 $senderKey = "bank_account_" . $senderId;
 $senderAccount = json_decode($db->get($senderKey), true);
 $senderCardIndex = -1;
@@ -69,6 +72,7 @@ if ($senderId !== $recipientId) {
 
 $txId = 'TRX' . time();
 $date = date('c');
+
 $txData = [
     'id' => $txId, 'type' => 'transfer', 'amount' => -$totalDeduction,
     'description' => $description, 'timestamp' => $date
@@ -86,6 +90,20 @@ $recipientTxKey = "bank_tx_" . $recipientId;
 $recipientTxs = json_decode($db->get($recipientTxKey) ?: '[]', true);
 array_unshift($recipientTxs, $recTxData);
 $db->set($recipientTxKey, json_encode($recipientTxs));
+
+$globalLogData = [
+    'id' => $txId,
+    'userId' => $senderId,
+    'username' => $senderUsername,
+    'type' => 'transfer',
+    'amount' => $amount,
+    'timestamp' => date('Y-m-d H:i:s'),
+    'description' => "用户转账: " . $senderUsername . " -> " . $toCardNumber . " (" . $description . ")"
+];
+$globalLogsRaw = $db->get('bank_transactions');
+$globalLogs = $globalLogsRaw ? json_decode($globalLogsRaw, true) : [];
+array_unshift($globalLogs, $globalLogData);
+$db->set('bank_transactions', json_encode(array_slice($globalLogs, 0, 500)));
 
 ob_clean();
 jsonResponse(['success' => true]);

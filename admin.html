@@ -1270,6 +1270,19 @@
             } else {
                 tableBody.innerHTML = '<tr><td colspan="6" class="px-6 py-8 text-center text-gray-500">未找到匹配的交易记录</td></tr>';
             }
+
+            const todayStr = new Date().toISOString().split('T')[0];
+            let todayCount = 0;
+            let todaySum = 0;
+
+            res.transactions.forEach(tx => {
+                if (tx.timestamp && tx.timestamp.startsWith(todayStr)) {
+                    todayCount++;
+                    todaySum += Math.abs(parseFloat(tx.amount || 0));
+                }
+            });
+            document.getElementById('bank-today-transactions').textContent = todayCount;
+            document.getElementById('bank-today-amount').textContent = '¥' + todaySum.toFixed(2);
         }
     }
 
@@ -1479,6 +1492,15 @@
             if (res.success) {
                 globalCardsCache = res.cards;
                 renderBankTable(globalCardsCache);
+
+                document.getElementById('bank-total-accounts').textContent = res.total;
+
+                let totalBalance = 0;
+                res.cards.forEach(c => totalBalance += parseFloat(c.balance || 0));
+                document.getElementById('bank-total-balance').textContent = '¥' + totalBalance.toLocaleString();
+
+                renderBankTable(res.cards);
+                renderBankPagination(res.total);
                 tableBody.innerHTML = res.cards.map(card => `
             <tr>
                 <td class="px-3 py-2">${card.username}</td>
@@ -1534,18 +1556,6 @@
                 html += `<button onclick="loadBankData(${i})" class="px-3 py-1 mx-1 border ${i === currentBankPage ? 'bg-primary text-white' : 'bg-white'}">${i}</button>`;
             }
             container.innerHTML = html;
-        }
-
-        async function adjustBalance(cardId) {
-            const amount = prompt('请输入新的余额:');
-            if (amount !== null) {
-                const res = await apiFetch('bank/updateBalance.php', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({cardId, newBalance: amount})
-                });
-                if (res.success) await loadBankData();
-            }
         }
 
         async function loadLibraryData() {
@@ -1817,18 +1827,28 @@
 
             document.getElementById('account-action-form').addEventListener('submit', async (e) => {
                 e.preventDefault();
+
                 const actionType = document.getElementById('action-type').value;
                 const userId = document.getElementById('action-username').value;
                 const cardId = document.getElementById('action-card').value;
                 const amount = document.getElementById('action-amount').value;
 
                 let url = '';
-                if (actionType === 'deposit' || actionType === 'withdraw' || actionType === 'adjust-limit') {
+
+                if (actionType === 'deposit' || actionType === 'withdraw') {
+                    const params = new URLSearchParams({
+                        cardId: cardId,
+                        userId: userId,
+                        amount: amount,
+                        action: actionType
+                    });
+                    url = `bank/updateBalance.php?${params.toString()}`;
+                } else if (actionType === 'adjust-limit') {
                     const params = new URLSearchParams({
                         id: cardId,
                         userId: userId,
                         balance: amount,
-                        action: actionType === 'adjust-limit' ? 'adjustLimit' : 'updateBalance'
+                        action: 'adjustLimit'
                     });
                     url = `bank/updateCard.php?${params.toString()}`;
                 } else if (actionType === 'transfer') {
@@ -1836,7 +1856,7 @@
                     url = `bank/transfer.php?userId=${userId}&targetUserId=${targetUserId}&amount=${amount}&cardId=${cardId}`;
                 }
 
-                const res = await apiFetch(url, {method: 'GET'});
+                const res = await apiFetch(url, { method: 'GET' });
                 if (res.success) {
                     alert('操作成功');
                     document.getElementById('account-action-modal').classList.add('hidden');
