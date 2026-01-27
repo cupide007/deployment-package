@@ -8,15 +8,17 @@ if (!$sessionId) jsonError('未登录', 401);
 $sessionData = $db->get('sess_' . $sessionId);
 if (!$sessionData) jsonError('会话已过期', 401);
 
-$session = json_decode($sessionData, true);
-$userId = $session['userId'];
+$targetUserId = $_GET['userId'] ?? '';
+if (!$targetUserId) jsonError('未指定用户ID');
 
-$userRaw = $db->get($userId);
-$user = json_decode($userRaw ?: '[]', true);
-$username = $user['username'] ?? '未知用户';
+$userRaw = $db->get($targetUserId);
+if (!$userRaw) jsonError('目标用户不存在');
+$user = json_decode($userRaw, true);
 
 $cardType = $_GET['cardType'] ?? 'debit';
-$holderName = trim($_GET['holderName'] ?? '') ?: $username;
+$holderName = trim($_GET['holderName'] ?? '') ?: ($user['username'] ?? '未知用户');
+$initialBalance = floatval($_GET['balance'] ?? 0);
+$creditLimit = floatval($_GET['creditLimit'] ?? ($cardType === 'credit' ? 5000 : 0));
 
 do {
     $cardNumber = '4' . rand(100, 999) . rand(1000, 9999) . rand(1000, 9999) . rand(1000, 9999);
@@ -25,22 +27,23 @@ do {
 
 $newCard = [
     'id' => uniqid('card_'),
-    'userId' => $userId,
+    'userId' => $targetUserId,
     'cardNumber' => $cardNumber,
     'cardType' => $cardType,
-    'balance' => 0,
-    'creditLimit' => ($cardType === 'credit') ? 5000 : 0,
+    'balance' => $initialBalance,
+    'creditLimit' => $creditLimit,
     'holderName' => $holderName,
-    'createdAt' => date('c')
+    'status' => (isset($_GET['status']) && !empty($_GET['status'])) ? $_GET['status'] : 'active',
+    'createdAt' => date('Y-m-d H:i:s')
 ];
 
-$key = "bank_account_" . $userId;
+$key = "bank_account_" . $targetUserId;
 $accountRaw = $db->get($key);
 $account = $accountRaw ? json_decode($accountRaw, true) : ['cards' => []];
 $account['cards'][] = $newCard;
 
 $db->set($key, json_encode($account));
-$db->set('idx_card_' . $cardNumber, $userId);
+$db->set('idx_card_' . $cardNumber, $targetUserId);
 
 ob_clean();
 header('Content-Type: application/json; charset=utf-8');

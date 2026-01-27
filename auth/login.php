@@ -36,7 +36,7 @@ if ($verifyHash !== $user['hash']) {
     jsonError('账号不存在或密码错误');
 }
 
-$user['lastLogin'] = date('c');
+$user['lastLogin'] = date('Y-m-d H:i:s');
 $db->set($targetId, json_encode($user));
 
 $sessionId = bin2hex(random_bytes(32));

@@ -41,7 +41,7 @@ $newUser = [
     'age' => trim($data['age'] ?? ''),
     'residence' => trim($data['residence'] ?? ''),
     'bio' => trim($data['bio'] ?? ''),
-    'createdAt' => date('c'),
+    'createdAt' => date('-m-d H:i:s'),
     'lastLogin' => null
 ];
 
