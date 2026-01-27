@@ -20,10 +20,16 @@ function jsonError($message, $code = 400) {
     exit;
 }
 
-function getJsonInput() {
+function getJsonInput(): array
+{
     $raw = file_get_contents('php://input');
-    $data = json_decode($raw, true);
-    return is_array($data) ? $data : $_POST;
+    $jsonData = json_decode($raw, true);
+
+    $jsonData = is_array($jsonData) ? $jsonData : [];
+
+    $postData = is_array($_POST) ? $_POST : [];
+
+    return array_merge($postData, $jsonData);
 }
 
 if (!class_exists('Database')) {
