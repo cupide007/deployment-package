@@ -1221,6 +1221,362 @@
     let currentBankPage = 1;
     const bankPageSize = 5;
 
+
+    let globalAdminPermissions = [];
+    let globalPermissionTemplates = [];
+    let globalAdminLogs = [];
+
+    document.querySelectorAll('.permissions-tab-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.permissions-tab-btn').forEach(b => {
+                b.classList.remove('border-primary', 'text-primary');
+                b.classList.add('border-transparent', 'text-gray-500');
+            });
+            this.classList.remove('border-transparent', 'text-gray-500');
+            this.classList.add('border-primary', 'text-primary');
+
+            const tabId = this.dataset.tab;
+            document.querySelectorAll('.permissions-tab-content').forEach(c => c.classList.add('hidden'));
+            document.getElementById(tabId).classList.remove('hidden');
+
+            if (tabId === 'admin-permissions') loadAdminPermissions();
+            else if (tabId === 'permission-templates') loadPermissionTemplates();
+            else if (tabId === 'admin-logs') loadAdminLogs();
+        });
+    });
+
+    async function loadPermissionTemplates() {
+        const res = await apiFetch('admin/getPermissionTemplates.php');
+        if (res.success) {
+            globalPermissionTemplates = res.templates || [];
+            renderPermissionTemplates();
+            updateTemplateOptions();
+        }
+    }
+
+    function renderPermissionTemplates() {
+        const tbody = document.getElementById('permission-templates-table-body');
+        const searchTerm = document.getElementById('permission-templates-search').value.toLowerCase();
+
+        const filtered = globalPermissionTemplates.filter(t =>
+            t.name.toLowerCase().includes(searchTerm) ||
+            (t.description || '').toLowerCase().includes(searchTerm)
+        );
+
+        tbody.innerHTML = filtered.map(t => `
+            <tr>
+                <td class="px-6 py-4 font-medium text-primary">${t.name}</td>
+                <td class="px-6 py-4">${translateLevel(t.level)}</td>
+                <td class="px-6 py-4 text-sm text-gray-500">${t.modules.join(', ')}</td>
+                <td class="px-6 py-4 text-gray-400 text-sm">${t.description || '-'}</td>
+                <td class="px-6 py-4 flex space-x-2">
+                    <button class="text-accent hover:text-blue-600" onclick="editTemplate('${t.id}')">编辑</button>
+                    <button class="text-red-500 hover:text-red-700" onclick="deleteTemplate('${t.id}')">删除</button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    document.getElementById('add-permission-template-btn').addEventListener('click', () => {
+        document.getElementById('permission-template-id').value = '';
+        document.getElementById('permission-template-form').reset();
+        document.getElementById('permission-template-modal-title').textContent = '创建权限模板';
+        document.getElementById('permission-template-modal').classList.remove('hidden');
+    });
+
+    function editTemplate(id) {
+        const t = globalPermissionTemplates.find(x => x.id === id);
+        if (!t) return;
+
+        document.getElementById('permission-template-id').value = t.id;
+        document.getElementById('template-name').value = t.name;
+        document.getElementById('template-description').value = t.description || '';
+        document.getElementById('template-level').value = t.level;
+
+        document.querySelectorAll('input[name="template-modules"]').forEach(cb => cb.checked = false);
+        if (t.modules) {
+            t.modules.forEach(m => {
+                const cb = document.getElementById('template-module-' + m);
+                if (cb) cb.checked = true;
+            });
+        }
+
+        document.getElementById('permission-template-modal-title').textContent = '编辑权限模板';
+        document.getElementById('permission-template-modal').classList.remove('hidden');
+    }
+
+    document.getElementById('permission-template-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = document.getElementById('permission-template-id').value;
+        const name = document.getElementById('template-name').value;
+        const desc = document.getElementById('template-description').value;
+        const level = document.getElementById('template-level').value;
+
+        const modules = [];
+        document.querySelectorAll('input[name="template-modules"]:checked').forEach(cb => modules.push(cb.value));
+
+        let newTemplates = [...globalPermissionTemplates];
+
+        if (id) {
+            const idx = newTemplates.findIndex(x => x.id === id);
+            if (idx !== -1) newTemplates[idx] = { id, name, description: desc, level, modules };
+        } else {
+            newTemplates.push({
+                id: 'tpl_' + Date.now(),
+                name,
+                description: desc,
+                level,
+                modules
+            });
+        }
+
+        const res = await apiFetch('admin/savePermissionTemplates.php', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ templates: newTemplates })
+        });
+
+        if (res.success) {
+            alert('模板保存成功');
+            document.getElementById('permission-template-modal').classList.add('hidden');
+            loadPermissionTemplates();
+        } else {
+            alert('保存失败: ' + res.error);
+        }
+    });
+
+    async function deleteTemplate(id) {
+        if (!confirm('确定删除此模板吗？')) return;
+        const newTemplates = globalPermissionTemplates.filter(t => t.id !== id);
+        await apiFetch('admin/savePermissionTemplates.php', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ templates: newTemplates })
+        });
+        loadPermissionTemplates();
+    }
+
+    async function loadAdminPermissions() {
+        const [permRes, userRes] = await Promise.all([
+            apiFetch('admin/getAdminPermissions.php'),
+            apiFetch('users/getUsers.php')
+        ]);
+
+        if (permRes.success) {
+            globalAdminPermissions = permRes.permissions || [];
+            renderAdminPermissions();
+        }
+
+        if (userRes.success) {
+            const select = document.getElementById('admin-permission-user');
+            select.innerHTML = userRes.users.map(u => `<option value="${u.id}">${u.username} (${u.email})</option>`).join('');
+        }
+    }
+
+    function renderAdminPermissions() {
+        const tbody = document.getElementById('admin-permissions-table-body');
+        const searchTerm = document.getElementById('admin-permissions-search').value.toLowerCase();
+
+        const filtered = globalAdminPermissions.filter(p =>
+            p.adminName.toLowerCase().includes(searchTerm) ||
+            (p.username || '').toLowerCase().includes(searchTerm)
+        );
+
+        tbody.innerHTML = filtered.map(p => `
+            <tr>
+                <td class="px-6 py-4 font-bold text-primary">${p.adminName}</td>
+                <td class="px-6 py-4">${p.username || '未知用户'}</td>
+                <td class="px-6 py-4">${translateLevel(p.level)}</td>
+                <td class="px-6 py-4 text-sm text-gray-500">${(p.modules || []).join(', ')}</td>
+                <td class="px-6 py-4 text-xs text-gray-400">${p.createdAt || '-'}</td>
+                <td class="px-6 py-4 flex space-x-2">
+                    <button class="text-accent hover:text-blue-600" onclick="editAdminPermission('${p.id}')">编辑</button>
+                    <button class="text-red-500 hover:text-red-700" onclick="deleteAdminPermission('${p.id}')">撤职</button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function translateLevel(level) {
+        const map = {
+            'global_admin': '<span class="text-red-600 font-bold">全局管理员</span>',
+            'module_admin': '<span class="text-blue-600">模块管理员</span>',
+            'admin': '普通管理员'
+        };
+        return map[level] || level;
+    }
+
+    function updateTemplateOptions() {
+        const select = document.getElementById('admin-permission-template');
+        select.innerHTML = '<option value="">不使用模板 (自定义)</option>' +
+            globalPermissionTemplates.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
+    }
+
+    document.getElementById('admin-permission-template').addEventListener('change', function() {
+        const tId = this.value;
+        if (!tId) return;
+
+        const template = globalPermissionTemplates.find(t => t.id === tId);
+        if (template) {
+            document.getElementById('admin-permission-level').value = template.level;
+            document.querySelectorAll('input[name="modules"]').forEach(cb => cb.checked = false);
+            if (template.modules) {
+                template.modules.forEach(m => {
+                    const cb = document.getElementById('module-' + m);
+                    if (cb) cb.checked = true;
+                });
+            }
+        }
+    });
+
+    document.getElementById('add-admin-permission-btn').addEventListener('click', () => {
+        document.getElementById('admin-permission-id').value = '';
+        document.getElementById('admin-permission-form').reset();
+        document.getElementById('admin-permission-user').disabled = false;
+        document.getElementById('admin-permission-modal-title').textContent = '任命管理员';
+        document.getElementById('admin-permission-modal').classList.remove('hidden');
+    });
+
+    function editAdminPermission(id) {
+        const p = globalAdminPermissions.find(x => x.id === id);
+        if (!p) return;
+
+        document.getElementById('admin-permission-id').value = p.id;
+        document.getElementById('admin-permission-user').value = p.userId;
+        document.getElementById('admin-permission-user').disabled = true;
+        document.getElementById('admin-permission-name').value = p.adminName;
+        document.getElementById('admin-permission-level').value = p.level;
+        document.getElementById('admin-permission-template').value = '';
+
+        document.querySelectorAll('input[name="modules"]').forEach(cb => cb.checked = false);
+        if (p.modules) {
+            p.modules.forEach(m => {
+                const cb = document.getElementById('module-' + m);
+                if (cb) cb.checked = true;
+            });
+        }
+
+        document.getElementById('admin-permission-modal-title').textContent = '编辑管理员权限';
+        document.getElementById('admin-permission-modal').classList.remove('hidden');
+    }
+
+    document.getElementById('admin-permission-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const id = document.getElementById('admin-permission-id').value;
+        const userId = document.getElementById('admin-permission-user').value;
+        const userText = document.getElementById('admin-permission-user').options[document.getElementById('admin-permission-user').selectedIndex].text;
+        const username = userText.split(' (')[0];
+
+        const adminName = document.getElementById('admin-permission-name').value;
+        const level = document.getElementById('admin-permission-level').value;
+
+        const modules = [];
+        document.querySelectorAll('input[name="modules"]:checked').forEach(cb => modules.push(cb.value));
+
+        let newPerms = [...globalAdminPermissions];
+
+        if (id) {
+            const idx = newPerms.findIndex(x => x.id === id);
+            if (idx !== -1) {
+                newPerms[idx] = { ...newPerms[idx], adminName, level, modules };
+            }
+        } else {
+            if (newPerms.find(p => p.userId === userId)) {
+                alert('该用户已经是管理员了，请直接编辑。');
+                return;
+            }
+            newPerms.push({
+                id: 'adm_' + Date.now(),
+                userId,
+                username,
+                adminName,
+                level,
+                modules,
+                createdAt: new Date().toISOString().split('T')[0]
+            });
+        }
+
+        const res = await apiFetch('admin/saveAdminPermissions.php', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ permissions: newPerms })
+        });
+
+        if (res.success) {
+            alert('管理员权限保存成功');
+            document.getElementById('admin-permission-modal').classList.add('hidden');
+            loadAdminPermissions();
+            logAction('update_admin', `更新/创建管理员: ${adminName}`);
+        } else {
+            alert('保存失败: ' + res.error);
+        }
+    });
+
+    async function deleteAdminPermission(id) {
+        if (!confirm('确定撤销该管理员的所有权限吗？')) return;
+        const newPerms = globalAdminPermissions.filter(p => p.id !== id);
+
+        await apiFetch('admin/saveAdminPermissions.php', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ permissions: newPerms })
+        });
+
+        loadAdminPermissions();
+        logAction('delete_admin', `撤销管理员ID: ${id}`);
+    }
+
+    async function loadAdminLogs() {
+        const res = await apiFetch('admin/getAdminLogs.php');
+        if (res.success) {
+            globalAdminLogs = res.logs || [];
+            renderAdminLogs();
+        }
+    }
+
+    function renderAdminLogs() {
+        const tbody = document.getElementById('admin-logs-table-body');
+        const searchTerm = document.getElementById('admin-logs-search').value.toLowerCase();
+
+        const sorted = [...globalAdminLogs].reverse();
+
+        const filtered = sorted.filter(l =>
+            (l.adminName || '').toLowerCase().includes(searchTerm) ||
+            (l.action || '').toLowerCase().includes(searchTerm) ||
+            (l.details || '').toLowerCase().includes(searchTerm)
+        );
+
+        tbody.innerHTML = filtered.map(l => `
+            <tr>
+                <td class="px-6 py-4 text-sm font-medium text-gray-900">${l.adminName || 'System'}</td>
+                <td class="px-6 py-4 text-sm text-gray-500">${l.action}</td>
+                <td class="px-6 py-4 text-sm text-gray-500">${l.details}</td>
+                <td class="px-6 py-4 text-sm text-gray-400">${l.timestamp}</td>
+            </tr>
+        `).join('');
+    }
+
+    async function logAction(action, details) {
+        const currentUser = document.getElementById('admin-username').textContent;
+        await apiFetch('admin/saveAdminLogs.php', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                log: {
+                    adminName: currentUser,
+                    action: action,
+                    details: details,
+                    timestamp: new Date().toISOString().replace('T', ' ').slice(0, 19)
+                }
+            })
+        });
+    }
+
+    document.getElementById('admin-logs-search').addEventListener('input', renderAdminLogs);
+    document.getElementById('permission-templates-search').addEventListener('input', renderPermissionTemplates);
+    document.getElementById('admin-permissions-search').addEventListener('input', renderAdminPermissions);
+
     async function apiFetch(url, options = {}) {
         try {
             const response = await fetch(url, options);
@@ -1893,7 +2249,10 @@
             case 'users': loadUsersData(); break;
             case 'bank': loadBankData(); loadTransactionsData(); break;
             case 'library': loadLibraryData(); break;
-            case 'permissions': loadAdminPermissions(); break;
+            case 'permissions':
+                loadAdminPermissions();
+                loadPermissionTemplates();
+                break;
         }
     }
 
