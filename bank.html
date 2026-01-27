@@ -123,7 +123,7 @@
     <nav id="main-nav" class="bg-primary text-light shadow-lg fixed w-full z-50 transition-all duration-300">
         <div class="container mx-auto px-4 py-3 flex justify-between items-center">
             <div class="flex items-center space-x-2">
-                <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/d8ddf5e8d8c84316a653dcb93cf61629~tplv-a9rns2rl98-image.image?lk3s=8e244e95&rcl=202601202312037748F98E243C1F231D4E&rrcfp=f06b921b&x-expires=1771513966&x-signature=gxZfK%2BBdsU1IDbMR4LFDmEH2PhA%3D" alt="安提斯特国旗" class="h-10 w-10 rounded-full">
+                <img src="flag.png" alt="安提斯特国旗" class="h-10 w-10 rounded-full">
                 <span class="text-xl font-bold">安提斯特虚拟国</span>
             </div>
             <div class="hidden md:flex space-x-6">
@@ -501,27 +501,27 @@
                                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                                             <div>
                                                 <span class="text-gray-600">付款账户：</span>
-                                                <span id="confirm-from-account" class="font-medium">未选择</span>
+                                                <span id="confirm-from-acc">未选择</span>
                                             </div>
                                             <div>
                                                 <span class="text-gray-600">收款账户：</span>
-                                                <span id="confirm-to-account" class="font-medium">-</span>
+                                                <span id="confirm-to-acc">-</span>
                                             </div>
                                             <div>
                                                 <span class="text-gray-600">收款人：</span>
-                                                <span id="confirm-to-name" class="font-medium">-</span>
+                                                <span id="confirm-recipient">-</span>
                                             </div>
                                             <div>
                                                 <span class="text-gray-600">转账金额：</span>
-                                                <span id="confirm-amount" class="font-medium">¥0.00</span>
+                                                <span id="confirm-amount">¥0.00</span>
                                             </div>
                                             <div>
                                                 <span class="text-gray-600">手续费：</span>
-                                                <span class="font-medium">¥0.00</span>
+                                                <span id="confirm-fee">¥0.00</span>
                                             </div>
                                             <div>
                                                 <span class="text-gray-600">实付金额：</span>
-                                                <span id="confirm-total" class="font-medium text-primary">¥0.00</span>
+                                                <span id="confirm-total">¥0.00</span>
                                             </div>
                                         </div>
                                     </div>
@@ -732,7 +732,7 @@
             <div class="flex flex-col md:flex-row justify-between items-center">
                 <div class="mb-4 md:mb-0">
                     <div class="flex items-center space-x-2">
-                        <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/d8ddf5e8d8c84316a653dcb93cf61629~tplv-a9rns2rl98-image.image?lk3s=8e244e95&rcl=202601202312037748F98E243C1F231D4E&rrcfp=f06b921b&x-expires=1771513966&x-signature=gxZfK%2BBdsU1IDbMR4LFDmEH2PhA%3D" alt="安提斯特国旗" class="h-8 w-8 rounded-full">
+                        <img src="flag.png" alt="安提斯特国旗" class="h-8 w-8 rounded-full">
                         <span class="text-lg font-bold">安提斯特虚拟国</span>
                     </div>
                     <p class="text-sm text-gray-300 mt-2">
@@ -966,7 +966,10 @@
 
                     el.innerHTML = `
                     <div class="absolute top-4 right-4"><span class="bg-secondary text-primary text-xs font-bold px-2 py-1 rounded">${typeText}</span></div>
-                    <div class="mb-6"><i class="fa fa-university text-3xl opacity-80"></i></div>
+<!--                    <div class="mb-6"><i class="fa fa-university text-3xl opacity-80"></i></div>-->
+                    <div class="mb-6">
+                        <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/d8ddf5e8d8c84316a653dcb93cf61629~tplv-a9rns2rl98-image.image?lk3s=8e244e95&rcl=202601202312037748F98E243C1F231D4E&rrcfp=f06b921b&x-expires=1771513966&x-signature=gxZfK%2BBdsU1IDbMR4LFDmEH2PhA%3D" alt="徽章" class="h-10 w-10 opacity-80">
+                    </div>
                     <div class="mb-4"><p class="text-sm opacity-80 mb-1">卡号</p><p class="text-xl font-mono">${formatCardNumber(card.cardNumber)}</p></div>
                     <div class="mb-4"><p class="text-sm opacity-80 mb-1">持卡人</p><p class="text-lg font-medium">${card.holderName}</p></div>
                     <div class="flex justify-between">
@@ -1155,22 +1158,52 @@
                         }
                     });
                 }
+                const fromAccSelect = document.getElementById('from-account');
+                const toAccSelect = document.getElementById('to-account');
+                const transferAmtInput = document.getElementById('transfer-amount');
+                const recipientNameInput = document.getElementById('recipient-name');
+
+                const syncTransferInfo = () => {
+                    const selectedFromId = fromAccSelect.value;
+                    const selectedCard = currentCards.find(c => c.id === selectedFromId);
+
+                    document.getElementById('confirm-from-acc').textContent = fromAccSelect.options[fromAccSelect.selectedIndex]?.text || '未选择';
+                    document.getElementById('confirm-to-acc').textContent = toAccSelect.value || '-';
+                    document.getElementById('confirm-recipient').textContent = recipientNameInput.value || '-';
+
+                    const amount = parseFloat(transferAmtInput.value) || 0;
+                    document.getElementById('confirm-amount').textContent = `¥${amount.toFixed(2)}`;
+
+                    let fee = 0;
+                    if (selectedCard && selectedCard.cardType === 'credit') {
+                        fee = amount * 0.01;
+                    }
+
+                    document.getElementById('confirm-fee').textContent = `¥${fee.toFixed(2)}`;
+                    document.getElementById('confirm-total').textContent = `¥${(amount + fee).toFixed(2)}`;
+                };
+
+                if (fromAccSelect) fromAccSelect.addEventListener('change', syncTransferInfo);
+                if (toAccSelect) toAccSelect.addEventListener('change', syncTransferInfo);
+                if (transferAmtInput) transferAmtInput.addEventListener('input', syncTransferInfo);
+                if (recipientNameInput) recipientNameInput.addEventListener('input', syncTransferInfo);
 
                 const transForm = document.getElementById('transfer-form');
                 if(transForm) {
                     transForm.addEventListener('submit', async e => {
                         e.preventDefault();
-                        const body = {
-                            fromCardId: document.getElementById('from-account').value,
-                            toCardNumber: document.getElementById('to-account').value,
-                            amount: document.getElementById('transfer-amount').value,
-                            description: document.getElementById('transfer-description').value
-                        };
-                        const data = await apiCall('bank/transfer.php', 'POST', body);
+                        const fromCardId = document.getElementById('from-account').value;
+                        const toCardNumber = document.getElementById('to-account').value;
+                        const amount = document.getElementById('transfer-amount').value;
+                        const description = document.getElementById('transfer-description').value;
+
+                        const url = `bank/transfer.php?fromCardId=${encodeURIComponent(fromCardId)}&toCardNumber=${encodeURIComponent(toCardNumber)}&amount=${encodeURIComponent(amount)}&description=${encodeURIComponent(description)}`;
+                        const data = await apiCall(url, 'GET');
+
                         if (data.success) {
                             const modal = document.getElementById('transfer-success-modal');
                             if(modal) {
-                                document.getElementById('transfer-amount-display').textContent = `¥${body.amount}`;
+                                document.getElementById('transfer-amount-display').textContent = `¥${amount}`;
                                 modal.classList.remove('hidden');
                             } else {
                                 alert('转账成功');
