@@ -41,7 +41,7 @@ for ($i = 0; $i < $meta['chunk_count']; $i++) {
 $content = base64_decode($base64);
 
 header('Content-Type: ' . ($meta['type'] ?? 'application/octet-stream'));
-header('Content-Disposition: attachment; filename="' . rawurlencode($meta['name']) . '"');
+header('Content-Disposition: inline; filename="' . rawurlencode($meta['name']) . '"');
 header('Content-Length: ' . strlen($content));
 echo $content;
 ?>
