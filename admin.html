@@ -1177,14 +1177,98 @@
         </div>
     </div>
 </div>
-<!-- JavaScript -->
+
 <script>
     let globalUsersCache = [];
     let globalDocumentsCache = [];
+    let globalCardsCache = [];
     let userGrowthChartInstance = null;
     let documentCategoryChartInstance = null;
+    let currentBankPage = 1;
+    const bankPageSize = 5;
 
-    let globalCardsCache = [];
+    async function apiFetch(url, options = {}) {
+        try {
+            const response = await fetch(url, options);
+            const result = await response.json();
+            if (!result.success) throw new Error(result.error || '请求失败');
+            return result;
+        } catch (error) {
+            console.error('API Error:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    function updateActionCardOptions() {
+        const actionUserSelect = document.getElementById('action-username');
+        const actionCardTypeSelect = document.getElementById('action-card-type');
+        const actionCardSelect = document.getElementById('action-card');
+
+        if (!actionUserSelect || !actionCardSelect) return;
+
+        const selectedUserId = actionUserSelect.value;
+        const selectedType = actionCardTypeSelect.value;
+
+        if (!selectedUserId) {
+            actionCardSelect.innerHTML = '<option value="">请先选择用户</option>';
+            return;
+        }
+
+        const filteredCards = globalCardsCache.filter(card =>
+            card.userId == selectedUserId && card.cardType === selectedType
+        );
+
+        if (filteredCards.length > 0) {
+            actionCardSelect.innerHTML = filteredCards.map(card =>
+                `<option value="${card.id}">${card.cardNumber} (余额: ¥${parseFloat(card.balance).toFixed(2)})</option>`
+            ).join('');
+        } else {
+            actionCardSelect.innerHTML = '<option value="">该用户无此类卡片</option>';
+        }
+
+        updateLimitInputPlaceholder();
+    }
+
+    function updateActionTypeOptions() {
+        const actionCardTypeSelect = document.getElementById('action-card-type');
+        const actionTypeSelect = document.getElementById('action-type');
+
+        if (!actionTypeSelect || !actionCardTypeSelect) return;
+
+        const type = actionCardTypeSelect.value;
+        const adjustOption = actionTypeSelect.querySelector('option[value="adjust-limit"]');
+
+        if (adjustOption) {
+            if (type === 'debit') {
+                adjustOption.style.display = 'none';
+                if (actionTypeSelect.value === 'adjust-limit') {
+                    actionTypeSelect.value = 'deposit';
+                    actionTypeSelect.dispatchEvent(new Event('change'));
+                }
+            } else {
+                adjustOption.style.display = 'block';
+            }
+        }
+    }
+
+    function updateLimitInputPlaceholder() {
+        const actionCardSelect = document.getElementById('action-card');
+        if (!actionCardSelect) return;
+
+        const cardId = actionCardSelect.value;
+        const card = globalCardsCache.find(c => c.id === cardId);
+        const limitInput = document.getElementById('action-new-limit');
+
+        if (limitInput) {
+            if (card && card.creditLimit) {
+                limitInput.value = card.creditLimit;
+                limitInput.placeholder = `当前额度: ${card.creditLimit}`;
+            } else {
+                limitInput.value = '';
+                limitInput.placeholder = '输入新的信用额度';
+            }
+        }
+    }
 
     function editCard(cardId, userId) {
         const cardData = globalCardsCache.find(c => c.id === cardId);
@@ -1195,7 +1279,6 @@
             document.getElementById('edit-card-balance').value = cardData.balance;
             document.getElementById('edit-card-limit').value = cardData.creditLimit || 0;
             document.getElementById('edit-card-status').value = cardData.status || 'active';
-
             document.getElementById('edit-card-modal').classList.remove('hidden');
         }
     }
@@ -1212,17 +1295,6 @@
         }
     }
 
-    async function apiFetch(url, options = {}) {
-        try {
-            const response = await fetch(url, options);
-            const result = await response.json();
-            if (!result.success) throw new Error(result.error || '请求失败');
-            return result;
-        } catch (error) {
-            console.error('API Error:', error);
-            return { success: false, error: error.message };
-        }
-    }
     async function loadTransactionsData() {
         const tableBody = document.getElementById('transactions-table-body');
         const res = await apiFetch('bank/getTransactions.php');
@@ -1237,7 +1309,6 @@
                     (tx.description || '').toLowerCase().includes(searchTerm);
                 const txType = (tx.type || '').toLowerCase();
                 const matchesType = typeFilter === 'all' || txType === typeFilter;
-
                 return matchesSearch && matchesType;
             });
 
@@ -1245,15 +1316,9 @@
                 tableBody.innerHTML = filteredTransactions.map(tx => {
                     const displayTime = tx.timestamp ? tx.timestamp.replace('T', ' ').slice(0, 19) : '-';
                     const amount = parseFloat(tx.amount || 0);
-
                     const isNegative = amount < 0;
-
-                    const typeMap = {
-                        'deposit': '存款',
-                        'withdraw': '取款',
-                        'transfer': '转账'
-                    };
-                    const typeText = typeMap[tx.type] || '其他';
+                    const typeMap = { 'deposit': '存款', 'withdraw': '取款', 'transfer': '转账', 'admin_adjust': '调账' };
+                    const typeText = typeMap[tx.type] || tx.type || '其他';
 
                     return `
                 <tr class="hover:bg-gray-50 transition-colors">
@@ -1274,7 +1339,6 @@
             const todayStr = new Date().toISOString().split('T')[0];
             let todayCount = 0;
             let todaySum = 0;
-
             res.transactions.forEach(tx => {
                 if (tx.timestamp && tx.timestamp.startsWith(todayStr)) {
                     todayCount++;
@@ -1286,251 +1350,100 @@
         }
     }
 
-        async function checkAdminLogin() {
-            const res = await apiFetch('auth/getCurrentUser.php');
-            if (!res.success || res.user.role !== 'admin') {
-                window.location.href = 'index.html';
-            } else {
-                document.getElementById('admin-username').textContent = res.user.username;
-            }
+    async function checkAdminLogin() {
+        const res = await apiFetch('auth/getCurrentUser.php');
+        if (!res.success || res.user.role !== 'admin') {
+            window.location.href = 'index.html';
+        } else {
+            document.getElementById('admin-username').textContent = res.user.username;
         }
+    }
 
-        function generateCharts() {
-            if (typeof Chart === 'undefined') return;
+    async function loadDashboardData() {
+        const uRes = await apiFetch('users/getUsers.php');
+        const dRes = await apiFetch('library/getDocuments.php');
+        const bRes = await apiFetch('bank/getAllCards.php?page=1&pageSize=5');
 
-            const userCtx = document.getElementById('userGrowthChart');
-            if (userCtx) {
-                if (userGrowthChartInstance) userGrowthChartInstance.destroy();
-                userGrowthChartInstance = new Chart(userCtx, {
-                    type: 'line',
-                    data: {
-                        labels: ['1月', '2月', '3月', '4月', '5月', '6月'],
-                        datasets: [{
-                            label: '用户人数',
-                            data: [globalUsersCache.length - 2, globalUsersCache.length - 1, globalUsersCache.length],
-                            borderColor: '#3E92CC',
-                            backgroundColor: 'rgba(62, 146, 204, 0.1)',
-                            fill: true,
-                            tension: 0.4
-                        }]
-                    },
-                    options: {responsive: true, maintainAspectRatio: false}
-                });
-            }
-
-            const docCtx = document.getElementById('documentCategoryChart');
-            if (docCtx) {
-                const counts = {};
-                globalDocumentsCache.forEach(d => counts[d.category] = (counts[d.category] || 0) + 1);
-                if (documentCategoryChartInstance) documentCategoryChartInstance.destroy();
-                documentCategoryChartInstance = new Chart(docCtx, {
-                    type: 'doughnut',
-                    data: {
-                        labels: Object.keys(counts),
-                        datasets: [{
-                            data: Object.values(counts),
-                            backgroundColor: ['#0A2463', '#E6AF2E', '#3E92CC', '#2ECC71', '#9B59B6']
-                        }]
-                    },
-                    options: {responsive: true, maintainAspectRatio: false}
-                });
-            }
+        if (uRes.success) {
+            globalUsersCache = uRes.users;
+            document.getElementById('total-users').textContent = globalUsersCache.length;
         }
-
-        async function loadDashboardData() {
-            const uRes = await apiFetch('users/getUsers.php');
-            const dRes = await apiFetch('library/getDocuments.php');
-            const bRes = await apiFetch('bank/getAllCards.php?page=1&pageSize=5');
-
-            if (uRes.success) {
-                globalUsersCache = uRes.users;
-                document.getElementById('total-users').textContent = globalUsersCache.length;
-            }
-            if (dRes.success) {
-                globalDocumentsCache = dRes.documents;
-                document.getElementById('total-documents').textContent = globalDocumentsCache.length;
-            }
-            if (bRes.success) {
-                document.getElementById('total-accounts').textContent = bRes.total;
-            }
-            generateCharts();
+        if (dRes.success) {
+            globalDocumentsCache = dRes.documents;
+            document.getElementById('total-documents').textContent = globalDocumentsCache.length;
         }
-
-        async function loadUsersData() {
-            const tableBody = document.getElementById('users-table-body');
-            const res = await apiFetch('users/getUsers.php');
-            if (res.success) {
-                globalUsersCache = res.users;
-                renderUsersTable(globalUsersCache);
-                tableBody.innerHTML = globalUsersCache.map(user => `
-        <tr>
-            <td class="px-6 py-4">${user.username || '-'}</td>
-            <td class="px-6 py-4">${user.email || '-'}</td>
-            <td class="px-6 py-4">${user.qq || '-'}</td>
-            <td class="px-6 py-4">${user.gender || '-'}</td>
-            <td class="px-6 py-4">${user.race || '-'}</td>
-            <td class="px-6 py-4">${user.age || '-'}</td>
-            <td class="px-6 py-4">${user.residence || '-'}</td>
-            <td class="px-6 py-4">${user.role === 'admin' ? '管理员' : '普通用户'}</td>
-            <td class="px-6 py-4">${user.createdAt ? user.createdAt.replace('T', ' ').slice(0, 19) : '-'}</td>
-            <td class="px-6 py-4">${user.lastLogin ? user.lastLogin.replace('T', ' ').slice(0, 19) : '-'}</td>
-            <td class="px-6 py-4">
-                <button class="text-accent mr-3" onclick="editUser('${user.id}')">编辑</button>
-                <button class="text-red-500" onclick="confirmDeleteUser('${user.id}', '${user.username}')">删除</button>
-            </td>
-        </tr>`).join('');
-            }
+        if (bRes.success) {
+            document.getElementById('total-accounts').textContent = bRes.total;
         }
+        generateCharts();
+    }
 
-        function renderUsersTable(users) {
-            const searchTerm = document.getElementById('user-search').value.toLowerCase();
-            const roleFilter = document.getElementById('user-role-filter').value;
-
-            const filtered = users.filter(user => {
-                const matchesSearch = (user.username || '').toLowerCase().includes(searchTerm) ||
-                    (user.email || '').toLowerCase().includes(searchTerm);
-                const matchesRole = roleFilter === 'all' || user.role === roleFilter;
-                return matchesSearch && matchesRole;
+    function generateCharts() {
+        if (typeof Chart === 'undefined') return;
+        const userCtx = document.getElementById('userGrowthChart');
+        if (userCtx) {
+            if (userGrowthChartInstance) userGrowthChartInstance.destroy();
+            userGrowthChartInstance = new Chart(userCtx, {
+                type: 'line',
+                data: {
+                    labels: ['1月', '2月', '3月', '4月', '5月', '6月'],
+                    datasets: [{
+                        label: '用户人数',
+                        data: [globalUsersCache.length - 2, globalUsersCache.length - 1, globalUsersCache.length],
+                        borderColor: '#3E92CC',
+                        backgroundColor: 'rgba(62, 146, 204, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {responsive: true, maintainAspectRatio: false}
             });
-
-            document.getElementById('users-table-body').innerHTML = filtered.map(user => `
-        <tr>
-            <td class="px-6 py-4">${user.username || '-'}</td>
-            <td class="px-6 py-4">${user.email || '-'}</td>
-            <td class="px-6 py-4">${user.qq || '-'}</td>
-            <td class="px-6 py-4">${user.gender || '-'}</td>
-            <td class="px-6 py-4">${user.race || '-'}</td>
-            <td class="px-6 py-4">${user.age || '-'}</td>
-            <td class="px-6 py-4">${user.residence || '-'}</td>
-            <td class="px-6 py-4">${user.role === 'admin' ? '管理员' : '普通用户'}</td>
-            <td class="px-6 py-4">${user.createdAt ? user.createdAt.replace('T', ' ').slice(0, 19) : '-'}</td>
-            <td class="px-6 py-4">${user.lastLogin ? user.lastLogin.replace('T', ' ').slice(0, 19) : '-'}</td>
-            <td class="px-6 py-4">
-                <button class="text-accent mr-3" onclick="editUser('${user.id}')">编辑</button>
-                <button class="text-red-500" onclick="confirmDeleteUser('${user.id}', '${user.username}')">删除</button>
-            </td>
-        </tr>`).join('');
         }
-
-        function editUser(userId) {
-            const user = globalUsersCache.find(u => u.id === userId);
-            if (user) {
-                document.getElementById('edit-user-id').value = user.id;
-                document.getElementById('edit-username').value = user.username || '';
-                document.getElementById('edit-email').value = user.email || '';
-                document.getElementById('edit-role').value = user.role || 'user';
-                document.getElementById('edit-qq').value = user.qq || '';
-                document.getElementById('edit-gender').value = user.gender || '男';
-                document.getElementById('edit-race').value = user.race || '';
-                document.getElementById('edit-age').value = user.age || '';
-                document.getElementById('edit-residence').value = user.residence || '';
-                document.getElementById('edit-bio').value = user.bio || '';
-
-                document.getElementById('edit-user-modal').classList.remove('hidden');
-            }
-        }
-
-        async function handleEditUser(e) {
-            e.preventDefault();
-
-            const params = new URLSearchParams({
-                id: document.getElementById('edit-user-id').value,
-                username: document.getElementById('edit-username').value,
-                email: document.getElementById('edit-email').value,
-                role: document.getElementById('edit-role').value,
-                qq: document.getElementById('edit-qq').value,
-                gender: document.getElementById('edit-gender').value,
-                race: document.getElementById('edit-race').value,
-                age: document.getElementById('edit-age').value,
-                residence: document.getElementById('edit-residence').value,
-                bio: document.getElementById('edit-bio').value
+        const docCtx = document.getElementById('documentCategoryChart');
+        if (docCtx) {
+            const counts = {};
+            globalDocumentsCache.forEach(d => counts[d.category] = (counts[d.category] || 0) + 1);
+            if (documentCategoryChartInstance) documentCategoryChartInstance.destroy();
+            documentCategoryChartInstance = new Chart(docCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(counts),
+                    datasets: [{
+                        data: Object.values(counts),
+                        backgroundColor: ['#0A2463', '#E6AF2E', '#3E92CC', '#2ECC71', '#9B59B6']
+                    }]
+                },
+                options: {responsive: true, maintainAspectRatio: false}
             });
-
-            const res = await apiFetch(`users/updateUser.php?${params.toString()}`, {
-                method: 'GET'
-            });
-
-            if (res.success) {
-                alert('修改成功');
-                document.getElementById('edit-user-modal').classList.add('hidden');
-                await loadUsersData();
-            } else {
-                alert('修改失败：' + res.error);
-            }
         }
+    }
 
-        document.getElementById('edit-user-form').addEventListener('submit', handleEditUser);
+    async function loadBankData(page = 1) {
+        currentBankPage = page;
+        const tableBody = document.getElementById('accounts-table-body');
+        const res = await apiFetch(`bank/getAllCards.php?page=${page}&pageSize=${bankPageSize}`, {method: 'GET'});
 
-        function confirmDeleteUser(id, name) {
-            if (confirm(`确定要永久删除用户 ${name} 吗？此操作不可恢复。`)) {
-                deleteUser(id);
-            }
+        if (res.success) {
+            globalCardsCache = res.cards;
+            document.getElementById('bank-total-accounts').textContent = res.total;
+            let totalBalance = 0;
+            res.cards.forEach(c => totalBalance += parseFloat(c.balance || 0));
+            document.getElementById('bank-total-balance').textContent = '¥' + totalBalance.toLocaleString();
+            renderBankTable(res.cards);
+            renderBankPagination(res.total);
         }
+    }
 
-        async function deleteUser(userId) {
-            const res = await apiFetch(`users/deleteUser.php?id=${userId}`, {
-                method: 'GET'
-            });
-
-            if (res.success) {
-                alert('删除成功');
-                await loadUsersData();
-                await loadDashboardData();
-            } else {
-                alert('删除失败：' + res.error);
-            }
-        }
-
-        let currentBankPage = 1;
-        const bankPageSize = 5;
-
-        async function loadBankData(page = 1) {
-            currentBankPage = page;
-            const tableBody = document.getElementById('accounts-table-body');
-            const res = await apiFetch(`bank/getAllCards.php?page=${page}&pageSize=${bankPageSize}`, {method: 'GET'});
-
-            if (res.success) {
-                globalCardsCache = res.cards;
-                renderBankTable(globalCardsCache);
-
-                document.getElementById('bank-total-accounts').textContent = res.total;
-
-                let totalBalance = 0;
-                res.cards.forEach(c => totalBalance += parseFloat(c.balance || 0));
-                document.getElementById('bank-total-balance').textContent = '¥' + totalBalance.toLocaleString();
-
-                renderBankTable(res.cards);
-                renderBankPagination(res.total);
-                tableBody.innerHTML = res.cards.map(card => `
-            <tr>
-                <td class="px-3 py-2">${card.username}</td>
-                <td class="px-3 py-2">${card.cardType === 'credit' ? '信用卡' : '借记卡'}</td>
-                <td class="px-3 py-2">${card.cardNumber}</td>
-                <td class="px-3 py-2">¥${parseFloat(card.balance).toFixed(2)}</td>
-                <td class="px-3 py-2">¥${parseFloat(card.creditLimit || 0).toFixed(2)}</td>
-                <td class="px-3 py-2">${(card.status === 'active' || !card.status) ? '正常' : '冻结'}</td>
-                <td class="px-3 py-2">${card.createdAt ? card.createdAt.replace('T', ' ').slice(0, 19) : '-'}</td>
-                <td class="px-6 py-4">
-                    <button class="text-accent mr-3" onclick="editCard('${card.id}', '${card.userId}')">编辑</button>
-                    <button class="text-red-500" onclick="deleteCard('${card.id}', '${card.userId}')">注销</button>
-                </td>
-            </tr>`).join('');
-                renderBankPagination(res.total);
-            }
-        }
-
-        function renderBankTable(cards) {
-            const searchTerm = document.getElementById('account-search').value.toLowerCase();
-            const typeFilter = document.getElementById('card-type-filter').value;
-
-            const filtered = cards.filter(card => {
-                const matchesSearch = (card.username || '').toLowerCase().includes(searchTerm) ||
-                    (card.cardNumber || '').toLowerCase().includes(searchTerm);
-                const matchesType = typeFilter === 'all' || card.cardType === typeFilter;
-                return matchesSearch && matchesType;
-            });
-
-            document.getElementById('accounts-table-body').innerHTML = filtered.map(card => `
+    function renderBankTable(cards) {
+        const searchTerm = document.getElementById('account-search').value.toLowerCase();
+        const typeFilter = document.getElementById('card-type-filter').value;
+        const filtered = cards.filter(card => {
+            const matchesSearch = (card.username || '').toLowerCase().includes(searchTerm) ||
+                (card.cardNumber || '').toLowerCase().includes(searchTerm);
+            const matchesType = typeFilter === 'all' || card.cardType === typeFilter;
+            return matchesSearch && matchesType;
+        });
+        document.getElementById('accounts-table-body').innerHTML = filtered.map(card => `
         <tr>
             <td class="px-3 py-2">${card.username}</td>
             <td class="px-3 py-2">${card.cardType === 'credit' ? '信用卡' : '借记卡'}</td>
@@ -1544,84 +1457,314 @@
                 <button class="text-red-500" onclick="deleteCard('${card.id}', '${card.userId}')">注销</button>
             </td>
         </tr>`).join('');
+    }
+
+    function renderBankPagination(total) {
+        const totalPages = Math.ceil(total / bankPageSize);
+        const container = document.getElementById('bank-pagination');
+        if (!container) return;
+        let html = '';
+        for (let i = 1; i <= totalPages; i++) {
+            html += `<button onclick="loadBankData(${i})" class="px-3 py-1 mx-1 border ${i === currentBankPage ? 'bg-primary text-white' : 'bg-white'}">${i}</button>`;
         }
+        container.innerHTML = html;
+    }
 
-        function renderBankPagination(total) {
-            const totalPages = Math.ceil(total / bankPageSize);
-            const container = document.getElementById('bank-pagination');
-            if (!container) return;
-
-            let html = '';
-            for (let i = 1; i <= totalPages; i++) {
-                html += `<button onclick="loadBankData(${i})" class="px-3 py-1 mx-1 border ${i === currentBankPage ? 'bg-primary text-white' : 'bg-white'}">${i}</button>`;
-            }
-            container.innerHTML = html;
+    async function loadUsersData() {
+        const tableBody = document.getElementById('users-table-body');
+        const res = await apiFetch('users/getUsers.php');
+        if (res.success) {
+            globalUsersCache = res.users;
+            renderUsersTable(globalUsersCache);
         }
+    }
 
-        async function loadLibraryData() {
-            const list = document.getElementById('documents-list');
-            const res = await apiFetch('library/getDocuments.php');
-            if (res.success) {
-                list.innerHTML = res.documents.map(doc => `
-                <div class="bg-gray-50 p-4 rounded-lg flex justify-between items-center mb-2">
-                    <div>
-                        <h4 class="font-bold">${doc.title}</h4>
-                        <p class="text-sm text-gray-500">${doc.author} | ${doc.category}</p>
-                    </div>
-                    <button class="text-red-500" onclick="deleteDocument('${doc.id}')">删除</button>
-                </div>`).join('');
-            }
+    function renderUsersTable(users) {
+        const searchTerm = document.getElementById('user-search').value.toLowerCase();
+        const roleFilter = document.getElementById('user-role-filter').value;
+        const filtered = users.filter(user => {
+            const matchesSearch = (user.username || '').toLowerCase().includes(searchTerm) ||
+                (user.email || '').toLowerCase().includes(searchTerm);
+            const matchesRole = roleFilter === 'all' || user.role === roleFilter;
+            return matchesSearch && matchesRole;
+        });
+        document.getElementById('users-table-body').innerHTML = filtered.map(user => `
+        <tr>
+            <td class="px-6 py-4">${user.username || '-'}</td>
+            <td class="px-6 py-4">${user.email || '-'}</td>
+            <td class="px-6 py-4">${user.qq || '-'}</td>
+            <td class="px-6 py-4">${user.gender || '-'}</td>
+            <td class="px-6 py-4">${user.race || '-'}</td>
+            <td class="px-6 py-4">${user.age || '-'}</td>
+            <td class="px-6 py-4">${user.residence || '-'}</td>
+            <td class="px-6 py-4">${user.role === 'admin' ? '管理员' : '普通用户'}</td>
+            <td class="px-6 py-4">${user.createdAt ? user.createdAt.replace('T', ' ').slice(0, 19) : '-'}</td>
+            <td class="px-6 py-4">${user.lastLogin ? user.lastLogin.replace('T', ' ').slice(0, 19) : '-'}</td>
+            <td class="px-6 py-4">
+                <button class="text-accent mr-3" onclick="editUser('${user.id}')">编辑</button>
+                <button class="text-red-500" onclick="confirmDeleteUser('${user.id}', '${user.username}')">删除</button>
+            </td>
+        </tr>`).join('');
+    }
+
+    function editUser(userId) {
+        const user = globalUsersCache.find(u => u.id === userId);
+        if (user) {
+            document.getElementById('edit-user-id').value = user.id;
+            document.getElementById('edit-username').value = user.username || '';
+            document.getElementById('edit-email').value = user.email || '';
+            document.getElementById('edit-role').value = user.role || 'user';
+            document.getElementById('edit-qq').value = user.qq || '';
+            document.getElementById('edit-gender').value = user.gender || '男';
+            document.getElementById('edit-race').value = user.race || '';
+            document.getElementById('edit-age').value = user.age || '';
+            document.getElementById('edit-residence').value = user.residence || '';
+            document.getElementById('edit-bio').value = user.bio || '';
+            document.getElementById('edit-user-modal').classList.remove('hidden');
         }
+    }
 
-        async function deleteDocument(id) {
-            if (confirm('确定删除该文献吗？')) {
-                const res = await apiFetch(`library/saveDocuments.php?action=delete&id=${id}`);
-                if (res.success) loadLibraryData();
-            }
+    async function handleEditUser(e) {
+        e.preventDefault();
+        const params = new URLSearchParams({
+            id: document.getElementById('edit-user-id').value,
+            username: document.getElementById('edit-username').value,
+            email: document.getElementById('edit-email').value,
+            role: document.getElementById('edit-role').value,
+            qq: document.getElementById('edit-qq').value,
+            gender: document.getElementById('edit-gender').value,
+            race: document.getElementById('edit-race').value,
+            age: document.getElementById('edit-age').value,
+            residence: document.getElementById('edit-residence').value,
+            bio: document.getElementById('edit-bio').value
+        });
+        const res = await apiFetch(`users/updateUser.php?${params.toString()}`, { method: 'GET' });
+        if (res.success) {
+            alert('修改成功');
+            document.getElementById('edit-user-modal').classList.add('hidden');
+            await loadUsersData();
+        } else {
+            alert('修改失败：' + res.error);
         }
+    }
 
-        async function loadAdminPermissions() {
-            const tableBody = document.getElementById('admin-permissions-table-body');
-            const res = await apiFetch('admin/getAdminPermissions.php');
-            if (res.success) {
-                tableBody.innerHTML = res.permissions.map(p => `
-                <tr>
-                    <td class="px-6 py-4">${p.adminName}</td>
-                    <td class="px-6 py-4">${p.level}</td>
-                    <td class="px-6 py-4">${p.modules.join(', ')}</td>
-                    <td class="px-6 py-4"><button class="text-red-500">撤权</button></td>
-                </tr>`).join('');
-            }
+    function confirmDeleteUser(id, name) {
+        if (confirm(`确定要永久删除用户 ${name} 吗？此操作不可恢复。`)) {
+            deleteUser(id);
         }
+    }
 
-        function loadSectionData(section) {
-            switch (section) {
-                case 'dashboard':
-                    loadDashboardData();
-                    break;
-                case 'users':
-                    loadUsersData();
-                    break;
-                case 'bank':
-                    loadBankData();
-                    loadTransactionsData();
-                    break;
-                case 'library':
-                    loadLibraryData();
-                    break;
-                case 'permissions':
-                    loadAdminPermissions();
-                    break;
-            }
+    async function deleteUser(userId) {
+        const res = await apiFetch(`users/deleteUser.php?id=${userId}`, { method: 'GET' });
+        if (res.success) {
+            alert('删除成功');
+            await loadUsersData();
+            await loadDashboardData();
+        } else {
+            alert('删除失败：' + res.error);
         }
+    }
 
-        document.getElementById('add-user-btn').addEventListener('click', () => {
-            document.getElementById('add-user-modal').classList.remove('hidden');
+    async function loadLibraryData() {
+        const list = document.getElementById('documents-list');
+        const res = await apiFetch('library/getDocuments.php');
+        if (res.success) {
+            list.innerHTML = res.documents.map(doc => `
+            <div class="bg-gray-50 p-4 rounded-lg flex justify-between items-center mb-2">
+                <div>
+                    <h4 class="font-bold">${doc.title}</h4>
+                    <p class="text-sm text-gray-500">${doc.author} | ${doc.category}</p>
+                </div>
+                <button class="text-red-500" onclick="deleteDocument('${doc.id}')">删除</button>
+            </div>`).join('');
+        }
+    }
+
+    async function deleteDocument(id) {
+        if (confirm('确定删除该文献吗？')) {
+            const res = await apiFetch(`library/saveDocuments.php?action=delete&id=${id}`);
+            if (res.success) loadLibraryData();
+        }
+    }
+
+    async function loadAdminPermissions() {
+        const tableBody = document.getElementById('admin-permissions-table-body');
+        const res = await apiFetch('admin/getAdminPermissions.php');
+        if (res.success) {
+            tableBody.innerHTML = res.permissions.map(p => `
+            <tr>
+                <td class="px-6 py-4">${p.adminName}</td>
+                <td class="px-6 py-4">${p.level}</td>
+                <td class="px-6 py-4">${p.modules.join(', ')}</td>
+                <td class="px-6 py-4"><button class="text-red-500">撤权</button></td>
+            </tr>`).join('');
+        }
+    }
+
+    function loadSectionData(section) {
+        switch (section) {
+            case 'dashboard': loadDashboardData(); break;
+            case 'users': loadUsersData(); break;
+            case 'bank': loadBankData(); loadTransactionsData(); break;
+            case 'library': loadLibraryData(); break;
+            case 'permissions': loadAdminPermissions(); break;
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        checkAdminLogin();
+        loadDashboardData();
+        loadUsersData();
+        loadBankData();
+        loadTransactionsData();
+
+        document.querySelectorAll('.admin-nav-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const target = this.dataset.target;
+                document.querySelectorAll('.admin-nav-btn').forEach(b => b.classList.remove('bg-secondary', 'text-primary'));
+                this.classList.add('bg-secondary', 'text-primary');
+                document.querySelectorAll('.admin-section').forEach(s => s.classList.add('hidden'));
+                document.getElementById(target).classList.remove('hidden');
+                loadSectionData(target);
+            });
         });
 
-        document.getElementById('add-user-form').addEventListener('submit', async (e) => {
+        document.querySelectorAll('.close-modal').forEach(btn => {
+            btn.addEventListener('click', () => btn.closest('.fixed').classList.add('hidden'));
+        });
+
+        const openActionBtn = document.getElementById('open-action-modal-btn');
+        if (openActionBtn) {
+            openActionBtn.addEventListener('click', async () => {
+                const res = await apiFetch('bank/getAllCards.php?page=1&pageSize=9999');
+                if (res.success) {
+                    globalCardsCache = res.cards;
+                }
+                document.getElementById('account-action-modal').classList.remove('hidden');
+
+                const actionUserSelect = document.getElementById('action-username');
+                actionUserSelect.innerHTML = globalUsersCache.map(u =>
+                    `<option value="${u.id}">${u.username}</option>`
+                ).join('');
+
+                document.getElementById('transfer-target').innerHTML = '<option value="">请选择收款人</option>' + globalUsersCache.map(u =>
+                    `<option value="${u.id}">${u.username}</option>`
+                ).join('');
+
+                document.getElementById('action-card-type').value = 'debit';
+                document.getElementById('action-type').value = 'deposit';
+
+                updateActionCardOptions();
+                updateActionTypeOptions();
+                document.getElementById('action-type').dispatchEvent(new Event('change'));
+            });
+        }
+
+        const actionUserSelect = document.getElementById('action-username');
+        if (actionUserSelect) {
+            actionUserSelect.addEventListener('change', updateActionCardOptions);
+        }
+
+        const actionCardTypeSelect = document.getElementById('action-card-type');
+        if (actionCardTypeSelect) {
+            actionCardTypeSelect.addEventListener('change', () => {
+                updateActionCardOptions();
+                updateActionTypeOptions();
+            });
+        }
+
+        const actionCardSelect = document.getElementById('action-card');
+        if (actionCardSelect) {
+            actionCardSelect.addEventListener('change', updateLimitInputPlaceholder);
+        }
+
+        document.getElementById('action-type').addEventListener('change', function() {
+            const val = this.value;
+            const limitContainer = document.getElementById('limit-adjust-container');
+            const transferContainer = document.getElementById('transfer-target-container');
+            const amountInputDiv = document.getElementById('action-amount').parentElement;
+
+            limitContainer.classList.add('hidden');
+            transferContainer.classList.add('hidden');
+            amountInputDiv.classList.remove('hidden');
+
+            document.getElementById('action-amount').required = true;
+            document.getElementById('action-new-limit').required = false;
+            document.getElementById('transfer-target').required = false;
+
+            if (val === 'adjust-limit') {
+                limitContainer.classList.remove('hidden');
+                amountInputDiv.classList.add('hidden');
+                document.getElementById('action-amount').required = false;
+                document.getElementById('action-new-limit').required = true;
+                updateLimitInputPlaceholder();
+            } else if (val === 'transfer') {
+                transferContainer.classList.remove('hidden');
+                document.getElementById('transfer-target').required = true;
+            }
+        });
+
+        document.getElementById('account-action-form').addEventListener('submit', async (e) => {
             e.preventDefault();
 
+            const actionType = document.getElementById('action-type').value;
+            const userId = document.getElementById('action-username').value;
+            const cardId = document.getElementById('action-card').value;
+            const amount = document.getElementById('action-amount').value;
+            const note = document.getElementById('action-note').value;
+            let url = '';
+
+            if (document.getElementById('action-card-type').value === 'debit' && actionType === 'adjust-limit') {
+                alert('借记卡不支持调整信用额度');
+                return;
+            }
+
+            if (actionType === 'deposit' || actionType === 'withdraw') {
+                const params = new URLSearchParams({
+                    cardId: cardId,
+                    userId: userId,
+                    amount: amount,
+                    action: actionType,
+                    description: note
+                });
+                url = `bank/updateBalance.php?${params.toString()}`;
+
+            } else if (actionType === 'adjust-limit') {
+                const newLimit = document.getElementById('action-new-limit').value;
+                const params = new URLSearchParams({
+                    id: cardId,
+                    userId: userId,
+                    creditLimit: newLimit,
+                    action: 'adjustLimit'
+                });
+                url = `bank/updateCard.php?${params.toString()}`;
+
+            } else if (actionType === 'transfer') {
+                const targetUserId = document.getElementById('transfer-target').value;
+                const params = new URLSearchParams({
+                    userId: userId,
+                    targetUserId: targetUserId,
+                    amount: amount,
+                    cardId: cardId,
+                    description: note || '管理员转账'
+                });
+                url = `bank/transfer.php?${params.toString()}`;
+            }
+
+            const res = await apiFetch(url, { method: 'GET' });
+            if (res.success) {
+                alert('操作成功');
+                document.getElementById('account-action-modal').classList.add('hidden');
+                await loadBankData(currentBankPage);
+            } else {
+                alert('操作失败：' + res.error);
+            }
+        });
+
+        document.getElementById('edit-user-form').addEventListener('submit', handleEditUser);
+        document.getElementById('add-user-btn').addEventListener('click', () => document.getElementById('add-user-modal').classList.remove('hidden'));
+        document.getElementById('add-user-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
             const params = new URLSearchParams({
                 username: document.getElementById('add-username').value,
                 email: document.getElementById('add-email').value,
@@ -1634,239 +1777,71 @@
                 bio: document.getElementById('add-bio').value,
                 role: document.getElementById('add-role').value
             });
-
-            const res = await apiFetch(`auth/register.php?${params.toString()}`, {
-                method: 'GET'
-            });
-
-            if (res.success) {
-                alert('用户添加成功');
-                document.getElementById('add-user-modal').classList.add('hidden');
-                document.getElementById('add-user-form').reset();
-                loadUsersData();
-                if (typeof loadDashboardData === 'function') loadDashboardData();
-            } else {
-                alert('添加失败：' + res.error);
-            }
+            const res = await apiFetch(`auth/register.php?${params.toString()}`, {method: 'GET'});
+            if(res.success){ alert('添加成功'); document.getElementById('add-user-modal').classList.add('hidden'); loadUsersData(); } else { alert(res.error); }
         });
+        document.getElementById('back-to-home').addEventListener('click', () => window.location.href = 'index.html');
+        document.getElementById('logout-btn').addEventListener('click', async () => { if(confirm('确定退出？')) await apiFetch('auth/logout.php'); window.location.href='index.html'; });
 
-        document.addEventListener('DOMContentLoaded', function () {
-            checkAdminLogin();
-            loadDashboardData();
-            loadUsersData();
-            loadBankData();
-            loadTransactionsData();
-
-            document.getElementById('edit-card-form').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const params = new URLSearchParams({
-                    id: document.getElementById('edit-card-id').value,
-                    userId: document.getElementById('edit-card-userid').value,
-                    holderName: document.getElementById('edit-card-holder').value,
-                    balance: document.getElementById('edit-card-balance').value,
-                    creditLimit: document.getElementById('edit-card-limit').value,
-                    status: document.getElementById('edit-card-status').value
-                });
-                const res = await apiFetch(`bank/updateCard.php?${params.toString()}`, {method: 'GET'});
-                if (res.success) {
-                    alert('修改成功');
-                    document.getElementById('edit-card-modal').classList.add('hidden');
-                    await loadBankData(currentBankPage);
-                } else {
-                    alert(res.error);
-                }
-            });
-
-            document.querySelectorAll('.admin-nav-btn').forEach(btn => {
-                btn.addEventListener('click', function () {
-                    const target = this.dataset.target;
-                    document.querySelectorAll('.admin-nav-btn').forEach(b => b.classList.remove('bg-secondary', 'text-primary'));
-                    this.classList.add('bg-secondary', 'text-primary');
-                    document.querySelectorAll('.admin-section').forEach(s => s.classList.add('hidden'));
-                    document.getElementById(target).classList.remove('hidden');
-                    loadSectionData(target);
-                });
-            });
-
-            document.querySelectorAll('.close-modal').forEach(btn => {
-                btn.addEventListener('click', () => btn.closest('.fixed').classList.add('hidden'));
-            });
-
-            document.getElementById('add-user-btn').addEventListener('click', () => {
-                document.getElementById('add-user-modal').classList.remove('hidden');
-            });
-
-            document.getElementById('back-to-home').addEventListener('click', () => {
-                window.location.href = 'index.html';
-            });
-
-            document.getElementById('open-card-btn').addEventListener('click', () => {
-                document.getElementById('open-card-modal').classList.remove('hidden');
-
-                const userSelect = document.getElementById('open-card-user');
-                userSelect.innerHTML = globalUsersCache.map(u =>
-                    `<option value="${u.id}">${u.username}</option>`
-                ).join('');
-
-                const typeSelect = document.getElementById('open-card-type');
-                const limitInput = document.getElementById('open-card-credit-limit');
-                typeSelect.value = 'debit';
+        document.getElementById('open-card-btn').addEventListener('click', () => {
+            document.getElementById('open-card-modal').classList.remove('hidden');
+            const userSelect = document.getElementById('open-card-user');
+            userSelect.innerHTML = globalUsersCache.map(u => `<option value="${u.id}">${u.username}</option>`).join('');
+            const typeSelect = document.getElementById('open-card-type');
+            const limitInput = document.getElementById('open-card-credit-limit');
+            typeSelect.value = 'debit';
+            limitInput.value = 0;
+            limitInput.disabled = true;
+            limitInput.classList.add('bg-gray-100');
+        });
+        document.getElementById('open-card-type').addEventListener('change', function () {
+            const limitInput = document.getElementById('open-card-credit-limit');
+            if (this.value === 'debit') {
                 limitInput.value = 0;
                 limitInput.disabled = true;
                 limitInput.classList.add('bg-gray-100');
+            } else {
+                limitInput.value = 5000;
+                limitInput.disabled = false;
+                limitInput.classList.remove('bg-gray-100');
+            }
+        });
+        document.getElementById('open-card-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const params = new URLSearchParams({
+                userId: document.getElementById('open-card-user').value,
+                cardType: document.getElementById('open-card-type').value,
+                holderName: document.getElementById('open-card-holder-name').value,
+                balance: document.getElementById('open-card-initial-balance').value,
+                creditLimit: document.getElementById('open-card-credit-limit').value,
+                status: document.getElementById('open-card-status').value,
+                note: document.getElementById('open-card-note').value
             });
+            const res = await apiFetch(`bank/createCard.php?${params.toString()}`, {method: 'GET'});
+            if(res.success){ alert('开卡成功'); document.getElementById('open-card-modal').classList.add('hidden'); await loadBankData(); } else { alert(res.error); }
+        });
 
-            document.getElementById('open-card-type').addEventListener('change', function () {
-                const limitInput = document.getElementById('open-card-credit-limit');
-                if (this.value === 'debit') {
-                    limitInput.value = 0;
-                    limitInput.disabled = true;
-                    limitInput.classList.add('bg-gray-100');
-                } else {
-                    limitInput.value = 5000;
-                    limitInput.disabled = false;
-                    limitInput.classList.remove('bg-gray-100');
-                }
+        document.getElementById('user-search').addEventListener('input', () => renderUsersTable(globalUsersCache));
+        document.getElementById('user-role-filter').addEventListener('change', () => renderUsersTable(globalUsersCache));
+        document.getElementById('account-search').addEventListener('input', () => renderBankTable(globalCardsCache));
+        document.getElementById('card-type-filter').addEventListener('change', () => renderBankTable(globalCardsCache));
+        if (document.getElementById('transaction-search')) document.getElementById('transaction-search').addEventListener('input', loadTransactionsData);
+        if (document.getElementById('transaction-type-filter')) document.getElementById('transaction-type-filter').addEventListener('change', loadTransactionsData);
+
+        document.getElementById('edit-card-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const params = new URLSearchParams({
+                id: document.getElementById('edit-card-id').value,
+                userId: document.getElementById('edit-card-userid').value,
+                holderName: document.getElementById('edit-card-holder').value,
+                balance: document.getElementById('edit-card-balance').value,
+                creditLimit: document.getElementById('edit-card-limit').value,
+                status: document.getElementById('edit-card-status').value
             });
-
-            document.getElementById('open-card-form').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const params = new URLSearchParams({
-                    userId: document.getElementById('open-card-user').value,
-                    cardType: document.getElementById('open-card-type').value,
-                    holderName: document.getElementById('open-card-holder-name').value,
-                    balance: document.getElementById('open-card-initial-balance').value,
-                    creditLimit: document.getElementById('open-card-credit-limit').value,
-                    status: document.getElementById('open-card-status').value,
-                    note: document.getElementById('open-card-note').value
-                });
-                const res = await apiFetch(`bank/createCard.php?${params.toString()}`, {method: 'GET'});
-                if (res.success) {
-                    alert('开卡成功');
-                    document.getElementById('open-card-modal').classList.add('hidden');
-                    await loadBankData();
-                } else {
-                    alert(res.error);
-                }
-            });
-
-            document.getElementById('logout-btn').addEventListener('click', async () => {
-                if (confirm('确定退出？')) {
-                    const res = await apiFetch('auth/logout.php', {method: 'GET'});
-                    if (res.success) window.location.href = 'index.html';
-                }
-            });
-
-            document.getElementById('user-search').addEventListener('input', () => renderUsersTable(globalUsersCache));
-            document.getElementById('user-role-filter').addEventListener('change', () => renderUsersTable(globalUsersCache));
-
-            document.getElementById('account-search').addEventListener('input', () => renderBankTable(globalCardsCache));
-            document.getElementById('card-type-filter').addEventListener('change', () => renderBankTable(globalCardsCache));
-
-            const txSearchInput = document.getElementById('transaction-search');
-            const txTypeFilter = document.getElementById('transaction-type-filter');
-
-            if (txSearchInput) {
-                txSearchInput.addEventListener('input', loadTransactionsData);
-            }
-            if (txTypeFilter) {
-                txTypeFilter.addEventListener('change', loadTransactionsData);
-            }
-
-            const actionUserSelect = document.getElementById('action-username');
-            const actionCardTypeSelect = document.getElementById('action-card-type');
-            const actionCardSelect = document.getElementById('action-card');
-
-            function updateActionCardOptions() {
-                const selectedUserId = actionUserSelect.value;
-                const selectedType = actionCardTypeSelect.value;
-
-                if (!selectedUserId) {
-                    actionCardSelect.innerHTML = '<option value="">请先选择用户</option>';
-                    return;
-                }
-
-                const filteredCards = globalCardsCache.filter(card =>
-                    card.userId == selectedUserId && card.cardType === selectedType
-                );
-
-                if (filteredCards.length > 0) {
-                    actionCardSelect.innerHTML = filteredCards.map(card =>
-                        `<option value="${card.id}">${card.cardNumber} (余额: ¥${parseFloat(card.balance).toFixed(2)})</option>`
-                    ).join('');
-                } else {
-                    actionCardSelect.innerHTML = '<option value="">该用户无此类卡片</option>';
-                }
-            }
-
-            if (actionUserSelect) {
-                actionUserSelect.addEventListener('change', updateActionCardOptions);
-            }
-
-            if (actionCardTypeSelect) {
-                actionCardTypeSelect.addEventListener('change', updateActionCardOptions);
-            }
-
-            const openActionBtn = document.getElementById('open-action-modal-btn');
-            if (openActionBtn) {
-                openActionBtn.addEventListener('click', async () => {
-                    const res = await apiFetch('bank/getAllCards.php?page=1&pageSize=9999');
-                    if (res.success) {
-                        globalCardsCache = res.cards;
-                    }
-
-                    document.getElementById('account-action-modal').classList.remove('hidden');
-
-                    actionUserSelect.innerHTML = globalUsersCache.map(u =>
-                        `<option value="${u.id}">${u.username}</option>`
-                    ).join('');
-
-                    updateActionCardOptions();
-                });
-            }
-
-            document.getElementById('account-action-form').addEventListener('submit', async (e) => {
-                e.preventDefault();
-
-                const actionType = document.getElementById('action-type').value;
-                const userId = document.getElementById('action-username').value;
-                const cardId = document.getElementById('action-card').value;
-                const amount = document.getElementById('action-amount').value;
-
-                let url = '';
-
-                if (actionType === 'deposit' || actionType === 'withdraw') {
-                    const params = new URLSearchParams({
-                        cardId: cardId,
-                        userId: userId,
-                        amount: amount,
-                        action: actionType
-                    });
-                    url = `bank/updateBalance.php?${params.toString()}`;
-                } else if (actionType === 'adjust-limit') {
-                    const params = new URLSearchParams({
-                        id: cardId,
-                        userId: userId,
-                        balance: amount,
-                        action: 'adjustLimit'
-                    });
-                    url = `bank/updateCard.php?${params.toString()}`;
-                } else if (actionType === 'transfer') {
-                    const targetUserId = document.getElementById('transfer-target').value;
-                    url = `bank/transfer.php?userId=${userId}&targetUserId=${targetUserId}&amount=${amount}&cardId=${cardId}`;
-                }
-
-                const res = await apiFetch(url, { method: 'GET' });
-                if (res.success) {
-                    alert('操作成功');
-                    document.getElementById('account-action-modal').classList.add('hidden');
-                    await loadBankData(currentBankPage);
-                } else {
-                    alert('操作失败：' + res.error);
-                }
-            });
-
-        })
+            const res = await apiFetch(`bank/updateCard.php?${params.toString()}`, {method: 'GET'});
+            if(res.success){ alert('修改成功'); document.getElementById('edit-card-modal').classList.add('hidden'); await loadBankData(currentBankPage); } else { alert(res.error); }
+        });
+    });
 </script>
 </body>
 </html>

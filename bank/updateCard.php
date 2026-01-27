@@ -9,10 +9,8 @@ if (!$sessionData) jsonError('会话已过期', 401);
 
 $adminId = json_decode($sessionData, true)['userId'];
 $adminUserRaw = $db->get($adminId);
-$adminUsername = $adminUserRaw ? json_decode($adminUserRaw, true)['username'] : '管理员';
 
 $adminUser = $adminUserRaw ? json_decode($adminUserRaw, true) : [];
-
 if (($adminUser['role'] ?? '') !== 'admin') {
     jsonError('无权访问', 403);
 }
@@ -26,30 +24,43 @@ $key = "bank_account_" . $targetUserId;
 $accountRaw = $db->get($key);
 if (!$accountRaw) jsonError('账户不存在');
 
-$targetUserRaw = $db->get($targetUserId);
-$targetUsername = $targetUserRaw ? json_decode($targetUserRaw, true)['username'] : $targetUserId;
-
 $account = json_decode($accountRaw, true);
 $cardFound = false;
 $balanceDiff = 0;
 $isBalanceChanged = false;
+$logDescription = [];
 $cardNumber = '';
+
+$adminUsername = $adminUser['username'] ?? '管理员';
+$targetUserRaw = $db->get($targetUserId);
+$targetUsername = $targetUserRaw ? json_decode($targetUserRaw, true)['username'] : $targetUserId;
 
 foreach ($account['cards'] as &$c) {
     if ($c['id'] === $cardId) {
-        $c['holderName'] = $_GET['holderName'] ?? $c['holderName'];
 
-        $oldBalance = floatval($c['balance']);
-        $newBalance = floatval($_GET['balance'] ?? 0);
+        if (isset($_GET['holderName'])) $c['holderName'] = $_GET['holderName'];
 
-        if (abs($newBalance - $oldBalance) > 0.0001) {
-            $balanceDiff = $newBalance - $oldBalance;
-            $c['balance'] = $newBalance;
-            $isBalanceChanged = true;
+        if (isset($_GET['balance'])) {
+            $newBalance = floatval($_GET['balance']);
+            $oldBalance = floatval($c['balance']);
+            if (abs($newBalance - $oldBalance) > 0.0001) {
+                $balanceDiff = $newBalance - $oldBalance;
+                $c['balance'] = $newBalance;
+                $isBalanceChanged = true;
+                $logDescription[] = "余额调整";
+            }
         }
 
-        $c['creditLimit'] = floatval($_GET['creditLimit'] ?? 0);
-        $c['status'] = $_GET['status'] ?? 'active';
+        if (isset($_GET['creditLimit'])) {
+            $oldLimit = floatval($c['creditLimit'] ?? 0);
+            $newLimit = floatval($_GET['creditLimit']);
+            if (abs($newLimit - $oldLimit) > 0.0001) {
+                $c['creditLimit'] = $newLimit;
+                $logDescription[] = "额度调整({$oldLimit}->{$newLimit})";
+            }
+        }
+
+        if (isset($_GET['status'])) $c['status'] = $_GET['status'];
 
         $cardNumber = $c['cardNumber'];
         $cardFound = true;
@@ -61,17 +72,18 @@ if (!$cardFound) jsonError('卡片未找到');
 
 $db->set($key, json_encode($account));
 
-if ($isBalanceChanged) {
+if (!empty($logDescription)) {
     $txId = 'ADJ' . time() . rand(100, 999);
+    $descStr = implode(', ', $logDescription);
 
     $logData = [
         'id' => $txId,
         'userId' => $targetUserId,
         'username' => $targetUsername,
         'type' => 'admin_adjust',
-        'amount' => $balanceDiff,
+        'amount' => $isBalanceChanged ? $balanceDiff : 0,
         'timestamp' => date('Y-m-d H:i:s'),
-        'description' => "管理员({$adminUsername})强制调账: 卡号{$cardNumber} 余额调整"
+        'description' => "管理员({$adminUsername})操作: 卡号{$cardNumber} {$descStr}"
     ];
 
     $logsRaw = $db->get('bank_transactions');
