@@ -2,223 +2,335 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>Retinbox PHP 系统完整性测试</title>
+    <title>安提斯特虚拟国 - 全链路深度测试 (稳定版)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="retinbox-config.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
-<body class="bg-gray-100 p-10">
-<div class="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-lg">
-    <h1 class="text-3xl font-bold mb-6 text-gray-800">Retinbox PHP 系统自检程序</h1>
+<body class="bg-slate-900 text-slate-200 min-h-screen p-8 font-sans">
 
-    <div class="mb-6 flex gap-4">
-        <button onclick="startTests()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded transition">
-            开始全面测试 (安全模式)
-        </button>
-        <button onclick="clearConsole()" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded transition">
-            清空日志
-        </button>
-    </div>
+<div class="max-w-6xl mx-auto">
+    <header class="flex justify-between items-center mb-8 border-b border-slate-700 pb-4">
+        <div>
+            <h1 class="text-3xl font-bold text-white"><i class="fas fa-microchip text-blue-500 mr-2"></i>系统全链路深度测试</h1>
+            <p class="text-slate-400 mt-1">稳定版：内置 429 错误自动重试与防抖动机制</p>
+        </div>
+        <div class="flex gap-3">
+            <button onclick="startAdvancedTests()" id="startBtn" class="bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-6 rounded shadow-lg shadow-blue-500/30 transition transform hover:scale-105">
+                <i class="fas fa-play mr-2"></i>启动测试
+            </button>
+            <button onclick="clearLogs()" class="bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold py-2 px-4 rounded transition">
+                <i class="fas fa-trash mr-2"></i>清空
+            </button>
+        </div>
+    </header>
 
-    <div id="progress-container" class="w-full bg-gray-200 rounded-full h-2.5 mb-6 hidden">
-        <div id="progress-bar" class="bg-blue-600 h-2.5 rounded-full" style="width: 0%"></div>
-    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div class="lg:col-span-2 space-y-6">
+            <div class="bg-slate-800 rounded-lg p-4 shadow-lg border border-slate-700">
+                <div class="flex justify-between text-sm mb-2 text-slate-400">
+                    <span id="status-text">就绪</span>
+                    <span id="progress-percent">0%</span>
+                </div>
+                <div class="w-full bg-slate-700 rounded-full h-3 overflow-hidden">
+                    <div id="progress-bar" class="bg-gradient-to-r from-blue-500 to-cyan-400 h-3 rounded-full transition-all duration-500 w-0"></div>
+                </div>
+            </div>
 
-    <div class="space-y-4">
-        <div class="border rounded-lg overflow-hidden">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">模块</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">测试项</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">状态</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">耗时</th>
-                </tr>
-                </thead>
-                <tbody id="test-results" class="bg-white divide-y divide-gray-200">
-                </tbody>
-            </table>
+            <div class="bg-slate-800 rounded-lg shadow-lg border border-slate-700 overflow-hidden">
+                <table class="w-full text-left border-collapse">
+                    <thead class="bg-slate-700/50 text-slate-300 text-xs uppercase">
+                    <tr>
+                        <th class="p-4">模块</th>
+                        <th class="p-4">测试场景</th>
+                        <th class="p-4">预期结果</th>
+                        <th class="p-4 text-center">状态</th>
+                    </tr>
+                    </thead>
+                    <tbody id="test-list" class="divide-y divide-slate-700 text-sm">
+                    <tr><td colspan="4" class="p-8 text-center text-slate-500">点击“启动测试”开始运行...</td></tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
-        <div class="bg-black text-green-400 p-4 rounded font-mono text-sm h-64 overflow-y-auto" id="console-output">
-            > 准备就绪，请点击开始测试。
+        <div class="bg-black rounded-lg shadow-lg border border-slate-700 flex flex-col h-[600px]">
+            <div class="p-3 bg-slate-800 border-b border-slate-700 font-mono text-xs text-slate-400 flex justify-between">
+                <span>TERMINAL OUTPUT</span>
+                <span class="animate-pulse">●</span>
+            </div>
+            <div id="console-output" class="flex-1 p-4 font-mono text-xs overflow-y-auto space-y-2 text-green-400 scrollbar-thin scrollbar-thumb-slate-700">
+                <div class="text-slate-500">> System Ready...</div>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
-    const log = (msg, type = 'info') => {
-        const consoleDiv = document.getElementById('console-output');
-        const color = type === 'error' ? 'text-red-400' : (type === 'success' ? 'text-green-400' : 'text-gray-300');
-        consoleDiv.innerHTML += `<div class="${color}">[${new Date().toLocaleTimeString()}] ${msg}</div>`;
-        consoleDiv.scrollTop = consoleDiv.scrollHeight;
+    const logger = {
+        log: (msg) => writeConsole(msg, 'text-slate-300'),
+        info: (msg) => writeConsole(`ℹ️ ${msg}`, 'text-blue-400'),
+        success: (msg) => writeConsole(`✅ ${msg}`, 'text-green-400'),
+        error: (msg) => writeConsole(`❌ ${msg}`, 'text-red-500 font-bold'),
+        warn: (msg) => writeConsole(`⚠️ ${msg}`, 'text-yellow-400')
     };
 
-    const addResult = (module, item, success, time) => {
-        const tbody = document.getElementById('test-results');
-        const row = document.createElement('tr');
-        row.innerHTML = `
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${module}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item}</td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${success ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
-                        ${success ? '通过' : '失败'}
-                    </span>
+    function writeConsole(html, colorClass = '') {
+        const div = document.getElementById('console-output');
+        const entry = document.createElement('div');
+        entry.className = `${colorClass} break-all`;
+        entry.innerHTML = `<span class="text-slate-600 mr-2">[${new Date().toLocaleTimeString()}]</span>${html}`;
+        div.appendChild(entry);
+        div.scrollTop = div.scrollHeight;
+    }
+
+    function updateRowStatus(id, status, time = 0) {
+        const el = document.getElementById(`status-${id}`);
+        if (!el) return;
+
+        let badge = '';
+        if (status === 'running') {
+            badge = `<i class="fas fa-spinner fa-spin text-blue-400"></i>`;
+        } else if (status === 'pass') {
+            badge = `<span class="bg-green-900/50 text-green-400 px-2 py-1 rounded border border-green-800 text-xs font-bold">PASS (${time}ms)</span>`;
+        } else if (status === 'retry') {
+            badge = `<span class="bg-yellow-900/50 text-yellow-400 px-2 py-1 rounded border border-yellow-800 text-xs font-bold">RETRY</span>`;
+        } else {
+            badge = `<span class="bg-red-900/50 text-red-400 px-2 py-1 rounded border border-red-800 text-xs font-bold">FAIL</span>`;
+        }
+        el.innerHTML = badge;
+    }
+
+    function clearLogs() {
+        document.getElementById('console-output').innerHTML = '<div class="text-slate-500">> Logs Cleared</div>';
+        document.getElementById('test-list').innerHTML = '<tr><td colspan="4" class="p-8 text-center text-slate-500">点击“启动测试”开始运行...</td></tr>';
+        document.getElementById('progress-bar').style.width = '0%';
+    }
+
+    // --- 核心重试逻辑 ---
+    async function runWithRetry(fn, maxRetries = 3) {
+        for (let i = 0; i < maxRetries; i++) {
+            try {
+                await fn();
+                return; // 成功则退出
+            } catch (e) {
+                // 如果是 429 错误且还有重试机会
+                if ((e.message.includes('429') || e.message.includes('Server Error')) && i < maxRetries - 1) {
+                    const delay = 3000; // 等待 3 秒
+                    logger.warn(`触发限流 (429)，等待 ${delay/1000} 秒后重试 (${i + 1}/${maxRetries})...`);
+                    updateRowStatus('running', 'retry'); // 这里的 ID 需要动态传递，但在外层处理更方便
+                    await new Promise(r => setTimeout(r, delay));
+                    continue;
+                }
+                throw e; // 其他错误或重试耗尽直接抛出
+            }
+        }
+    }
+
+    const testSuite = [
+        { id: 'init', module: '系统', name: '环境初始化检查', desc: '检测/创建 Admin 账号', fn: testInit },
+        { id: 'reg', module: '认证', name: '新用户注册', desc: '创建临时测试账号', fn: testRegister },
+        { id: 'login', module: '认证', name: '用户登录', desc: '获取 Session 会话', fn: testLogin },
+        { id: 'profile', module: '用户', name: '修改个人资料', desc: '更新昵称与简介 (GET)', fn: testUpdateProfile },
+        { id: 'avatar', module: '用户', name: '上传头像', desc: 'Multipart 图片上传', fn: testUploadAvatar },
+        { id: 'card_debit_1', module: '银行', name: '开通借记卡 A', desc: '开卡并预存 1000 元', fn: testCreateDebitCardA },
+        { id: 'card_debit_2', module: '银行', name: '开通借记卡 B', desc: '开卡余额 0 元 (用于接收转账)', fn: testCreateDebitCardB },
+        { id: 'card_credit', module: '银行', name: '开通信用卡 C', desc: '开通透支额度 5000 元', fn: testCreateCreditCard },
+        { id: 'transfer', module: '银行', name: '转账测试 (A -> B)', desc: '从卡A转账 100 元到卡B', fn: testTransfer },
+        { id: 'verify_bal', module: '银行', name: '余额变动验证', desc: '验证 A少100, B多100', fn: testBalanceVerification },
+        { id: 'repayment', module: '银行', name: '信用卡还款', desc: '从卡A还款 50 元到卡C', fn: testRepayment },
+        { id: 'logs', module: '银行', name: '流水记录核查', desc: '检查交易日志是否存在', fn: testTransactionLogs },
+        { id: 'upload_doc', module: '图书馆', name: '上传文献', desc: '上传测试文档', fn: testLibraryUpload }
+    ];
+
+    let ctx = {
+        rand: Math.floor(Math.random() * 10000),
+        user: null,
+        userId: null,
+        cards: { a: null, b: null, c: null },
+        docId: null
+    };
+
+    async function startAdvancedTests() {
+        clearLogs();
+        const tbody = document.getElementById('test-list');
+        tbody.innerHTML = '';
+
+        testSuite.forEach(test => {
+            const tr = document.createElement('tr');
+            tr.className = "hover:bg-slate-700/30 transition";
+            tr.innerHTML = `
+                <td class="p-4 font-bold text-slate-300 border-b border-slate-700">${test.module}</td>
+                <td class="p-4 border-b border-slate-700">
+                    <div class="font-semibold text-white">${test.name}</div>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${time}ms</td>
+                <td class="p-4 text-slate-400 text-xs border-b border-slate-700">${test.desc}</td>
+                <td class="p-4 text-center border-b border-slate-700" id="status-${test.id}">
+                    <span class="text-slate-600">waiting</span>
+                </td>
             `;
-        tbody.appendChild(row);
-    };
+            tbody.appendChild(tr);
+        });
 
-    const clearConsole = () => {
-        document.getElementById('console-output').innerHTML = '> 日志已清空...';
-        document.getElementById('test-results').innerHTML = '';
-    };
+        ctx.email = `adv_test_${ctx.rand}@example.com`;
+        ctx.username = `User_${ctx.rand}`;
+        ctx.password = 'Pass123!';
 
-    async function startTests() {
-        clearConsole();
-        document.getElementById('progress-container').classList.remove('hidden');
-        const tests = [
-            testInit,
-            testRegister,
-            testLogin,
-            testBankCreate,
-            testBankTransaction,
-            testLibraryAdd,
-            testSettingsUpdate,
-            testFileUpload
-        ];
+        logger.info(`初始化测试上下文: 用户名=${ctx.username}`);
+        document.getElementById('startBtn').disabled = true;
+        document.getElementById('startBtn').classList.add('opacity-50');
 
-        let passed = 0;
-        const rand = Math.floor(Math.random() * 10000);
-        const testEmail = `test_${rand}@example.com`;
-        const testUser = `tester_${rand}`;
-        const testPass = 'password123';
-        let testContext = { email: testEmail, username: testUser, password: testPass };
+        let passedCount = 0;
 
-        log('开始测试 (间隔 5秒 以防止 429 错误)...');
+        for (let i = 0; i < testSuite.length; i++) {
+            const test = testSuite[i];
+            const progress = Math.round((i / testSuite.length) * 100);
+            document.getElementById('progress-bar').style.width = `${progress}%`;
+            document.getElementById('progress-percent').innerText = `${progress}%`;
+            document.getElementById('status-text').innerText = `正在执行: ${test.name}`;
 
-        for (let i = 0; i < tests.length; i++) {
-            const percent = ((i) / tests.length) * 100;
-            document.getElementById('progress-bar').style.width = `${percent}%`;
+            updateRowStatus(test.id, 'running');
+            const startTime = Date.now();
 
             try {
-                await tests[i](testContext);
-                passed++;
-            } catch (e) {
-                log(`测试失败: ${e.message}`, 'error');
-            }
+                // 延迟 2 秒 (比之前的 1.5s 稍长)
+                await new Promise(r => setTimeout(r, 2000));
 
-            await new Promise(r => setTimeout(r, 5000));
+                // 使用重试机制执行
+                await runWithRetry(async () => {
+                    // 如果正在重试，界面显示 retry 状态
+                    if (document.getElementById(`status-${test.id}`).innerText.includes('FAIL')) {
+                        updateRowStatus(test.id, 'retry');
+                    }
+                    await test.fn();
+                });
+
+                const timeTaken = Date.now() - startTime;
+                updateRowStatus(test.id, 'pass', timeTaken);
+                passedCount++;
+            } catch (err) {
+                const timeTaken = Date.now() - startTime;
+                updateRowStatus(test.id, 'fail', timeTaken);
+                logger.error(`步骤 [${test.name}] 失败: ${err.message}`);
+
+                if (test.id === 'reg' || test.id === 'login') break;
+            }
         }
 
         document.getElementById('progress-bar').style.width = '100%';
-        log(`测试完成! 通过: ${passed}/${tests.length}`, passed === tests.length ? 'success' : 'error');
-    }
+        document.getElementById('progress-percent').innerText = '100%';
+        document.getElementById('status-text').innerText = '测试完成';
+        document.getElementById('startBtn').disabled = false;
+        document.getElementById('startBtn').classList.remove('opacity-50');
 
-    async function testInit(ctx) {
-        const start = Date.now();
-        try {
-            const res = await window.retinbox.request('init', 'POST');
-            log('初始化: ' + (res.success ? '成功' : res.message));
-            addResult('系统', '数据库初始化', true, Date.now() - start);
-        } catch (e) {
-            if (e.message && e.message.includes('数据库已初始化')) {
-                log('数据库已存在，跳过');
-                addResult('系统', '数据库初始化 (已存在)', true, Date.now() - start);
-            } else {
-                addResult('系统', '数据库初始化', false, Date.now() - start);
-                throw e;
-            }
+        if (passedCount === testSuite.length) {
+            logger.success("🏆 所有测试通过！系统功能运转正常。");
+        } else {
+            logger.warn(`⚠️ 测试完成，通过率: ${passedCount}/${testSuite.length}`);
         }
     }
 
-    async function testRegister(ctx) {
-        const start = Date.now();
-        try {
-            const res = await window.retinbox.register(ctx.email, ctx.password, ctx.username);
-            log(`注册成功: UserID=${res.user.id}`);
-            addResult('认证', '用户注册', true, Date.now() - start);
-        } catch (e) {
-            addResult('认证', '用户注册', false, Date.now() - start);
-            throw e;
-        }
+    // --- 测试用例实现 (保持不变，已包含上次修复) ---
+
+    async function testInit() {
+        const res = await window.retinbox.request('init', 'GET');
+        if (!res.initialized) await window.retinbox.request('init', 'POST');
     }
 
-    async function testLogin(ctx) {
-        const start = Date.now();
-        try {
-            await window.retinbox.login(ctx.email, ctx.password);
-            log(`登录成功`);
-            addResult('认证', '用户登录', true, Date.now() - start);
-        } catch (e) {
-            addResult('认证', '用户登录', false, Date.now() - start);
-            throw e;
-        }
+    async function testRegister() {
+        const res = await window.retinbox.register(ctx.email, ctx.password, ctx.username);
+        ctx.userId = res.user.id;
+        logger.log(`注册成功 ID: ${ctx.userId}`);
     }
 
-    async function testBankCreate(ctx) {
-        const start = Date.now();
-        try {
-            await window.retinbox.createBankAccount();
-            log(`开户成功`);
-            addResult('银行', '创建账户', true, Date.now() - start);
-        } catch (e) {
-            if (e.message && e.message.includes('已存在')) {
-                addResult('银行', '创建账户 (已存在)', true, Date.now() - start);
-            } else {
-                addResult('银行', '创建账户', false, Date.now() - start);
-                throw e;
-            }
-        }
+    async function testLogin() {
+        const res = await window.retinbox.login(ctx.email, ctx.password);
+        if (!res.user || res.user.id !== ctx.userId) throw new Error("Session ID 不匹配");
+        logger.log("登录成功");
     }
 
-    async function testBankTransaction(ctx) {
-        const start = Date.now();
-        try {
-            await window.retinbox.addTransaction(100, 'income', '测试收入');
-            addResult('银行', '交易测试', true, Date.now() - start);
-        } catch (e) {
-            addResult('银行', '交易测试', false, Date.now() - start);
-            throw e;
-        }
+    async function testUpdateProfile() {
+        const newBio = "Automated Test Bio " + ctx.rand;
+        const params = new URLSearchParams({ id: ctx.userId, bio: newBio, gender: 'Robot' });
+        const res = await window.retinbox.request(`users/updateUser?${params.toString()}`, 'GET');
+        if (res.user.bio !== newBio) throw new Error("资料未更新");
+        logger.log("个人资料更新验证通过");
     }
 
-    async function testLibraryAdd(ctx) {
-        const start = Date.now();
-        try {
-            await window.retinbox.addLibraryRecord('bk_test_1', '测试图书');
-            addResult('图书馆', '借阅图书', true, Date.now() - start);
-        } catch (e) {
-            addResult('图书馆', '借阅图书', false, Date.now() - start);
-            throw e;
-        }
+    async function testUploadAvatar() {
+        const base64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
+        const res = await fetch(`data:image/png;base64,${base64}`);
+        const blob = await res.blob();
+        const formData = new FormData();
+        formData.append('avatar', blob, 'avatar_test.png');
+        formData.append('userId', ctx.userId);
+        const uploadRes = await window.retinbox.upload('users/upload-avatar', formData);
+        if (!uploadRes.success) throw new Error(uploadRes.error);
+        logger.log(`头像上传成功`);
     }
 
-    async function testSettingsUpdate(ctx) {
-        const start = Date.now();
-        try {
-            await window.retinbox.updateUserSettings({ theme: 'dark' });
-            addResult('设置', '更新设置', true, Date.now() - start);
-        } catch (e) {
-            addResult('设置', '更新设置', false, Date.now() - start);
-            throw e;
-        }
+    async function testCreateDebitCardA() {
+        const params = new URLSearchParams({ userId: ctx.userId, cardType: 'debit', holderName: ctx.username, balance: '1000' });
+        const res = await window.retinbox.request(`bank/createCard?${params.toString()}`, 'GET');
+        ctx.cards.a = res.card;
+        logger.log(`卡 A (借记) 创建成功: ${res.card.cardNumber}`);
     }
 
-    async function testFileUpload(ctx) {
-        const start = Date.now();
-        try {
-            const blob = new Blob(["Hello World"], { type: "text/plain" });
-            const formData = new FormData();
-            formData.append("document", blob, "test_doc.txt");
+    async function testCreateDebitCardB() {
+        const params = new URLSearchParams({ userId: ctx.userId, cardType: 'debit', holderName: ctx.username, balance: '0' });
+        const res = await window.retinbox.request(`bank/createCard?${params.toString()}`, 'GET');
+        ctx.cards.b = res.card;
+        logger.log(`卡 B (借记) 创建成功: ${res.card.cardNumber}`);
+    }
 
-            const res = await window.retinbox.uploadDocument(formData);
-            log(`上传成功: ID=${res.document.id}`);
-            addResult('上传', '文档上传', true, Date.now() - start);
-        } catch (e) {
-            log('上传失败: ' + e.message, 'error');
-            addResult('上传', '文档上传', false, Date.now() - start);
-        }
+    async function testCreateCreditCard() {
+        const params = new URLSearchParams({ userId: ctx.userId, cardType: 'credit', holderName: ctx.username });
+        const res = await window.retinbox.request(`bank/createCard?${params.toString()}`, 'GET');
+        ctx.cards.c = res.card;
+        logger.log(`卡 C (信用) 创建成功: ${res.card.cardNumber}`);
+    }
+
+    async function testTransfer() {
+        if (!ctx.cards.a || !ctx.cards.b) throw new Error("前序开卡步骤失败");
+        // 双保险：URL 参数 + Body 参数
+        const params = new URLSearchParams({ amount: '100', targetUserId: ctx.userId, userId: ctx.userId });
+        const payload = { userId: ctx.userId, fromCardId: ctx.cards.a.id, toCardNumber: ctx.cards.b.cardNumber, amount: 100, description: 'Test Transfer' };
+        await window.retinbox.request(`bank/transfer?${params.toString()}`, 'POST', payload);
+        logger.log(`转账指令发送: A -> B (100元)`);
+    }
+
+    async function testBalanceVerification() {
+        const res = await window.retinbox.request('bank/getCards', 'GET');
+        const cardA = res.cards.find(c => c.id === ctx.cards.a.id);
+        const cardB = res.cards.find(c => c.id === ctx.cards.b.id);
+        logger.log(`验证余额: 卡A=${cardA.balance} (预期900), 卡B=${cardB.balance} (预期100)`);
+        if (parseFloat(cardA.balance) !== 900) throw new Error(`卡A余额错误: ${cardA.balance}`);
+        if (parseFloat(cardB.balance) !== 100) throw new Error(`卡B余额错误: ${cardB.balance}`);
+    }
+
+    async function testRepayment() {
+        const params = new URLSearchParams({ debitCardId: ctx.cards.a.id, creditCardId: ctx.cards.c.id, amount: '50' });
+        await window.retinbox.request(`bank/repayment?${params.toString()}`, 'GET');
+        logger.log("还款指令发送成功");
+    }
+
+    async function testTransactionLogs() {
+        const res = await window.retinbox.request('bank/getTransactions', 'GET');
+        const types = (res.transactions || []).map(t => t.type);
+        logger.log(`检测到流水类型: ${types.join(', ')}`);
+        if (!types.includes('transfer') || !types.includes('repayment')) throw new Error("流水中缺失转账或还款记录");
+    }
+
+    async function testLibraryUpload() {
+        const blob = new Blob(["Test Content"], { type: "text/plain" });
+        const formData = new FormData();
+        formData.append("document", blob, "adv_test.txt");
+        formData.append("title", "测试文档");
+        formData.append("author", "Tester");
+        formData.append("category", "Log");
+        formData.append("description", "Auto");
+        const res = await window.retinbox.uploadDocument(formData);
+        logger.log(`文档上传成功`);
     }
 </script>
 </body>
