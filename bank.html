@@ -929,6 +929,7 @@
                 renderCards();
                 renderTransactions();
                 populateForms();
+                updateStatistics();
             }
 
             function formatCardNumber(num) {
@@ -1333,6 +1334,21 @@
                     });
                 }
 
+                const refreshBtn = document.getElementById('refresh-statistics');
+                if (refreshBtn) {
+                    refreshBtn.addEventListener('click', async () => {
+                        await fetchTransactions();
+                        updateStatistics();
+                    });
+                }
+
+                const periodSelect = document.getElementById('statistics-period');
+                if (periodSelect) {
+                    periodSelect.addEventListener('change', () => {
+                        updateStatistics();
+                    });
+                }
+
                 document.getElementById('logout-btn').addEventListener('click', async () => {
                     await fetch('auth/logout.php');
                     window.location.href = 'index.html';
@@ -1359,6 +1375,72 @@
                     if(fromSelect) fromSelect.add(new Option(label, c.id));
                     if (c.cardType === 'credit' && creditSelect) creditSelect.add(new Option(label, c.id));
                     if (c.cardType === 'debit' && debitSelect) debitSelect.add(new Option(label, c.id));
+                });
+            }
+
+            function updateStatistics() {
+                const period = parseInt(document.getElementById('statistics-period').value);
+                const now = new Date();
+                const cutoff = new Date(now.setDate(now.getDate() - period));
+
+                let income = 0;
+                let expense = 0;
+                let count = 0;
+                const categories = { '转账': 0, '还款': 0, '存取款': 0, '其他': 0 };
+
+                currentTransactions.forEach(tx => {
+                    const txDate = new Date(tx.timestamp);
+                    if (txDate >= cutoff) {
+                        const amt = parseFloat(tx.amount);
+                        if (amt > 0) income += amt;
+                        else expense += Math.abs(amt);
+                        count++;
+
+                        if (tx.type === 'transfer') categories['转账'] += Math.abs(amt);
+                        else if (tx.type === 'repayment') categories['还款'] += Math.abs(amt);
+                        else if (tx.type === 'deposit' || tx.type === 'withdraw') categories['存取款'] += Math.abs(amt);
+                        else categories['其他'] += Math.abs(amt);
+                    }
+                });
+
+                document.getElementById('total-income').textContent = `¥${income.toFixed(2)}`;
+                document.getElementById('total-expense').textContent = `¥${expense.toFixed(2)}`;
+                document.getElementById('net-income').textContent = `¥${(income - expense).toFixed(2)}`;
+                document.getElementById('transaction-count').textContent = count;
+
+                renderCharts(categories, income, expense);
+            }
+
+            let categoryChart, trendChart;
+            function renderCharts(categories, income, expense) {
+                const catCtx = document.getElementById('expense-category-chart').getContext('2d');
+                if (categoryChart) categoryChart.destroy();
+                categoryChart = new Chart(catCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: Object.keys(categories),
+                        datasets: [{
+                            data: Object.values(categories),
+                            backgroundColor: ['#3E92CC', '#E6AF2E', '#0A2463', '#1E1B18']
+                        }]
+                    }
+                });
+
+                const trendCtx = document.getElementById('income-expense-chart').getContext('2d');
+                if (trendChart) trendChart.destroy();
+                trendChart = new Chart(trendCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['收入', '支出'],
+                        datasets: [{
+                            label: '金额',
+                            data: [income, expense],
+                            backgroundColor: ['#10B981', '#EF4444']
+                        }]
+                    },
+                    options: {
+                        scales: { y: { beginAtZero: true } }
+                    }
                 });
             }
 
