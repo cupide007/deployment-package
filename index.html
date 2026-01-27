@@ -88,6 +88,7 @@
             <a href="bank.html" class="nav-bank hidden hover:text-secondary transition-colors duration-200">国家银行</a>
             <a href="library.html" class="nav-library hidden hover:text-secondary transition-colors duration-200">国家图书馆</a>
             <a href="user-center.html" class="nav-user-center hidden hover:text-secondary transition-colors duration-200">用户中心</a>
+            <a href="admin.html" class="nav-admin hidden hover:text-secondary transition-colors duration-200 font-bold text-accent">后台管理</a>
         </div>
         <div class="flex items-center space-x-4">
             <button id="login-btn" class="bg-secondary text-primary px-4 py-2 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium">
@@ -108,6 +109,7 @@
             <a href="bank.html" class="nav-bank hidden py-2 hover:text-secondary transition-colors duration-200">国家银行</a>
             <a href="library.html" class="nav-library hidden py-2 hover:text-secondary transition-colors duration-200">国家图书馆</a>
             <a href="user-center.html" class="nav-user-center hidden py-2 hover:text-secondary transition-colors duration-200">用户中心</a>
+            <a href="admin.html" class="nav-admin hidden hover:text-secondary transition-colors duration-200 font-bold text-accent">后台管理</a>
         </div>
     </div>
 </nav>
@@ -259,10 +261,15 @@
             if (user) {
                 document.getElementById('login-btn').classList.add('hidden');
                 document.getElementById('logout-btn').classList.remove('hidden');
-
                 document.querySelectorAll('.nav-bank, .nav-library, .nav-user-center').forEach(el => {
                     el.classList.remove('hidden');
                 });
+
+                if (user.role === 'admin') {
+                    document.querySelectorAll('.nav-admin').forEach(el => {
+                        el.classList.remove('hidden');
+                    });
+                }
 
                 document.getElementById('hero-login-btn').textContent = '进入用户中心';
                 document.getElementById('hero-login-btn').onclick = function() {
@@ -345,7 +352,11 @@
             try {
                 const res = await window.retinbox.login(email, pass);
                 if (res.success) {
-                    window.location.href = 'user-center.html';
+                    if (res.user && res.user.role === 'admin') {
+                        window.location.href = 'admin.html';
+                    } else {
+                        window.location.href = 'user-center.html';
+                    }
                 }
             } catch (err) {
                 alert(err.message || '登录失败');
