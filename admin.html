@@ -1666,7 +1666,23 @@
         if (uRes.success) {
             globalUsersCache = uRes.users;
             document.getElementById('total-users').textContent = globalUsersCache.length;
+
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const todayStr = `${year}-${month}-${day}`;
+
+            let activeCount = 0;
+            globalUsersCache.forEach(u => {
+                if (u.lastLogin && u.lastLogin.startsWith(todayStr)) {
+                    activeCount++;
+                }
+            });
+
+            document.getElementById('active-users').textContent = activeCount;
         }
+
         if (dRes.success) {
             globalDocumentsCache = dRes.documents;
             document.getElementById('total-documents').textContent = globalDocumentsCache.length;
@@ -1674,6 +1690,7 @@
         if (bRes.success) {
             document.getElementById('total-accounts').textContent = bRes.total;
         }
+
         generateCharts();
     }
 
