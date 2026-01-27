@@ -306,115 +306,134 @@
                 <p class="text-gray-600">管理所有银行账户和交易记录。</p>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <!-- 账户管理 -->
-                <div class="lg:col-span-2">
-                    <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="text-xl font-bold text-primary">账户管理</h3>
-                            <div class="flex space-x-2">
-                                <button id="open-card-btn" class="bg-primary text-light px-4 py-2 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium flex items-center space-x-2">
-                                    <i class="fa fa-plus"></i>
-                                    <span>新开卡片</span>
-                                </button>
-                                <button id="open-action-modal-btn" class="bg-accent text-light px-4 py-2 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium flex items-center space-x-2">
-                                    <i class="fa fa-cogs"></i>
-                                    <span>账户操作</span>
-                                </button>
-                            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white rounded-lg shadow p-6 border-l-4 border-primary transform transition-all hover:-translate-y-1">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="text-gray-500 text-sm font-medium mb-1">总账户数</p>
+                            <h3 id="bank-total-accounts" class="text-2xl font-bold text-primary">0</h3>
                         </div>
-                        <div class="flex justify-between items-center mb-6">
-                            <div class="relative w-64">
-                                <input type="text" id="account-search" class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" placeholder="搜索账户...">
-                                <i class="fa fa-search absolute left-3 top-3 text-gray-400"></i>
-                            </div>
-                            <select id="card-type-filter" class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
-                                <option value="all">所有卡类型</option>
-                                <option value="debit">借记卡</option>
-                                <option value="credit">信用卡</option>
-                            </select>
-                        </div>
-
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full divide-y divide-gray-200">
-                                <thead>
-                                <tr>
-                                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">用户名</th>
-                                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">账户类型</th>
-                                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">卡号</th>
-                                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">余额</th>
-                                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">信用额度</th>
-                                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">状态</th>
-                                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">创建时间</th>
-                                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
-                                </tr>
-                                </thead>
-                                <tbody id="accounts-table-body" class="bg-white divide-y divide-gray-200">
-                                </tbody>
-                            </table>
-                        </div>
-                        <div id="bank-pagination" class="mt-4 flex justify-center"></div>
-                    </div>
-
-                    <!-- 交易记录 -->
-                    <div class="bg-white rounded-lg shadow-lg p-6">
-                        <h3 class="text-xl font-bold text-primary mb-4">交易记录</h3>
-                        <div class="flex justify-between items-center mb-6">
-                            <div class="relative w-64">
-                                <input type="text" id="transaction-search" class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" placeholder="搜索交易...">
-                                <i class="fa fa-search absolute left-3 top-3 text-gray-400"></i>
-                            </div>
-                            <select id="transaction-type-filter" class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
-                                <option value="all">所有类型</option>
-                                <option value="deposit">存款</option>
-                                <option value="withdraw">取款</option>
-                                <option value="transfer">转账</option>
-                            </select>
-                        </div>
-
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full divide-y divide-gray-200">
-                                <thead>
-                                <tr>
-                                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">交易ID</th>
-                                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">用户</th>
-                                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">类型</th>
-                                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">金额</th>
-                                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">时间</th>
-                                    <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">备注</th>
-                                </tr>
-                                </thead>
-                                <tbody id="transactions-table-body" class="bg-white divide-y divide-gray-200">
-                                <!-- 交易数据将通过JavaScript动态填充 -->
-                                </tbody>
-                            </table>
+                        <div class="bg-primary bg-opacity-10 p-3 rounded-full">
+                            <i class="fa fa-credit-card text-primary text-xl"></i>
                         </div>
                     </div>
                 </div>
 
-                <!-- 账户操作 -->
-                <div>
-                    <!-- 统计信息 -->
-                    <div class="bg-white rounded-lg shadow-lg p-6">
-                        <h3 class="text-xl font-bold text-primary mb-4">银行统计</h3>
-                        <div class="space-y-4">
-                            <div class="flex justify-between items-center pb-2 border-b border-gray-200">
-                                <span class="text-gray-600">总账户数</span>
-                                <span id="bank-total-accounts" class="font-bold text-primary">0</span>
-                            </div>
-                            <div class="flex justify-between items-center pb-2 border-b border-gray-200">
-                                <span class="text-gray-600">总存款</span>
-                                <span id="bank-total-balance" class="font-bold text-accent">¥0.00</span>
-                            </div>
-                            <div class="flex justify-between items-center pb-2 border-b border-gray-200">
-                                <span class="text-gray-600">今日交易</span>
-                                <span id="bank-today-transactions" class="font-bold text-secondary">0</span>
-                            </div>
-                            <div class="flex justify-between items-center">
-                                <span class="text-gray-600">今日交易额</span>
-                                <span id="bank-today-amount" class="font-bold text-green-500">¥0.00</span>
-                            </div>
+                <div class="bg-white rounded-lg shadow p-6 border-l-4 border-accent transform transition-all hover:-translate-y-1">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="text-gray-500 text-sm font-medium mb-1">总存款</p>
+                            <h3 id="bank-total-balance" class="text-2xl font-bold text-accent">¥0.00</h3>
                         </div>
+                        <div class="bg-accent bg-opacity-10 p-3 rounded-full">
+                            <i class="fa fa-money text-accent text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow p-6 border-l-4 border-secondary transform transition-all hover:-translate-y-1">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="text-gray-500 text-sm font-medium mb-1">今日交易</p>
+                            <h3 id="bank-today-transactions" class="text-2xl font-bold text-secondary">0</h3>
+                        </div>
+                        <div class="bg-secondary bg-opacity-10 p-3 rounded-full">
+                            <i class="fa fa-exchange text-secondary text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow p-6 border-l-4 border-green-500 transform transition-all hover:-translate-y-1">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="text-gray-500 text-sm font-medium mb-1">今日交易额</p>
+                            <h3 id="bank-today-amount" class="text-2xl font-bold text-green-500">¥0.00</h3>
+                        </div>
+                        <div class="bg-green-500 bg-opacity-10 p-3 rounded-full">
+                            <i class="fa fa-line-chart text-green-500 text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-8">
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xl font-bold text-primary">账户管理</h3>
+                        <div class="flex space-x-2">
+                            <button id="open-card-btn" class="bg-primary text-light px-4 py-2 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium flex items-center space-x-2">
+                                <i class="fa fa-plus"></i>
+                                <span>新开卡片</span>
+                            </button>
+                            <button id="open-action-modal-btn" class="bg-accent text-light px-4 py-2 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium flex items-center space-x-2">
+                                <i class="fa fa-cogs"></i>
+                                <span>账户操作</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-center mb-6">
+                        <div class="relative w-64">
+                            <input type="text" id="account-search" class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" placeholder="搜索账户...">
+                            <i class="fa fa-search absolute left-3 top-3 text-gray-400"></i>
+                        </div>
+                        <select id="card-type-filter" class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+                            <option value="all">所有卡类型</option>
+                            <option value="debit">借记卡</option>
+                            <option value="credit">信用卡</option>
+                        </select>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead>
+                            <tr>
+                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">用户名</th>
+                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">账户类型</th>
+                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">卡号</th>
+                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">余额</th>
+                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">信用额度</th>
+                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">状态</th>
+                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">创建时间</th>
+                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
+                            </tr>
+                            </thead>
+                            <tbody id="accounts-table-body" class="bg-white divide-y divide-gray-200">
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="bank-pagination" class="mt-4 flex justify-center"></div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h3 class="text-xl font-bold text-primary mb-4">交易记录</h3>
+                    <div class="flex justify-between items-center mb-6">
+                        <div class="relative w-64">
+                            <input type="text" id="transaction-search" class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" placeholder="搜索交易...">
+                            <i class="fa fa-search absolute left-3 top-3 text-gray-400"></i>
+                        </div>
+                        <select id="transaction-type-filter" class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+                            <option value="all">所有类型</option>
+                            <option value="deposit">存款</option>
+                            <option value="withdraw">取款</option>
+                            <option value="transfer">转账</option>
+                        </select>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead>
+                            <tr>
+                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">交易ID</th>
+                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">用户</th>
+                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">类型</th>
+                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">金额</th>
+                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">时间</th>
+                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">备注</th>
+                            </tr>
+                            </thead>
+                            <tbody id="transactions-table-body" class="bg-white divide-y divide-gray-200">
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -1157,10 +1176,25 @@
                     <label for="action-amount" class="block text-gray-700 mb-2">金额</label>
                     <input type="number" id="action-amount" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" min="0" step="0.01" required>
                 </div>
-                <div id="transfer-target-container" class="hidden">
-                    <label for="transfer-target" class="block text-gray-700 mb-2">转账目标</label>
-                    <select id="transfer-target" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
-                    </select>
+                <div id="transfer-target-container" class="hidden space-y-3 border-t border-b border-gray-100 py-3 my-2">
+                    <label class="block text-gray-700 font-bold">转账目标搜索</label>
+
+                    <div class="flex space-x-2">
+                        <input type="text" id="recipient-search-keyword"
+                               class="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                               placeholder="输入用户名、QQ或卡号">
+                        <button type="button" id="search-recipient-btn"
+                                class="bg-accent text-light px-4 py-2 rounded-md hover:bg-opacity-90 transition-all">
+                            <i class="fa fa-search"></i> 搜索
+                        </button>
+                    </div>
+
+                    <div>
+                        <label for="transfer-recipient-card" class="block text-gray-700 mb-1 text-sm">请选择收款卡片</label>
+                        <select id="transfer-recipient-card" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+                            <option value="">请先搜索...</option>
+                        </select>
+                    </div>
                 </div>
                 <div id="limit-adjust-container" class="hidden">
                     <label for="action-new-limit" class="block text-gray-700 mb-2">新信用额度</label>
@@ -1647,9 +1681,10 @@
                     `<option value="${u.id}">${u.username}</option>`
                 ).join('');
 
-                document.getElementById('transfer-target').innerHTML = '<option value="">请选择收款人</option>' + globalUsersCache.map(u =>
-                    `<option value="${u.id}">${u.username}</option>`
-                ).join('');
+                const searchInput = document.getElementById('recipient-search-keyword');
+                const searchSelect = document.getElementById('transfer-recipient-card');
+                if (searchInput) searchInput.value = '';
+                if (searchSelect) searchSelect.innerHTML = '<option value="">请先搜索...</option>';
 
                 document.getElementById('action-card-type').value = 'debit';
                 document.getElementById('action-type').value = 'deposit';
@@ -1678,7 +1713,7 @@
             actionCardSelect.addEventListener('change', updateLimitInputPlaceholder);
         }
 
-        document.getElementById('action-type').addEventListener('change', function() {
+        document.getElementById('action-type').addEventListener('change', function () {
             const val = this.value;
             const limitContainer = document.getElementById('limit-adjust-container');
             const transferContainer = document.getElementById('transfer-target-container');
@@ -1690,7 +1725,6 @@
 
             document.getElementById('action-amount').required = true;
             document.getElementById('action-new-limit').required = false;
-            document.getElementById('transfer-target').required = false;
 
             if (val === 'adjust-limit') {
                 limitContainer.classList.remove('hidden');
@@ -1700,9 +1734,36 @@
                 updateLimitInputPlaceholder();
             } else if (val === 'transfer') {
                 transferContainer.classList.remove('hidden');
-                document.getElementById('transfer-target').required = true;
             }
         });
+
+        const searchRecipientBtn = document.getElementById('search-recipient-btn');
+        if (searchRecipientBtn) {
+            searchRecipientBtn.addEventListener('click', async () => {
+                const keyword = document.getElementById('recipient-search-keyword').value.trim();
+                const select = document.getElementById('transfer-recipient-card');
+
+                if (!keyword) {
+                    alert('请输入搜索关键词');
+                    return;
+                }
+
+                select.innerHTML = '<option value="">搜索中...</option>';
+                const res = await apiFetch(`bank/searchRecipient.php?keyword=${encodeURIComponent(keyword)}`);
+                select.innerHTML = '';
+
+                if (res.success && res.results && res.results.length > 0) {
+                    select.add(new Option(`找到 ${res.results.length} 个结果 - 请选择`, ""));
+                    res.results.forEach(item => {
+                        const typeName = item.cardType === 'credit' ? '信用卡' : '借记卡';
+                        const text = `[${typeName}] ${item.holderName} - ${item.cardNumber}`;
+                        select.add(new Option(text, item.cardNumber));
+                    });
+                } else {
+                    select.add(new Option("未找到匹配的用户或卡片", ""));
+                }
+            });
+        }
 
         document.getElementById('account-action-form').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -1740,12 +1801,16 @@
                 url = `bank/updateCard.php?${params.toString()}`;
 
             } else if (actionType === 'transfer') {
-                const targetUserId = document.getElementById('transfer-target').value;
+                const toCardNumber = document.getElementById('transfer-recipient-card').value;
+                if (!toCardNumber) {
+                    alert('请搜索并选择收款卡片');
+                    return;
+                }
                 const params = new URLSearchParams({
                     userId: userId,
-                    targetUserId: targetUserId,
+                    toCardNumber: toCardNumber,
                     amount: amount,
-                    cardId: cardId,
+                    fromCardId: cardId,
                     description: note || '管理员转账'
                 });
                 url = `bank/transfer.php?${params.toString()}`;
@@ -1777,11 +1842,17 @@
                 bio: document.getElementById('add-bio').value,
                 role: document.getElementById('add-role').value
             });
-            const res = await apiFetch(`auth/register.php?${params.toString()}`, {method: 'GET'});
-            if(res.success){ alert('添加成功'); document.getElementById('add-user-modal').classList.add('hidden'); loadUsersData(); } else { alert(res.error); }
+            const res = await apiFetch(`auth/register.php?${params.toString()}`, { method: 'GET' });
+            if (res.success) {
+                alert('添加成功');
+                document.getElementById('add-user-modal').classList.add('hidden');
+                loadUsersData();
+            } else {
+                alert(res.error);
+            }
         });
         document.getElementById('back-to-home').addEventListener('click', () => window.location.href = 'index.html');
-        document.getElementById('logout-btn').addEventListener('click', async () => { if(confirm('确定退出？')) await apiFetch('auth/logout.php'); window.location.href='index.html'; });
+        document.getElementById('logout-btn').addEventListener('click', async () => { if (confirm('确定退出？')) await apiFetch('auth/logout.php'); window.location.href = 'index.html'; });
 
         document.getElementById('open-card-btn').addEventListener('click', () => {
             document.getElementById('open-card-modal').classList.remove('hidden');
@@ -1817,8 +1888,8 @@
                 status: document.getElementById('open-card-status').value,
                 note: document.getElementById('open-card-note').value
             });
-            const res = await apiFetch(`bank/createCard.php?${params.toString()}`, {method: 'GET'});
-            if(res.success){ alert('开卡成功'); document.getElementById('open-card-modal').classList.add('hidden'); await loadBankData(); } else { alert(res.error); }
+            const res = await apiFetch(`bank/createCard.php?${params.toString()}`, { method: 'GET' });
+            if (res.success) { alert('开卡成功'); document.getElementById('open-card-modal').classList.add('hidden'); await loadBankData(); } else { alert(res.error); }
         });
 
         document.getElementById('user-search').addEventListener('input', () => renderUsersTable(globalUsersCache));
@@ -1838,8 +1909,8 @@
                 creditLimit: document.getElementById('edit-card-limit').value,
                 status: document.getElementById('edit-card-status').value
             });
-            const res = await apiFetch(`bank/updateCard.php?${params.toString()}`, {method: 'GET'});
-            if(res.success){ alert('修改成功'); document.getElementById('edit-card-modal').classList.add('hidden'); await loadBankData(currentBankPage); } else { alert(res.error); }
+            const res = await apiFetch(`bank/updateCard.php?${params.toString()}`, { method: 'GET' });
+            if (res.success) { alert('修改成功'); document.getElementById('edit-card-modal').classList.add('hidden'); await loadBankData(currentBankPage); } else { alert(res.error); }
         });
     });
 </script>
