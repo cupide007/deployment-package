@@ -12,9 +12,9 @@ $loginUserRaw = $db->get($loginUserId);
 $isAdmin = ($loginUserRaw && (json_decode($loginUserRaw, true)['role'] ?? '') === 'admin');
 
 $rawInput = file_get_contents('php://input');
-$input = json_decode($rawInput, true);
+$input = json_decode($rawInput, true) ?? [];
 
-$fromCardId = $input['fromCardId'] ?? $_GET['cardId'] ?? $_GET['fromCardId'] ?? '';
+$fromCardId = $input['fromCardId'] ?? $_GET['fromCardId'] ?? $_GET['cardId'] ?? '';
 $toCardNumber = $input['toCardNumber'] ?? $_GET['toCardNumber'] ?? '';
 $targetUserId = $input['targetUserId'] ?? $_GET['targetUserId'] ?? '';
 $amount = floatval($input['amount'] ?? $_GET['amount'] ?? 0);
@@ -70,8 +70,13 @@ if ($toCardNumber) {
 if (!$recipientId) jsonError('收款账户不存在或未指定');
 
 $recipientKey = "bank_account_" . $recipientId;
-$recipientAccount = ($recipientId === $senderId) ? $senderAccount : json_decode($db->get($recipientKey), true);
-if (!$recipientAccount) jsonError('收款账户数据异常');
+
+if ($recipientId === $senderId) {
+    $recipientAccount =& $senderAccount;
+} else {
+    $recipientAccount = json_decode($db->get($recipientKey), true);
+    if (!$recipientAccount) jsonError('收款账户数据异常');
+}
 
 if ($toCardNumber) {
     foreach ($recipientAccount['cards'] as $index => $card) {
@@ -97,11 +102,12 @@ $senderCard['balance'] -= $totalDeduction;
 $recipientCard['balance'] += $amount;
 
 $db->set($senderKey, json_encode($senderAccount));
+
 if ($senderId !== $recipientId) {
     $db->set($recipientKey, json_encode($recipientAccount));
 }
 
-$txId = 'TRX' . time();
+$txId = 'TRX' . time() . rand(100, 999);
 $date = date('c');
 
 $txData = [
@@ -118,7 +124,12 @@ $recTxData = [
     'description' => "收到 {$senderUsername} 转账: " . $description, 'timestamp' => $date
 ];
 $recipientTxKey = "bank_tx_" . $recipientId;
-$recipientTxs = json_decode($db->get($recipientTxKey) ?: '[]', true);
+
+if ($senderId === $recipientId) {
+    $recipientTxs = json_decode($db->get($senderTxKey) ?: '[]', true);
+} else {
+    $recipientTxs = json_decode($db->get($recipientTxKey) ?: '[]', true);
+}
 array_unshift($recipientTxs, $recTxData);
 $db->set($recipientTxKey, json_encode($recipientTxs));
 

@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>安提斯特虚拟国 - 全链路深度测试 (稳定版)</title>
+    <title>安提斯特虚拟国 - 全链路深度测试 (终极版)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="retinbox-config.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -13,7 +13,7 @@
     <header class="flex justify-between items-center mb-8 border-b border-slate-700 pb-4">
         <div>
             <h1 class="text-3xl font-bold text-white"><i class="fas fa-microchip text-blue-500 mr-2"></i>系统全链路深度测试</h1>
-            <p class="text-slate-400 mt-1">稳定版：内置 429 错误自动重试与防抖动机制</p>
+            <p class="text-slate-400 mt-1">终极版：修复转账参数传递问题，增强环境兼容性</p>
         </div>
         <div class="flex gap-3">
             <button onclick="startAdvancedTests()" id="startBtn" class="bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-6 rounded shadow-lg shadow-blue-500/30 transition transform hover:scale-105">
@@ -112,17 +112,16 @@
         for (let i = 0; i < maxRetries; i++) {
             try {
                 await fn();
-                return; // 成功则退出
+                return;
             } catch (e) {
-                // 如果是 429 错误且还有重试机会
                 if ((e.message.includes('429') || e.message.includes('Server Error')) && i < maxRetries - 1) {
-                    const delay = 3000; // 等待 3 秒
+                    const delay = 3000;
                     logger.warn(`触发限流 (429)，等待 ${delay/1000} 秒后重试 (${i + 1}/${maxRetries})...`);
-                    updateRowStatus('running', 'retry'); // 这里的 ID 需要动态传递，但在外层处理更方便
+                    updateRowStatus('running', 'retry');
                     await new Promise(r => setTimeout(r, delay));
                     continue;
                 }
-                throw e; // 其他错误或重试耗尽直接抛出
+                throw e;
             }
         }
     }
@@ -193,12 +192,9 @@
             const startTime = Date.now();
 
             try {
-                // 延迟 2 秒 (比之前的 1.5s 稍长)
                 await new Promise(r => setTimeout(r, 2000));
 
-                // 使用重试机制执行
                 await runWithRetry(async () => {
-                    // 如果正在重试，界面显示 retry 状态
                     if (document.getElementById(`status-${test.id}`).innerText.includes('FAIL')) {
                         updateRowStatus(test.id, 'retry');
                     }
@@ -229,8 +225,6 @@
             logger.warn(`⚠️ 测试完成，通过率: ${passedCount}/${testSuite.length}`);
         }
     }
-
-    // --- 测试用例实现 (保持不变，已包含上次修复) ---
 
     async function testInit() {
         const res = await window.retinbox.request('init', 'GET');
@@ -290,11 +284,26 @@
         logger.log(`卡 C (信用) 创建成功: ${res.card.cardNumber}`);
     }
 
+    // ⚠️ 修复核心：同时在 URL 中传递卡号，防止 JSON 解析失败
     async function testTransfer() {
         if (!ctx.cards.a || !ctx.cards.b) throw new Error("前序开卡步骤失败");
-        // 双保险：URL 参数 + Body 参数
-        const params = new URLSearchParams({ amount: '100', targetUserId: ctx.userId, userId: ctx.userId });
-        const payload = { userId: ctx.userId, fromCardId: ctx.cards.a.id, toCardNumber: ctx.cards.b.cardNumber, amount: 100, description: 'Test Transfer' };
+
+        const params = new URLSearchParams({
+            amount: '100',
+            targetUserId: ctx.userId,
+            userId: ctx.userId,
+            fromCardId: ctx.cards.a.id,       // 关键修复
+            toCardNumber: ctx.cards.b.cardNumber // 关键修复
+        });
+
+        const payload = {
+            userId: ctx.userId,
+            fromCardId: ctx.cards.a.id,
+            toCardNumber: ctx.cards.b.cardNumber,
+            amount: 100,
+            description: 'Test Transfer'
+        };
+
         await window.retinbox.request(`bank/transfer?${params.toString()}`, 'POST', payload);
         logger.log(`转账指令发送: A -> B (100元)`);
     }
