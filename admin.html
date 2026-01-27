@@ -512,15 +512,15 @@
                             <input type="hidden" id="document-id">
                             <div>
                                 <label for="document-title" class="block text-gray-700 mb-2">标题</label>
-                                <input type="text" id="document-title" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required>
+                                <input type="text" id="document-title" name="title" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required>
                             </div>
                             <div>
                                 <label for="document-author" class="block text-gray-700 mb-2">作者</label>
-                                <input type="text" id="document-author" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required>
+                                <input type="text" id="document-author" name="author" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required>
                             </div>
                             <div>
                                 <label for="document-category" class="block text-gray-700 mb-2">分类</label>
-                                <select id="document-category" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required>
+                                <select id="document-category" name="category" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required>
                                     <option value="法律">法律</option>
                                     <option value="历史">历史</option>
                                     <option value="经济">经济</option>
@@ -531,11 +531,11 @@
                             </div>
                             <div>
                                 <label for="document-description" class="block text-gray-700 mb-2">描述</label>
-                                <textarea id="document-description" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" rows="4" required></textarea>
+                                <textarea id="document-description" name="description" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" rows="4" required></textarea>
                             </div>
                             <div>
                                 <label for="document-file" class="block text-gray-700 mb-2">文件</label>
-                                <input type="file" id="document-file" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" accept=".txt,.doc,.docx,.pdf,.xls,.xlsx">
+                                <input type="file" id="document-file" name="document" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" accept=".txt,.doc,.docx,.pdf,.xls,.xlsx">
                                 <p class="text-sm text-gray-500 mt-1">支持的格式：txt, doc, docx, pdf, xls, xlsx</p>
                             </div>
                             <!-- 文件预览区域 -->
@@ -1263,6 +1263,101 @@
         updateLimitInputPlaceholder();
     }
 
+    function getAbsoluteUrl(url) {
+        if (!url) return '';
+        try {
+            return new URL(url, window.location.href).href;
+        } catch (e) {
+            return url;
+        }
+    }
+
+    function getFileExtension(doc) {
+        if (doc.name) {
+            const parts = doc.name.split('.');
+            if(parts.length > 1) return '.' + parts.pop().toLowerCase();
+        }
+        if (doc.fileUrl) {
+            try {
+                const u = new URL(doc.fileUrl, window.location.href);
+                const parts = u.pathname.split('.');
+                if (parts.length > 1) return '.' + parts.pop().toLowerCase();
+            } catch(e) {}
+        }
+        return '.pdf';
+    }
+
+    function handleDownload(docId) {
+        const doc = globalDocumentsCache.find(d => d.id === docId);
+        if (!doc) return;
+
+        const fileUrl = doc.fileUrl || ('library/document-file.php?id=' + doc.id);
+        const absUrl = getAbsoluteUrl(fileUrl);
+
+        if (fileUrl && fileUrl !== '#') {
+            const link = document.createElement('a');
+            link.href = absUrl;
+            link.download = doc.name || 'document';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        } else {
+            alert('该文献暂不提供下载');
+        }
+    }
+
+    async function handlePreview(docId) {
+        const doc = globalDocumentsCache.find(d => d.id === docId);
+        if (!doc) return;
+
+        const fileUrl = doc.fileUrl || ('library/document-file.php?id=' + doc.id);
+        const absUrl = getAbsoluteUrl(fileUrl);
+        const extension = getFileExtension(doc);
+
+        if (fileUrl && fileUrl !== '#') {
+            try {
+                if (['.txt', '.md'].includes(extension)) {
+                    let textContent = '';
+                    const textResponse = await fetch(absUrl);
+                    if (!textResponse.ok) {
+                        throw new Error('fetch_failed');
+                    }
+                    textContent = await textResponse.text();
+
+                    const safeText = textContent
+                        .replace(/&/g, "&amp;")
+                        .replace(/</g, "&lt;")
+                        .replace(/>/g, "&gt;")
+                        .replace(/"/g, "&quot;")
+                        .replace(/'/g, "&#039;");
+
+                    const newWindow = window.open('', '_blank');
+                    if (newWindow) {
+                        newWindow.document.write(`
+                            <html>
+                            <head>
+                                <title>${doc.title}</title>
+                                <style>
+                                    body { font-family: monospace; white-space: pre-wrap; padding: 20px; background-color: #f9fafb; color: #1f2937; }
+                                </style>
+                            </head>
+                            <body>${safeText}</body>
+                            </html>
+                        `);
+                    }
+                } else if (['.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx'].includes(extension)) {
+                    window.open(`https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(absUrl)}`, '_blank');
+                } else {
+                    window.open(absUrl, '_blank');
+                }
+            } catch (error) {
+                alert('在线阅读失败，请尝试下载');
+                console.error(error);
+            }
+        } else {
+            alert('该文献暂不提供在线阅读');
+        }
+    }
     function updateActionTypeOptions() {
         const actionCardTypeSelect = document.getElementById('action-card-type');
         const actionTypeSelect = document.getElementById('action-type');
@@ -1600,26 +1695,183 @@
     }
 
     async function loadLibraryData() {
-        const list = document.getElementById('documents-list');
         const res = await apiFetch('library/getDocuments.php');
         if (res.success) {
-            list.innerHTML = res.documents.map(doc => `
-            <div class="bg-gray-50 p-4 rounded-lg flex justify-between items-center mb-2">
-                <div>
-                    <h4 class="font-bold">${doc.title}</h4>
-                    <p class="text-sm text-gray-500">${doc.author} | ${doc.category}</p>
-                </div>
-                <button class="text-red-500" onclick="deleteDocument('${doc.id}')">删除</button>
-            </div>`).join('');
+            globalDocumentsCache = res.documents;
+            renderDocumentsList();
+            document.getElementById('total-documents').textContent = globalDocumentsCache.length;
         }
     }
 
+    function renderDocumentsList() {
+        const list = document.getElementById('documents-list');
+        const searchTerm = document.getElementById('document-search').value.toLowerCase();
+        const categoryFilter = document.getElementById('document-category-filter').value;
+        const statusFilter = document.getElementById('document-status-filter').value;
+
+        const filtered = globalDocumentsCache.filter(doc => {
+            const title = Array.isArray(doc.title) ? doc.title[0] : (doc.title || doc.name || '');
+            const author = Array.isArray(doc.author) ? doc.author[0] : (doc.author || doc.uploaderName || '');
+
+            const matchesSearch = title.toLowerCase().includes(searchTerm) ||
+                author.toLowerCase().includes(searchTerm);
+
+            const docCategory = Array.isArray(doc.category) ? doc.category[0] : (doc.category || '其他');
+            const matchesCategory = categoryFilter === 'all' || docCategory === categoryFilter;
+
+            const isApproved = doc.approved !== false;
+            let matchesStatus = true;
+            if (statusFilter === 'approved') matchesStatus = isApproved;
+            if (statusFilter === 'pending') matchesStatus = !isApproved;
+
+            return matchesSearch && matchesCategory && matchesStatus;
+        });
+
+        if (filtered.length === 0) {
+            list.innerHTML = '<div class="text-center text-gray-500 py-4">暂无文献数据</div>';
+            return;
+        }
+
+        list.innerHTML = filtered.map(doc => {
+            const title = Array.isArray(doc.title) ? doc.title[0] : (doc.title || doc.name || '无标题');
+            const author = Array.isArray(doc.author) ? doc.author[0] : (doc.author || doc.uploaderName || '未知作者');
+            const category = Array.isArray(doc.category) ? doc.category[0] : (doc.category || '其他');
+            const description = Array.isArray(doc.description) ? doc.description[0] : (doc.description || '暂无描述');
+
+            const isApproved = doc.approved !== false;
+
+            const statusBadge = isApproved
+                ? '<span class="px-2 py-0.5 rounded text-xs bg-green-100 text-green-800 ml-2">已发布</span>'
+                : '<span class="px-2 py-0.5 rounded text-xs bg-yellow-100 text-yellow-800 ml-2">待审核</span>';
+
+            const approveBtnText = isApproved ? '下架' : '通过';
+            const approveBtnIcon = isApproved ? 'fa-ban' : 'fa-check';
+            const approveBtnColor = isApproved ? 'text-orange-500 hover:text-orange-700' : 'text-green-500 hover:text-green-700';
+
+            return `
+            <div class="bg-gray-50 p-4 rounded-lg flex justify-between items-center hover:shadow-md transition-shadow">
+                <div class="flex-1">
+                    <div class="flex items-center space-x-2 mb-1">
+                        <h4 class="font-bold text-primary text-lg">${title}</h4>
+                        <span class="px-2 py-0.5 rounded text-xs bg-blue-100 text-blue-800">${category}</span>
+                        ${statusBadge}
+                    </div>
+                    <p class="text-sm text-gray-600 mb-1"><i class="fa fa-user mr-1"></i>${author}</p>
+                    <p class="text-xs text-gray-400 truncate w-2/3">${description}</p>
+                </div>
+                <div class="flex space-x-3 ml-4">
+                    <button class="${approveBtnColor} flex items-center" onclick="toggleApprove('${doc.id}')">
+                        <i class="fa ${approveBtnIcon} mr-1"></i> ${approveBtnText}
+                    </button>
+                    <button class="text-secondary hover:text-yellow-600 flex items-center" onclick="handlePreview('${doc.id}')">
+                        <i class="fa fa-eye mr-1"></i> 预览
+                    </button>
+                    <button class="text-accent hover:text-blue-600 flex items-center" onclick="handleDownload('${doc.id}')">
+                        <i class="fa fa-download mr-1"></i> 下载
+                    </button>
+                    <button class="text-red-500 hover:text-red-700 flex items-center" onclick="deleteDocument('${doc.id}')">
+                        <i class="fa fa-trash mr-1"></i> 删除
+                    </button>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
     async function deleteDocument(id) {
-        if (confirm('确定删除该文献吗？')) {
-            const res = await apiFetch(`library/saveDocuments.php?action=delete&id=${id}`);
-            if (res.success) loadLibraryData();
+        if (!confirm('确定要删除这篇文献吗？此操作无法撤销。')) return;
+
+        const newDocuments = globalDocumentsCache.filter(doc => doc.id !== id);
+
+        try {
+            const response = await fetch('library/saveDocuments.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ documents: newDocuments })
+            });
+
+            const res = await response.json();
+
+            if (res.success) {
+                alert('文献删除成功');
+                loadLibraryData();
+            } else {
+                alert('删除失败：' + (res.message || res.error || '未知错误'));
+            }
+        } catch (error) {
+            console.error(error);
+            alert('请求失败，请检查网络');
         }
     }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('document-search').addEventListener('input', renderDocumentsList);
+        document.getElementById('document-category-filter').addEventListener('change', renderDocumentsList);
+        document.getElementById('document-status-filter').addEventListener('change', renderDocumentsList);
+        const uploadForm = document.getElementById('document-upload-form');
+        if (uploadForm) {
+            uploadForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+
+                const submitBtn = document.getElementById('submit-document-btn');
+                const originalText = submitBtn.innerText;
+                submitBtn.disabled = true;
+                submitBtn.innerText = '上传中...';
+
+                try {
+                    const formData = new FormData(this);
+
+                    const response = await fetch('library/upload-document.php', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        alert('文献上传成功');
+                        this.reset();
+                        document.getElementById('file-preview-container').classList.add('hidden');
+                        loadLibraryData();
+                    } else {
+                        alert('上传失败：' + (result.message || result.error || '未知错误'));
+                    }
+                } catch (error) {
+                    console.error(error);
+                    alert('上传请求发生错误');
+                } finally {
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = originalText;
+                }
+            });
+        }
+
+        const fileInput = document.getElementById('document-file');
+        if (fileInput) {
+            fileInput.addEventListener('change', function(e) {
+                const previewContainer = document.getElementById('file-preview-container');
+                if (this.files && this.files.length > 0) {
+                    previewContainer.classList.remove('hidden');
+                    document.getElementById('file-preview').innerText = `已选择文件: ${this.files[0].name} (${(this.files[0].size / 1024).toFixed(2)} KB)`;
+                } else {
+                    previewContainer.classList.add('hidden');
+                }
+            });
+        }
+
+        const uploadBtn = document.getElementById('upload-document-btn');
+        if (uploadBtn) {
+            uploadBtn.addEventListener('click', function() {
+                const panel = document.getElementById('document-upload-panel');
+                if (panel) {
+                    panel.scrollIntoView({ behavior: 'smooth' });
+                    const titleInput = document.getElementById('document-title');
+                    if (titleInput) titleInput.focus();
+                }
+            });
+        }
+    });
 
     async function loadAdminPermissions() {
         const tableBody = document.getElementById('admin-permissions-table-body');
@@ -1642,6 +1894,139 @@
             case 'bank': loadBankData(); loadTransactionsData(); break;
             case 'library': loadLibraryData(); break;
             case 'permissions': loadAdminPermissions(); break;
+        }
+    }
+
+    function getAbsoluteUrl(url) {
+        if (!url) return '';
+        try {
+            return new URL(url, window.location.href).href;
+        } catch (e) {
+            return url;
+        }
+    }
+
+    function getFileExtension(doc) {
+        if (doc.name) {
+            const parts = doc.name.split('.');
+            if(parts.length > 1) return '.' + parts.pop().toLowerCase();
+        }
+        if (doc.fileUrl) {
+            try {
+                const u = new URL(doc.fileUrl, window.location.href);
+                const parts = u.pathname.split('.');
+                if (parts.length > 1) return '.' + parts.pop().toLowerCase();
+            } catch(e) {}
+        }
+        return '.pdf';
+    }
+
+    function handleDownload(docId) {
+        const doc = globalDocumentsCache.find(d => d.id === docId);
+        if (!doc) return;
+
+        const fileUrl = doc.fileUrl || ('library/document-file.php?id=' + doc.id);
+        const absUrl = getAbsoluteUrl(fileUrl);
+
+        if (fileUrl && fileUrl !== '#') {
+            const link = document.createElement('a');
+            link.href = absUrl;
+            link.download = doc.name || 'document';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        } else {
+            alert('该文献暂不提供下载');
+        }
+    }
+
+    async function handlePreview(docId) {
+        const doc = globalDocumentsCache.find(d => d.id === docId);
+        if (!doc) return;
+
+        const fileUrl = doc.fileUrl || ('library/document-file.php?id=' + doc.id);
+        const absUrl = getAbsoluteUrl(fileUrl);
+        const extension = getFileExtension(doc);
+
+        if (fileUrl && fileUrl !== '#') {
+            try {
+                if (['.txt', '.md'].includes(extension)) {
+                    let textContent = '';
+                    const textResponse = await fetch(absUrl);
+                    if (!textResponse.ok) {
+                        throw new Error('fetch_failed');
+                    }
+                    textContent = await textResponse.text();
+
+                    const safeText = textContent
+                        .replace(/&/g, "&amp;")
+                        .replace(/</g, "&lt;")
+                        .replace(/>/g, "&gt;")
+                        .replace(/"/g, "&quot;")
+                        .replace(/'/g, "&#039;");
+
+                    const newWindow = window.open('', '_blank');
+                    if (newWindow) {
+                        newWindow.document.write(`
+                            <html>
+                            <head>
+                                <title>${doc.title}</title>
+                                <style>
+                                    body { font-family: monospace; white-space: pre-wrap; padding: 20px; background-color: #f9fafb; color: #1f2937; }
+                                </style>
+                            </head>
+                            <body>${safeText}</body>
+                            </html>
+                        `);
+                    }
+                } else if (['.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx'].includes(extension)) {
+                    window.open(`https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(absUrl)}`, '_blank');
+                } else {
+                    window.open(absUrl, '_blank');
+                }
+            } catch (error) {
+                alert('在线阅读失败，请尝试下载');
+                console.error(error);
+            }
+        } else {
+            alert('该文献暂不提供在线阅读');
+        }
+    }
+
+    async function toggleApprove(docId) {
+        const docIndex = globalDocumentsCache.findIndex(d => d.id === docId);
+        if (docIndex === -1) return;
+
+        const doc = globalDocumentsCache[docIndex];
+        const currentStatus = doc.approved !== false;
+        const newStatus = !currentStatus;
+        const actionText = newStatus ? '通过审核' : '下架';
+
+        if (!confirm(`确定要${actionText}这篇文献吗？`)) return;
+
+        const newDocuments = [...globalDocumentsCache];
+        newDocuments[docIndex] = { ...doc, approved: newStatus };
+
+        try {
+            const response = await fetch('library/saveDocuments.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ documents: newDocuments })
+            });
+
+            const res = await response.json();
+
+            if (res.success) {
+                alert(`文献${actionText}成功`);
+                loadLibraryData();
+            } else {
+                alert('操作失败：' + (res.message || res.error || '未知错误'));
+            }
+        } catch (error) {
+            console.error(error);
+            alert('请求失败，请检查网络');
         }
     }
 
