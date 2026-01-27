@@ -7,35 +7,38 @@ $sessionId = $_SERVER['HTTP_X_SESSION_ID'] ?? $_COOKIE['sessionId'] ?? '';
 if (!$sessionId) jsonError('未登录', 401);
 $sessionData = $db->get('sess_' . $sessionId);
 if (!$sessionData) jsonError('会话已过期', 401);
-$userId = json_decode($sessionData, true)['userId'];
 
-$data = getJsonInput();
-$userRaw = $db->get($userId);
+$data = $_GET;
+$targetId = $data['id'] ?? '';
+if (!$targetId) jsonError('缺少用户ID');
+
+$userRaw = $db->get($targetId);
 if (!$userRaw) jsonError('用户不存在');
 
 $user = json_decode($userRaw, true);
 
-// 修改用户名
 if (isset($data['username']) && $data['username'] !== $user['username']) {
     $newUsername = trim($data['username']);
     if (empty($newUsername)) jsonError('用户名不能为空');
-    if ($db->get("idx_username_" . md5($newUsername))) {
+
+    $existingUserId = $db->get("idx_username_" . md5($newUsername));
+    if ($existingUserId && $existingUserId !== $targetId) {
         jsonError('用户名已存在');
     }
+
     $db->delete("idx_username_" . md5($user['username']));
     $user['username'] = $newUsername;
-    $db->set("idx_username_" . md5($newUsername), $userId);
+    $db->set("idx_username_" . md5($newUsername), $targetId);
 }
 
-// 批量处理普通字段
-$fields = ['bio', 'gender', 'qq', 'race', 'age', 'residence'];
+$fields = ['email', 'bio', 'gender', 'qq', 'race', 'age', 'residence', 'role'];
 foreach ($fields as $field) {
     if (isset($data[$field])) {
         $user[$field] = trim($data[$field]);
     }
 }
 
-$db->set($userId, json_encode($user));
+$db->set($targetId, json_encode($user));
 
 unset($user['salt']);
 unset($user['hash']);

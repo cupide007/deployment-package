@@ -1,15 +1,24 @@
 <?php
 require_once '../common.php';
 $db = new Database('retinbox-main');
+$data = json_decode(file_get_contents('php://input'), true);
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') jsonError('Method Not Allowed', 405);
+if (!$data) {
+    echo json_encode(['success' => false]);
+    exit;
+}
 
-$sessionId = $_SERVER['HTTP_X_SESSION_ID'] ?? $_COOKIE['sessionId'] ?? '';
-if (!$sessionId) jsonError('未登录', 401);
+$logs = $db->get('admin_system_logs');
+$logsList = $logs ? json_decode($logs, true) : [];
 
-$data = getJsonInput();
-$logs = $data['logs'] ?? [];
-$db->set('sys_admin_logs', json_encode($logs));
+$data['id'] = 'log_' . uniqid();
+$data['timestamp'] = date('c');
+array_unshift($logsList, $data);
 
-jsonResponse(['success' => true]);
+if (count($logsList) > 500) {
+    $logsList = array_slice($logsList, 0, 500);
+}
+
+$db->set('admin_system_logs', json_encode($logsList));
+echo json_encode(['success' => true]);
 ?>

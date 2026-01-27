@@ -1,14 +1,30 @@
 <?php
 require_once '../common.php';
 $db = new Database('retinbox-main');
+$data = json_decode(file_get_contents('php://input'), true);
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') jsonError('Method Not Allowed', 405);
-$sessionId = $_SERVER['HTTP_X_SESSION_ID'] ?? $_COOKIE['sessionId'] ?? '';
-if (!$sessionId) jsonError('未登录', 401);
+if (!$data || !isset($data['adminId'])) {
+    echo json_encode(['success' => false, 'error' => 'Data incomplete']);
+    exit;
+}
 
-$data = getJsonInput();
-$permissions = $data['permissions'] ?? [];
-$db->set('sys_admin_permissions', json_encode($permissions));
+$permissions = $db->get('admin_permissions_global');
+$permissionsList = $permissions ? json_decode($permissions, true) : [];
 
-jsonResponse(['success' => true]);
+$found = false;
+foreach ($permissionsList as &$p) {
+    if ($p['adminId'] === $data['adminId']) {
+        $p = array_merge($p, $data);
+        $found = true;
+        break;
+    }
+}
+
+if (!$found) {
+    $data['id'] = 'perm_' . uniqid();
+    $permissionsList[] = $data;
+}
+
+$db->set('admin_permissions_global', json_encode($permissionsList));
+echo json_encode(['success' => true]);
 ?>

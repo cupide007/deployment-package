@@ -3,17 +3,17 @@ require_once '../common.php';
 
 $db = new Database('retinbox-main');
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    jsonError('请求方法不允许', 405);
+$data = getJsonInput();
+if (empty($data)) {
+    $data = $_GET;
 }
 
-$data = getJsonInput();
 $username = trim($data['username'] ?? '');
 $email = trim($data['email'] ?? '');
 $password = $data['password'] ?? '';
 
 if (!$username || !$email || !$password) {
-    jsonError('请填写完整信息');
+    jsonError('请填写完整信息（用户名、邮箱、密码）');
 }
 
 if ($db->get("idx_email_" . md5($email))) {
@@ -34,25 +34,35 @@ $newUser = [
     'email' => $email,
     'salt' => $salt,
     'hash' => $hash,
-    'role' => 'citizen',
+    'role' => $data['role'] ?? 'citizen',
+    'qq' => trim($data['qq'] ?? ''),
+    'gender' => $data['gender'] ?? '其他',
+    'race' => trim($data['race'] ?? ''),
+    'age' => trim($data['age'] ?? ''),
+    'residence' => trim($data['residence'] ?? ''),
+    'bio' => trim($data['bio'] ?? ''),
     'createdAt' => date('c'),
     'lastLogin' => null
 ];
 
 try {
     $db->set($userId, json_encode($newUser));
+
     $db->set("idx_email_" . md5($email), $userId);
     $db->set("idx_username_" . md5($username), $userId);
 
-    $usersList = json_decode($db->get('sys_users_list') ?: '[]', true);
+    $usersListRaw = $db->get('sys_users_list');
+    $usersList = $usersListRaw ? json_decode($usersListRaw, true) : [];
     $usersList[] = $userId;
     $db->set('sys_users_list', json_encode($usersList));
 
     $db->set("bank_account_" . $userId, json_encode(['balance' => 0, 'cards' => []]));
 
-    jsonResponse(['success' => true, 'message' => '注册成功', 'user' => $newUser]);
+    unset($newUser['salt']);
+    unset($newUser['hash']);
+    jsonResponse(['success' => true, 'message' => '添加成功', 'user' => $newUser]);
 
 } catch (Exception $e) {
-    jsonError('注册失败: ' . $e->getMessage(), 500);
+    jsonError('操作失败: ' . $e->getMessage(), 500);
 }
 ?>
