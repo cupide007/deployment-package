@@ -1216,276 +1216,812 @@
     let globalUsersCache = [];
     let globalDocumentsCache = [];
     let globalCardsCache = [];
-    let userGrowthChartInstance = null;
-    let documentCategoryChartInstance = null;
-    let currentBankPage = 1;
-    const bankPageSize = 5;
     let globalPermissionTemplates = [];
+    let globalAdminPermissions = [];
     let globalAdminLogs = [];
 
-    document.querySelectorAll('.permissions-tab-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            document.querySelectorAll('.permissions-tab-btn').forEach(b => {
-                b.classList.remove('border-primary', 'text-primary');
-                b.classList.add('border-transparent', 'text-gray-500');
-            });
-            this.classList.remove('border-transparent', 'text-gray-500');
-            this.classList.add('border-primary', 'text-primary');
+    let userGrowthChartInstance = null;
+    let documentCategoryChartInstance = null;
+    let userRaceChartInstance = null;
 
-            const tabId = this.dataset.tab;
-            document.querySelectorAll('.permissions-tab-content').forEach(c => c.classList.add('hidden'));
-            document.getElementById(tabId).classList.remove('hidden');
+    let currentBankPage = 1;
+    const bankPageSize = 5;
 
-            if (tabId === 'admin-permissions') loadAdminPermissions();
-            else if (tabId === 'permission-templates') loadPermissionTemplates();
-            else if (tabId === 'admin-logs') loadAdminLogs();
-        });
+    document.addEventListener('DOMContentLoaded', async function() {
+        await checkAdminLogin();
+
+        await Promise.all([
+            loadUsersData(),
+            loadBankData(),
+            loadLibraryData(),
+            loadTransactionsData()
+        ]);
+
+        renderDashboardStats();
+        bindAllEvents();
     });
 
-    async function loadPermissionTemplates() {
-        const res = await apiFetch('admin/getPermissionTemplates.php');
-        if (res.success) {
-            globalPermissionTemplates = res.templates || [];
-            renderPermissionTemplates();
-            updateTemplateOptions();
+    async function checkAdminLogin() {
+        const res = await apiFetch('auth/getCurrentUser.php');
+        if (!res.success || res.user.role !== 'admin') {
+            window.location.href = 'index.html';
+        } else {
+            document.getElementById('admin-username').textContent = res.user.username;
         }
     }
 
-    function renderPermissionTemplates() {
-        const tbody = document.getElementById('permission-templates-table-body');
-        const searchTerm = document.getElementById('permission-templates-search').value.toLowerCase();
+    async function loadUsersData() {
+        const res = await apiFetch('users/getUsers.php');
+        if (res.success) {
+            globalUsersCache = res.users;
+            renderUsersTable(globalUsersCache);
+            updateDashboardUserStats();
+        }
+    }
 
-        const filtered = globalPermissionTemplates.filter(t =>
-            t.name.toLowerCase().includes(searchTerm) ||
-            (t.description || '').toLowerCase().includes(searchTerm)
-        );
+    async function loadBankData(page = 1) {
+        currentBankPage = page;
+        const res = await apiFetch(`bank/getAllCards.php?page=${page}&pageSize=${bankPageSize}`, {method: 'GET'});
+        if (res.success) {
+            globalCardsCache = res.cards;
+            renderBankTable(res.cards);
+            renderBankPagination(res.total);
 
-        tbody.innerHTML = filtered.map(t => `
-            <tr>
-                <td class="px-6 py-4 font-medium text-primary">${t.name}</td>
-                <td class="px-6 py-4">${translateLevel(t.level)}</td>
-                <td class="px-6 py-4 text-sm text-gray-500">${t.modules.join(', ')}</td>
-                <td class="px-6 py-4 text-gray-400 text-sm">${t.description || '-'}</td>
-                <td class="px-6 py-4 flex space-x-2">
-                    <button class="text-accent hover:text-blue-600" onclick="editTemplate('${t.id}')">编辑</button>
-                    <button class="text-red-500 hover:text-red-700" onclick="deleteTemplate('${t.id}')">删除</button>
+            const totalAccountsEl = document.getElementById('total-accounts');
+            const bankTotalAccountsEl = document.getElementById('bank-total-accounts');
+            if(totalAccountsEl) totalAccountsEl.textContent = res.total;
+            if(bankTotalAccountsEl) bankTotalAccountsEl.textContent = res.total;
+
+            let totalBalance = 0;
+            res.cards.forEach(c => totalBalance += parseFloat(c.balance || 0));
+            document.getElementById('bank-total-balance').textContent = '¥' + totalBalance.toLocaleString();
+        }
+    }
+
+    async function loadLibraryData() {
+        const res = await apiFetch('library/getDocuments.php');
+        if (res.success) {
+            globalDocumentsCache = res.documents;
+            renderDocumentsList();
+
+            const totalDocsEl = document.getElementById('total-documents');
+            if(totalDocsEl) totalDocsEl.textContent = globalDocumentsCache.length;
+        }
+    }
+
+    async function loadTransactionsData() {
+        const res = await apiFetch('bank/getTransactions.php');
+        if (res.success && res.transactions) {
+            renderTransactionsTable(res.transactions);
+            calculateTodayTransactions(res.transactions);
+        }
+    }
+
+    function renderDashboardStats() {
+        generateCharts();
+    }
+
+    function updateDashboardUserStats() {
+        document.getElementById('total-users').textContent = globalUsersCache.length;
+        const now = new Date();
+        const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+        let activeCount = 0;
+        globalUsersCache.forEach(u => {
+            if (u.lastLogin && u.lastLogin.startsWith(todayStr)) {
+                activeCount++;
+            }
+        });
+        document.getElementById('active-users').textContent = activeCount;
+    }
+
+    function generateCharts() {
+        if (typeof Chart === 'undefined') return;
+
+        const userCtx = document.getElementById('userGrowthChart');
+        if (userCtx) {
+            if (userGrowthChartInstance) userGrowthChartInstance.destroy();
+            userGrowthChartInstance = new Chart(userCtx, {
+                type: 'line',
+                data: {
+                    labels: ['1月', '2月', '3月', '4月', '5月', '6月'],
+                    datasets: [{
+                        label: '用户人数',
+                        data: [
+                            Math.max(0, globalUsersCache.length - 5),
+                            Math.max(0, globalUsersCache.length - 3),
+                            Math.max(0, globalUsersCache.length - 2),
+                            Math.max(0, globalUsersCache.length - 1),
+                            globalUsersCache.length,
+                            globalUsersCache.length
+                        ],
+                        borderColor: '#3E92CC',
+                        backgroundColor: 'rgba(62, 146, 204, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {responsive: true, maintainAspectRatio: false}
+            });
+        }
+
+        const docCtx = document.getElementById('documentCategoryChart');
+        if (docCtx) {
+            const counts = {};
+            globalDocumentsCache.forEach(d => {
+                const cat = Array.isArray(d.category) ? d.category[0] : (d.category || '其他');
+                counts[cat] = (counts[cat] || 0) + 1;
+            });
+            if (documentCategoryChartInstance) documentCategoryChartInstance.destroy();
+            documentCategoryChartInstance = new Chart(docCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(counts),
+                    datasets: [{
+                        data: Object.values(counts),
+                        backgroundColor: ['#0A2463', '#E6AF2E', '#3E92CC', '#2ECC71', '#9B59B6', '#1E1B18']
+                    }]
+                },
+                options: {responsive: true, maintainAspectRatio: false}
+            });
+        }
+
+        const raceCtx = document.getElementById('userRaceChart');
+        if (raceCtx) {
+            const raceStats = {};
+            globalUsersCache.forEach(u => {
+                const r = u.race || '未填写';
+                raceStats[r] = (raceStats[r] || 0) + 1;
+            });
+            if (userRaceChartInstance) userRaceChartInstance.destroy();
+            userRaceChartInstance = new Chart(raceCtx, {
+                type: 'pie',
+                data: {
+                    labels: Object.keys(raceStats),
+                    datasets: [{
+                        label: '用户族裔分布',
+                        data: Object.values(raceStats),
+                        backgroundColor: ['#f87171', '#60a5fa', '#fbbf24', '#34d399', '#a78bfa', '#9ca3af']
+                    }]
+                },
+                options: {responsive: true, maintainAspectRatio: false}
+            });
+        }
+    }
+
+    function renderUsersTable(users) {
+        const searchTerm = document.getElementById('user-search').value.toLowerCase();
+        const roleFilter = document.getElementById('user-role-filter').value;
+        const filtered = users.filter(user => {
+            const matchesSearch = (user.username || '').toLowerCase().includes(searchTerm) ||
+                (user.email || '').toLowerCase().includes(searchTerm);
+            const matchesRole = roleFilter === 'all' || user.role === roleFilter;
+            return matchesSearch && matchesRole;
+        });
+        document.getElementById('users-table-body').innerHTML = filtered.map(user => `
+        <tr>
+            <td class="px-6 py-4">${user.username || '-'}</td>
+            <td class="px-6 py-4">${user.email || '-'}</td>
+            <td class="px-6 py-4">${user.qq || '-'}</td>
+            <td class="px-6 py-4">${user.gender || '-'}</td>
+            <td class="px-6 py-4">${user.race || '-'}</td>
+            <td class="px-6 py-4">${user.age || '-'}</td>
+            <td class="px-6 py-4">${user.residence || '-'}</td>
+            <td class="px-6 py-4"><span class="px-2 py-1 rounded text-xs ${user.role === 'admin' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'}">${user.role === 'admin' ? '管理员' : '普通用户'}</span></td>
+            <td class="px-6 py-4 text-xs text-gray-500">${user.createdAt ? user.createdAt.replace('T', ' ').slice(0, 10) : '-'}</td>
+            <td class="px-6 py-4 text-xs text-gray-500">${user.lastLogin ? user.lastLogin.replace('T', ' ').slice(0, 16) : '-'}</td>
+            <td class="px-6 py-4">
+                <button class="text-accent hover:text-blue-700 mr-3" onclick="editUser('${user.id}')">编辑</button>
+                <button class="text-red-500 hover:text-red-700" onclick="confirmDeleteUser('${user.id}', '${user.username}')">删除</button>
+            </td>
+        </tr>`).join('');
+    }
+
+    function renderBankTable(cards) {
+        const searchTerm = document.getElementById('account-search').value.toLowerCase();
+        const typeFilter = document.getElementById('card-type-filter').value;
+        const filtered = cards.filter(card => {
+            const matchesSearch = (card.username || '').toLowerCase().includes(searchTerm) ||
+                (card.cardNumber || '').toLowerCase().includes(searchTerm);
+            const matchesType = typeFilter === 'all' || card.cardType === typeFilter;
+            return matchesSearch && matchesType;
+        });
+        document.getElementById('accounts-table-body').innerHTML = filtered.map(card => `
+        <tr>
+            <td class="px-3 py-2 font-medium">${card.username}</td>
+            <td class="px-3 py-2"><span class="px-2 py-0.5 rounded text-xs ${card.cardType === 'credit' ? 'bg-purple-100 text-purple-800' : 'bg-green-100 text-green-800'}">${card.cardType === 'credit' ? '信用卡' : '借记卡'}</span></td>
+            <td class="px-3 py-2 font-mono text-gray-600">${card.cardNumber}</td>
+            <td class="px-3 py-2 font-bold text-gray-700">¥${parseFloat(card.balance).toFixed(2)}</td>
+            <td class="px-3 py-2 text-gray-500">¥${parseFloat(card.creditLimit || 0).toFixed(2)}</td>
+            <td class="px-3 py-2"><span class="px-2 py-0.5 rounded text-xs ${(card.status === 'active' || !card.status) ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}">${(card.status === 'active' || !card.status) ? '正常' : '冻结'}</span></td>
+            <td class="px-3 py-2 text-xs text-gray-400">${card.createdAt ? card.createdAt.replace('T', ' ').slice(0, 10) : '-'}</td>
+            <td class="px-6 py-4">
+                <button class="text-accent hover:text-blue-700 mr-3" onclick="editCard('${card.id}', '${card.userId}')">编辑</button>
+                <button class="text-red-500 hover:text-red-700" onclick="deleteCard('${card.id}', '${card.userId}')">注销</button>
+            </td>
+        </tr>`).join('');
+    }
+
+    function renderTransactionsTable(transactions) {
+        const tableBody = document.getElementById('transactions-table-body');
+        const searchTerm = document.getElementById('transaction-search').value.toLowerCase();
+        const typeFilter = document.getElementById('transaction-type-filter').value;
+
+        const filtered = transactions.filter(tx => {
+            const matchesSearch = (tx.id || '').toLowerCase().includes(searchTerm) ||
+                (tx.username || '').toLowerCase().includes(searchTerm) ||
+                (tx.description || '').toLowerCase().includes(searchTerm);
+            const txType = (tx.type || '').toLowerCase();
+            const matchesType = typeFilter === 'all' || txType === typeFilter;
+            return matchesSearch && matchesType;
+        });
+
+        if (filtered.length > 0) {
+            tableBody.innerHTML = filtered.map(tx => {
+                const displayTime = tx.timestamp ? tx.timestamp.replace('T', ' ').slice(0, 19) : '-';
+                const amount = parseFloat(tx.amount || 0);
+                const isNegative = amount < 0;
+                const typeMap = { 'deposit': '存款', 'withdraw': '取款', 'transfer': '转账', 'admin_adjust': '调账', 'repayment': '还款' };
+                const typeText = typeMap[tx.type] || tx.type || '其他';
+
+                return `
+            <tr class="hover:bg-gray-50 transition-colors">
+                <td class="px-6 py-4 text-xs text-gray-400 font-mono">${tx.id || '-'}</td>
+                <td class="px-6 py-4 text-sm font-medium text-gray-800">${tx.username || '系统'}</td>
+                <td class="px-6 py-4 text-sm text-gray-600">${typeText}</td>
+                <td class="px-6 py-4 text-sm font-bold ${isNegative ? 'text-red-500' : 'text-green-500'}">
+                    ${amount > 0 ? '+' : ''}${amount.toFixed(2)}
                 </td>
-            </tr>
-        `).join('');
-    }
-
-    document.getElementById('add-permission-template-btn').addEventListener('click', () => {
-        document.getElementById('permission-template-id').value = '';
-        document.getElementById('permission-template-form').reset();
-        document.getElementById('permission-template-modal-title').textContent = '创建权限模板';
-        document.getElementById('permission-template-modal').classList.remove('hidden');
-    });
-
-    function editTemplate(id) {
-        const t = globalPermissionTemplates.find(x => x.id === id);
-        if (!t) return;
-
-        document.getElementById('permission-template-id').value = t.id;
-        document.getElementById('template-name').value = t.name;
-        document.getElementById('template-description').value = t.description || '';
-        document.getElementById('template-level').value = t.level;
-
-        document.querySelectorAll('input[name="template-modules"]').forEach(cb => cb.checked = false);
-        if (t.modules) {
-            t.modules.forEach(m => {
-                const cb = document.getElementById('template-module-' + m);
-                if (cb) cb.checked = true;
-            });
-        }
-
-        document.getElementById('permission-template-modal-title').textContent = '编辑权限模板';
-        document.getElementById('permission-template-modal').classList.remove('hidden');
-    }
-
-    document.getElementById('permission-template-form').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const id = document.getElementById('permission-template-id').value;
-        const name = document.getElementById('template-name').value;
-        const desc = document.getElementById('template-description').value;
-        const level = document.getElementById('template-level').value;
-
-        const modules = [];
-        document.querySelectorAll('input[name="template-modules"]:checked').forEach(cb => modules.push(cb.value));
-
-        let newTemplates = [...globalPermissionTemplates];
-
-        if (id) {
-            const idx = newTemplates.findIndex(x => x.id === id);
-            if (idx !== -1) newTemplates[idx] = { id, name, description: desc, level, modules };
+                <td class="px-6 py-4 text-sm text-gray-500">${displayTime}</td>
+                <td class="px-6 py-4 text-sm text-gray-600 max-w-xs truncate" title="${tx.description}">${tx.description || '-'}</td>
+            </tr>`;
+            }).join('');
         } else {
-            newTemplates.push({
-                id: 'tpl_' + Date.now(),
-                name,
-                description: desc,
-                level,
-                modules
-            });
+            tableBody.innerHTML = '<tr><td colspan="6" class="px-6 py-8 text-center text-gray-500">未找到匹配的交易记录</td></tr>';
         }
+    }
 
-        const res = await apiFetch('admin/savePermissionTemplates.php', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ templates: newTemplates })
+    function calculateTodayTransactions(transactions) {
+        const todayStr = new Date().toISOString().split('T')[0];
+        let todayCount = 0;
+        let todaySum = 0;
+        transactions.forEach(tx => {
+            if (tx.timestamp && tx.timestamp.startsWith(todayStr)) {
+                todayCount++;
+                todaySum += Math.abs(parseFloat(tx.amount || 0));
+            }
+        });
+        document.getElementById('bank-today-transactions').textContent = todayCount;
+        document.getElementById('bank-today-amount').textContent = '¥' + todaySum.toFixed(2);
+    }
+
+    function renderBankPagination(total) {
+        const totalPages = Math.ceil(total / bankPageSize);
+        const container = document.getElementById('bank-pagination');
+        if (!container) return;
+        let html = '';
+        for (let i = 1; i <= totalPages; i++) {
+            html += `<button onclick="loadBankData(${i})" class="px-3 py-1 mx-1 rounded border ${i === currentBankPage ? 'bg-primary text-white border-primary' : 'bg-white border-gray-300 hover:bg-gray-50'}">${i}</button>`;
+        }
+        container.innerHTML = html;
+    }
+
+    function renderDocumentsList() {
+        const list = document.getElementById('documents-list');
+        const searchTerm = document.getElementById('document-search').value.toLowerCase();
+        const categoryFilter = document.getElementById('document-category-filter').value;
+        const statusFilter = document.getElementById('document-status-filter').value;
+
+        const filtered = globalDocumentsCache.filter(doc => {
+            const title = Array.isArray(doc.title) ? doc.title[0] : (doc.title || doc.name || '');
+            const author = Array.isArray(doc.author) ? doc.author[0] : (doc.author || doc.uploaderName || '');
+            const matchesSearch = title.toLowerCase().includes(searchTerm) || author.toLowerCase().includes(searchTerm);
+            const docCategory = Array.isArray(doc.category) ? doc.category[0] : (doc.category || '其他');
+            const matchesCategory = categoryFilter === 'all' || docCategory === categoryFilter;
+            const isApproved = doc.approved !== false;
+            let matchesStatus = true;
+            if (statusFilter === 'approved') matchesStatus = isApproved;
+            if (statusFilter === 'pending') matchesStatus = !isApproved;
+            return matchesSearch && matchesCategory && matchesStatus;
         });
 
-        if (res.success) {
-            alert('模板保存成功');
-            document.getElementById('permission-template-modal').classList.add('hidden');
-            loadPermissionTemplates();
-        } else {
-            alert('保存失败: ' + res.error);
+        if (filtered.length === 0) {
+            list.innerHTML = '<div class="text-center text-gray-500 py-4">暂无文献数据</div>';
+            return;
         }
-    });
 
-    async function deleteTemplate(id) {
-        if (!confirm('确定删除此模板吗？')) return;
-        const newTemplates = globalPermissionTemplates.filter(t => t.id !== id);
-        await apiFetch('admin/savePermissionTemplates.php', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ templates: newTemplates })
+        list.innerHTML = filtered.map(doc => {
+            const title = Array.isArray(doc.title) ? doc.title[0] : (doc.title || doc.name || '无标题');
+            const author = Array.isArray(doc.author) ? doc.author[0] : (doc.author || doc.uploaderName || '未知作者');
+            const category = Array.isArray(doc.category) ? doc.category[0] : (doc.category || '其他');
+            const description = Array.isArray(doc.description) ? doc.description[0] : (doc.description || '暂无描述');
+            const isApproved = doc.approved !== false;
+
+            const statusBadge = isApproved
+                ? '<span class="px-2 py-0.5 rounded text-xs bg-green-100 text-green-800 ml-2">已发布</span>'
+                : '<span class="px-2 py-0.5 rounded text-xs bg-yellow-100 text-yellow-800 ml-2">待审核</span>';
+            const approveBtnText = isApproved ? '下架' : '通过';
+            const approveBtnIcon = isApproved ? 'fa-ban' : 'fa-check';
+            const approveBtnColor = isApproved ? 'text-orange-500 hover:text-orange-700' : 'text-green-500 hover:text-green-700';
+
+            return `
+            <div class="bg-gray-50 p-4 rounded-lg flex justify-between items-center hover:shadow-md transition-shadow">
+                <div class="flex-1">
+                    <div class="flex items-center space-x-2 mb-1">
+                        <h4 class="font-bold text-primary text-lg">${title}</h4>
+                        <span class="px-2 py-0.5 rounded text-xs bg-blue-100 text-blue-800">${category}</span>
+                        ${statusBadge}
+                    </div>
+                    <p class="text-sm text-gray-600 mb-1"><i class="fa fa-user mr-1"></i>${author}</p>
+                    <p class="text-xs text-gray-400 truncate w-2/3">${description}</p>
+                </div>
+                <div class="flex space-x-3 ml-4">
+                    <button class="${approveBtnColor} flex items-center" onclick="toggleApprove('${doc.id}')">
+                        <i class="fa ${approveBtnIcon} mr-1"></i> ${approveBtnText}
+                    </button>
+                    <button class="text-secondary hover:text-yellow-600 flex items-center" onclick="handlePreview('${doc.id}')">
+                        <i class="fa fa-eye mr-1"></i> 预览
+                    </button>
+                    <button class="text-accent hover:text-blue-600 flex items-center" onclick="handleDownload('${doc.id}')">
+                        <i class="fa fa-download mr-1"></i> 下载
+                    </button>
+                    <button class="text-red-500 hover:text-red-700 flex items-center" onclick="deleteDocument('${doc.id}')">
+                        <i class="fa fa-trash mr-1"></i> 删除
+                    </button>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    function bindAllEvents() {
+        document.querySelectorAll('.admin-nav-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const target = this.dataset.target;
+                document.querySelectorAll('.admin-nav-btn').forEach(b => b.classList.remove('bg-secondary', 'text-primary'));
+                this.classList.add('bg-secondary', 'text-primary');
+                document.querySelectorAll('.admin-section').forEach(s => s.classList.add('hidden'));
+                document.getElementById(target).classList.remove('hidden');
+
+                if (target === 'permissions') {
+                    loadAdminPermissions();
+                    loadPermissionTemplates();
+                }
+            });
         });
-        await loadPermissionTemplates();
-    }
 
-    function updateTemplateOptions() {
-        const select = document.getElementById('admin-permission-template');
-        select.innerHTML = '<option value="">不使用模板 (自定义)</option>' +
-            globalPermissionTemplates.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
-    }
-
-    document.getElementById('admin-permission-template').addEventListener('change', function() {
-        const tId = this.value;
-        if (!tId) return;
-
-        const template = globalPermissionTemplates.find(t => t.id === tId);
-        if (template) {
-            document.getElementById('admin-permission-level').value = template.level;
-            document.querySelectorAll('input[name="modules"]').forEach(cb => cb.checked = false);
-            if (template.modules) {
-                template.modules.forEach(m => {
-                    const cb = document.getElementById('module-' + m);
-                    if (cb) cb.checked = true;
+        document.querySelectorAll('.permissions-tab-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.permissions-tab-btn').forEach(b => {
+                    b.classList.remove('border-primary', 'text-primary');
+                    b.classList.add('border-transparent', 'text-gray-500');
                 });
-            }
+                this.classList.remove('border-transparent', 'text-gray-500');
+                this.classList.add('border-primary', 'text-primary');
+                const tabId = this.dataset.tab;
+                document.querySelectorAll('.permissions-tab-content').forEach(c => c.classList.add('hidden'));
+                document.getElementById(tabId).classList.remove('hidden');
+                if (tabId === 'admin-permissions') loadAdminPermissions();
+                else if (tabId === 'permission-templates') loadPermissionTemplates();
+                else if (tabId === 'admin-logs') loadAdminLogs();
+            });
+        });
+
+        document.getElementById('user-search').addEventListener('input', () => renderUsersTable(globalUsersCache));
+        document.getElementById('user-role-filter').addEventListener('change', () => renderUsersTable(globalUsersCache));
+
+        document.getElementById('account-search').addEventListener('input', () => renderBankTable(globalCardsCache));
+        document.getElementById('card-type-filter').addEventListener('change', () => renderBankTable(globalCardsCache));
+
+        document.getElementById('transaction-search').addEventListener('input', () => loadTransactionsData());
+        document.getElementById('transaction-type-filter').addEventListener('change', loadTransactionsData);
+
+        document.getElementById('document-search').addEventListener('input', renderDocumentsList);
+        document.getElementById('document-category-filter').addEventListener('change', renderDocumentsList);
+        document.getElementById('document-status-filter').addEventListener('change', renderDocumentsList);
+
+        document.querySelectorAll('.close-modal').forEach(btn => {
+            btn.addEventListener('click', () => btn.closest('.fixed').classList.add('hidden'));
+        });
+
+        const openActionBtn = document.getElementById('open-action-modal-btn');
+        if (openActionBtn) {
+            openActionBtn.addEventListener('click', async () => {
+                const res = await apiFetch('bank/getAllCards.php?page=1&pageSize=9999');
+                if (res.success) { globalCardsCache = res.cards; }
+
+                document.getElementById('account-action-modal').classList.remove('hidden');
+                const actionUserSelect = document.getElementById('action-username');
+                actionUserSelect.innerHTML = globalUsersCache.map(u => `<option value="${u.id}">${u.username}</option>`).join('');
+
+                document.getElementById('action-card-type').value = 'debit';
+                document.getElementById('action-type').value = 'deposit';
+                updateActionCardOptions();
+                updateActionTypeOptions();
+                document.getElementById('action-type').dispatchEvent(new Event('change'));
+            });
         }
-    });
 
-    document.getElementById('add-admin-permission-btn').addEventListener('click', () => {
-        document.getElementById('admin-permission-id').value = '';
-        document.getElementById('admin-permission-form').reset();
-        document.getElementById('admin-permission-user').disabled = false;
-        document.getElementById('admin-permission-modal-title').textContent = '任命管理员';
-        document.getElementById('admin-permission-modal').classList.remove('hidden');
-    });
+        bindActionModalEvents();
+        bindUserModalEvents();
+        bindBankModalEvents();
+        bindDocumentEvents();
+        bindPermissionEvents();
 
-    document.getElementById('admin-permission-form').addEventListener('submit', async (e) => {
-        e.preventDefault();
+        document.getElementById('logout-btn').addEventListener('click', async () => {
+            if (confirm('确定退出？')) await apiFetch('auth/logout.php');
+            window.location.href = 'index.html';
+        });
 
-        const id = document.getElementById('admin-permission-id').value;
-        const userId = document.getElementById('admin-permission-user').value;
-        const userText = document.getElementById('admin-permission-user').options[document.getElementById('admin-permission-user').selectedIndex].text;
-        const username = userText.split(' (')[0];
+        document.getElementById('back-to-home').addEventListener('click', () => window.location.href = 'index.html');
+    }
 
-        const adminName = document.getElementById('admin-permission-name').value;
-        const level = document.getElementById('admin-permission-level').value;
+    function bindActionModalEvents() {
+        const actionUserSelect = document.getElementById('action-username');
+        if (actionUserSelect) actionUserSelect.addEventListener('change', updateActionCardOptions);
 
-        const modules = [];
-        document.querySelectorAll('input[name="modules"]:checked').forEach(cb => modules.push(cb.value));
+        const actionCardTypeSelect = document.getElementById('action-card-type');
+        if (actionCardTypeSelect) actionCardTypeSelect.addEventListener('change', () => { updateActionCardOptions(); updateActionTypeOptions(); });
 
-        let newPerms = [...globalAdminPermissions];
+        const actionCardSelect = document.getElementById('action-card');
+        if (actionCardSelect) actionCardSelect.addEventListener('change', updateLimitInputPlaceholder);
 
-        if (id) {
-            const idx = newPerms.findIndex(x => x.id === id);
-            if (idx !== -1) {
-                newPerms[idx] = { ...newPerms[idx], adminName, level, modules };
+        document.getElementById('action-type').addEventListener('change', function () {
+            const val = this.value;
+            const limitContainer = document.getElementById('limit-adjust-container');
+            const transferContainer = document.getElementById('transfer-target-container');
+            const amountInputDiv = document.getElementById('action-amount').parentElement;
+
+            limitContainer.classList.add('hidden');
+            transferContainer.classList.add('hidden');
+            amountInputDiv.classList.remove('hidden');
+
+            document.getElementById('action-amount').required = true;
+            document.getElementById('action-new-limit').required = false;
+
+            if (val === 'adjust-limit') {
+                limitContainer.classList.remove('hidden');
+                amountInputDiv.classList.add('hidden');
+                document.getElementById('action-amount').required = false;
+                document.getElementById('action-new-limit').required = true;
+                updateLimitInputPlaceholder();
+            } else if (val === 'transfer') {
+                transferContainer.classList.remove('hidden');
             }
-        } else {
-            if (newPerms.find(p => p.userId === userId)) {
-                alert('该用户已经是管理员了，请直接编辑。');
+        });
+
+        const searchRecipientBtn = document.getElementById('search-recipient-btn');
+        if (searchRecipientBtn) {
+            searchRecipientBtn.addEventListener('click', async () => {
+                const keyword = document.getElementById('recipient-search-keyword').value.trim();
+                const select = document.getElementById('transfer-recipient-card');
+                if (!keyword) { alert('请输入搜索关键词'); return; }
+                select.innerHTML = '<option value="">搜索中...</option>';
+                const res = await apiFetch(`bank/searchRecipient.php?keyword=${encodeURIComponent(keyword)}`);
+                select.innerHTML = '';
+                if (res.success && res.results && res.results.length > 0) {
+                    select.add(new Option(`找到 ${res.results.length} 个结果 - 请选择`, ""));
+                    res.results.forEach(item => {
+                        const typeName = item.cardType === 'credit' ? '信用卡' : '借记卡';
+                        const text = `[${typeName}] ${item.holderName} - ${item.cardNumber}`;
+                        select.add(new Option(text, item.cardNumber));
+                    });
+                } else {
+                    select.add(new Option("未找到匹配的用户或卡片", ""));
+                }
+            });
+        }
+
+        document.getElementById('account-action-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const actionType = document.getElementById('action-type').value;
+            const userId = document.getElementById('action-username').value;
+            const cardId = document.getElementById('action-card').value;
+            const amount = document.getElementById('action-amount').value;
+            const note = document.getElementById('action-note').value;
+            let url = '';
+
+            if (document.getElementById('action-card-type').value === 'debit' && actionType === 'adjust-limit') {
+                alert('借记卡不支持调整信用额度');
                 return;
             }
-            newPerms.push({
-                id: 'adm_' + Date.now(),
-                userId,
-                username,
-                adminName,
-                level,
-                modules,
-                createdAt: new Date().toISOString().split('T')[0]
+
+            if (actionType === 'deposit' || actionType === 'withdraw') {
+                const params = new URLSearchParams({ cardId: cardId, userId: userId, amount: amount, action: actionType, description: note });
+                url = `bank/updateBalance.php?${params.toString()}`;
+            } else if (actionType === 'adjust-limit') {
+                const newLimit = document.getElementById('action-new-limit').value;
+                const params = new URLSearchParams({ id: cardId, userId: userId, creditLimit: newLimit, action: 'adjustLimit' });
+                url = `bank/updateCard.php?${params.toString()}`;
+            } else if (actionType === 'transfer') {
+                const toCardNumber = document.getElementById('transfer-recipient-card').value;
+                if (!toCardNumber) { alert('请搜索并选择收款卡片'); return; }
+                const params = new URLSearchParams({ userId: userId, toCardNumber: toCardNumber, amount: amount, fromCardId: cardId, description: note || '管理员转账' });
+                url = `bank/transfer.php?${params.toString()}`;
+            }
+
+            const res = await apiFetch(url, { method: 'GET' });
+            if (res.success) {
+                alert('操作成功');
+                document.getElementById('account-action-modal').classList.add('hidden');
+                await loadBankData(currentBankPage);
+            } else {
+                alert('操作失败：' + res.error);
+            }
+        });
+    }
+
+    function bindUserModalEvents() {
+        document.getElementById('edit-user-form').addEventListener('submit', handleEditUser);
+        document.getElementById('add-user-btn').addEventListener('click', () => document.getElementById('add-user-modal').classList.remove('hidden'));
+        document.getElementById('add-user-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const params = new URLSearchParams({
+                username: document.getElementById('add-username').value,
+                email: document.getElementById('add-email').value,
+                password: document.getElementById('add-password').value,
+                qq: document.getElementById('add-qq').value,
+                gender: document.getElementById('add-gender').value,
+                race: document.getElementById('add-race').value,
+                age: document.getElementById('add-age').value,
+                residence: document.getElementById('add-residence').value,
+                bio: document.getElementById('add-bio').value,
+                role: document.getElementById('add-role').value
+            });
+            const res = await apiFetch(`auth/register.php?${params.toString()}`, { method: 'GET' });
+            if (res.success) {
+                alert('添加成功');
+                document.getElementById('add-user-modal').classList.add('hidden');
+                loadUsersData();
+            } else {
+                alert(res.error);
+            }
+        });
+    }
+
+    function bindBankModalEvents() {
+        document.getElementById('open-card-btn').addEventListener('click', () => {
+            document.getElementById('open-card-modal').classList.remove('hidden');
+            const userSelect = document.getElementById('open-card-user');
+            userSelect.innerHTML = globalUsersCache.map(u => `<option value="${u.id}">${u.username}</option>`).join('');
+
+            const typeSelect = document.getElementById('open-card-type');
+            const limitInput = document.getElementById('open-card-credit-limit');
+            typeSelect.value = 'debit';
+            limitInput.value = 0;
+            limitInput.disabled = true;
+            limitInput.classList.add('bg-gray-100');
+        });
+
+        document.getElementById('open-card-type').addEventListener('change', function () {
+            const limitInput = document.getElementById('open-card-credit-limit');
+            if (this.value === 'debit') {
+                limitInput.value = 0;
+                limitInput.disabled = true;
+                limitInput.classList.add('bg-gray-100');
+            } else {
+                limitInput.value = 5000;
+                limitInput.disabled = false;
+                limitInput.classList.remove('bg-gray-100');
+            }
+        });
+
+        document.getElementById('open-card-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const params = new URLSearchParams({
+                userId: document.getElementById('open-card-user').value,
+                cardType: document.getElementById('open-card-type').value,
+                holderName: document.getElementById('open-card-holder-name').value,
+                balance: document.getElementById('open-card-initial-balance').value,
+                creditLimit: document.getElementById('open-card-credit-limit').value,
+                status: document.getElementById('open-card-status').value,
+                note: document.getElementById('open-card-note').value
+            });
+            const res = await apiFetch(`bank/createCard.php?${params.toString()}`, { method: 'GET' });
+            if (res.success) {
+                alert('开卡成功');
+                document.getElementById('open-card-modal').classList.add('hidden');
+                await loadBankData();
+            } else {
+                alert(res.error);
+            }
+        });
+
+        document.getElementById('edit-card-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const params = new URLSearchParams({
+                id: document.getElementById('edit-card-id').value,
+                userId: document.getElementById('edit-card-userid').value,
+                holderName: document.getElementById('edit-card-holder').value,
+                balance: document.getElementById('edit-card-balance').value,
+                creditLimit: document.getElementById('edit-card-limit').value,
+                status: document.getElementById('edit-card-status').value
+            });
+            const res = await apiFetch(`bank/updateCard.php?${params.toString()}`, { method: 'GET' });
+            if (res.success) {
+                alert('修改成功');
+                document.getElementById('edit-card-modal').classList.add('hidden');
+                await loadBankData(currentBankPage);
+            } else {
+                alert(res.error);
+            }
+        });
+    }
+
+    function bindDocumentEvents() {
+        const uploadForm = document.getElementById('document-upload-form');
+        if (uploadForm) {
+            uploadForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const submitBtn = document.getElementById('submit-document-btn');
+                const originalText = submitBtn.innerText;
+                submitBtn.disabled = true;
+                submitBtn.innerText = '上传中...';
+                try {
+                    const formData = new FormData(this);
+                    const response = await fetch('library/upload-document.php', { method: 'POST', body: formData });
+                    const result = await response.json();
+                    if (result.success) {
+                        alert('文献上传成功');
+                        this.reset();
+                        document.getElementById('file-preview-container').classList.add('hidden');
+                        loadLibraryData();
+                    } else {
+                        alert('上传失败：' + (result.message || result.error || '未知错误'));
+                    }
+                } catch (error) {
+                    alert('上传请求发生错误');
+                } finally {
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = originalText;
+                }
             });
         }
 
-        const res = await apiFetch('admin/saveAdminPermissions.php', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ permissions: newPerms })
-        });
-
-        if (res.success) {
-            alert('管理员权限保存成功');
-            document.getElementById('admin-permission-modal').classList.add('hidden');
-            await loadAdminPermissions();
-            await logAction('update_admin', `更新/创建管理员: ${adminName}`);
-        } else {
-            alert('保存失败: ' + res.error);
-        }
-    });
-
-    async function loadAdminLogs() {
-        const res = await apiFetch('admin/getAdminLogs.php');
-        if (res.success) {
-            globalAdminLogs = res.logs || [];
-            renderAdminLogs();
-        }
-    }
-
-    function renderAdminLogs() {
-        const tbody = document.getElementById('admin-logs-table-body');
-        const searchTerm = document.getElementById('admin-logs-search').value.toLowerCase();
-
-        const sorted = [...globalAdminLogs].reverse();
-
-        const filtered = sorted.filter(l =>
-            (l.adminName || '').toLowerCase().includes(searchTerm) ||
-            (l.action || '').toLowerCase().includes(searchTerm) ||
-            (l.details || '').toLowerCase().includes(searchTerm)
-        );
-
-        tbody.innerHTML = filtered.map(l => `
-            <tr>
-                <td class="px-6 py-4 text-sm font-medium text-gray-900">${l.adminName || 'System'}</td>
-                <td class="px-6 py-4 text-sm text-gray-500">${l.action}</td>
-                <td class="px-6 py-4 text-sm text-gray-500">${l.details}</td>
-                <td class="px-6 py-4 text-sm text-gray-400">${l.timestamp}</td>
-            </tr>
-        `).join('');
-    }
-
-    async function logAction(action, details) {
-        const currentUser = document.getElementById('admin-username').textContent;
-        await apiFetch('admin/saveAdminLogs.php', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-                log: {
-                    adminName: currentUser,
-                    action: action,
-                    details: details,
-                    timestamp: new Date().toISOString().replace('T', ' ').slice(0, 19)
+        const fileInput = document.getElementById('document-file');
+        if (fileInput) {
+            fileInput.addEventListener('change', function(e) {
+                const previewContainer = document.getElementById('file-preview-container');
+                if (this.files && this.files.length > 0) {
+                    previewContainer.classList.remove('hidden');
+                    document.getElementById('file-preview').innerText = `已选择文件: ${this.files[0].name} (${(this.files[0].size / 1024).toFixed(2)} KB)`;
+                } else {
+                    previewContainer.classList.add('hidden');
                 }
-            })
-        });
+            });
+        }
+
+        const uploadDocBtn = document.getElementById('upload-document-btn');
+        if(uploadDocBtn) {
+            uploadDocBtn.addEventListener('click', function() {
+                const panel = document.getElementById('document-upload-panel');
+                if(panel) { panel.scrollIntoView({ behavior: 'smooth' }); document.getElementById('document-title').focus(); }
+            });
+        }
     }
 
-    document.getElementById('admin-logs-search').addEventListener('input', renderAdminLogs);
-    document.getElementById('permission-templates-search').addEventListener('input', renderPermissionTemplates);
-    document.getElementById('admin-permissions-search').addEventListener('input', renderAdminPermissions);
+    function bindPermissionEvents() {
+        document.getElementById('add-permission-template-btn').addEventListener('click', () => {
+            document.getElementById('permission-template-id').value = '';
+            document.getElementById('permission-template-form').reset();
+            document.getElementById('permission-template-modal-title').textContent = '创建权限模板';
+            document.getElementById('permission-template-modal').classList.remove('hidden');
+        });
+
+        document.getElementById('permission-template-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('permission-template-id').value;
+            const name = document.getElementById('template-name').value;
+            const desc = document.getElementById('template-description').value;
+            const level = document.getElementById('template-level').value;
+            const modules = [];
+            document.querySelectorAll('input[name="template-modules"]:checked').forEach(cb => modules.push(cb.value));
+            let newTemplates = [...globalPermissionTemplates];
+            if (id) {
+                const idx = newTemplates.findIndex(x => x.id === id);
+                if (idx !== -1) newTemplates[idx] = { id, name, description: desc, level, modules };
+            } else {
+                newTemplates.push({ id: 'tpl_' + Date.now(), name, description: desc, level, modules });
+            }
+            const res = await apiFetch('admin/savePermissionTemplates.php', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ templates: newTemplates })
+            });
+            if (res.success) {
+                alert('模板保存成功');
+                document.getElementById('permission-template-modal').classList.add('hidden');
+                loadPermissionTemplates();
+            } else {
+                alert('保存失败: ' + res.error);
+            }
+        });
+
+        document.getElementById('permission-templates-search').addEventListener('input', renderPermissionTemplates);
+
+        document.getElementById('admin-permission-template').addEventListener('change', function() {
+            const tId = this.value;
+            if (!tId) return;
+            const template = globalPermissionTemplates.find(t => t.id === tId);
+            if (template) {
+                document.getElementById('admin-permission-level').value = template.level;
+                document.querySelectorAll('input[name="modules"]').forEach(cb => cb.checked = false);
+                if (template.modules) {
+                    template.modules.forEach(m => {
+                        const cb = document.getElementById('module-' + m);
+                        if (cb) cb.checked = true;
+                    });
+                }
+            }
+        });
+
+        const addPermBtn = document.getElementById('add-admin-permission-btn');
+        if (addPermBtn) {
+            addPermBtn.addEventListener('click', () => {
+                document.getElementById('admin-permission-id').value = '';
+                document.getElementById('admin-permission-form').reset();
+                document.getElementById('admin-permission-user').disabled = false;
+                document.getElementById('admin-permission-modal-title').textContent = '任命管理员';
+                document.getElementById('admin-permission-modal').classList.remove('hidden');
+            });
+        }
+
+        const permSearch = document.getElementById('admin-permissions-search');
+        if (permSearch) {
+            permSearch.addEventListener('input', renderAdminPermissions);
+        }
+
+        const permForm = document.getElementById('admin-permission-form');
+        if (permForm) {
+            permForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const id = document.getElementById('admin-permission-id').value;
+                const userId = document.getElementById('admin-permission-user').value;
+
+                const userSelect = document.getElementById('admin-permission-user');
+                let username = '';
+                if (userSelect.selectedIndex !== -1) {
+                    const userText = userSelect.options[userSelect.selectedIndex].text;
+                    username = userText.split(' (')[0];
+                }
+
+                const adminName = document.getElementById('admin-permission-name').value;
+                const level = document.getElementById('admin-permission-level').value;
+
+                const params = new URLSearchParams();
+                params.append('adminId', userId);
+                params.append('userId', userId);
+                params.append('username', username);
+                params.append('adminName', adminName);
+                params.append('level', level);
+
+                if (id) {
+                    params.append('id', id);
+                }
+
+                document.querySelectorAll('input[name="modules"]:checked').forEach(cb => {
+                    params.append('modules[]', cb.value);
+                });
+
+                const url = `admin/saveAdminPermissions.php?${params.toString()}`;
+
+                const res = await apiFetch(url, {
+                    method: 'GET'
+                });
+
+                if (res.success) {
+                    alert('管理员权限保存成功');
+                    document.getElementById('admin-permission-modal').classList.add('hidden');
+                    await loadAdminPermissions();
+                    await logAction('update_admin', `更新/创建管理员: ${adminName}`);
+                } else {
+                    alert('保存失败: ' + res.error);
+                }
+            });
+        }
+
+        const adminLogSearch = document.getElementById('admin-logs-search');
+        if (adminLogSearch) adminLogSearch.addEventListener('input', renderAdminLogs);
+    }
 
     async function apiFetch(url, options = {}) {
         try {
@@ -1496,6 +2032,162 @@
         } catch (error) {
             console.error('API Error:', error);
             return { success: false, error: error.message };
+        }
+    }
+
+    function getAbsoluteUrl(url) {
+        if (!url) return '';
+        try { return new URL(url, window.location.href).href; } catch (e) { return url; }
+    }
+
+    function getFileExtension(doc) {
+        if (doc.name) {
+            const parts = doc.name.split('.');
+            if(parts.length > 1) return '.' + parts.pop().toLowerCase();
+        }
+        if (doc.fileUrl) {
+            try {
+                const u = new URL(doc.fileUrl, window.location.href);
+                const parts = u.pathname.split('.');
+                if (parts.length > 1) return '.' + parts.pop().toLowerCase();
+            } catch(e) {}
+        }
+        return '.pdf';
+    }
+
+    async function handleDownload(docId) {
+        const doc = globalDocumentsCache.find(d => d.id === docId);
+        if (!doc) return;
+
+        const fileUrl = doc.fileUrl || ('library/document-file.php?id=' + doc.id);
+        const absUrl = getAbsoluteUrl(fileUrl);
+
+        if (fileUrl && fileUrl !== '#') {
+            const link = document.createElement('a');
+            link.href = absUrl;
+            link.download = doc.name || 'document';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        } else {
+            alert('该文献暂不提供下载');
+        }
+    }
+
+    async function handlePreview(docId) {
+        const doc = globalDocumentsCache.find(d => d.id === docId);
+        if (!doc) return;
+
+        const fileUrl = doc.fileUrl || ('library/document-file.php?id=' + doc.id);
+        const absUrl = getAbsoluteUrl(fileUrl);
+        const extension = getFileExtension(doc);
+
+        if (fileUrl && fileUrl !== '#') {
+            try {
+                if (['.txt', '.md'].includes(extension)) {
+                    let textContent = '';
+                    const textResponse = await fetch(absUrl);
+                    if (!textResponse.ok) {
+                        throw new Error('fetch_failed');
+                    }
+                    textContent = await textResponse.text();
+
+                    const safeText = textContent
+                        .replace(/&/g, "&amp;")
+                        .replace(/</g, "&lt;")
+                        .replace(/>/g, "&gt;")
+                        .replace(/"/g, "&quot;")
+                        .replace(/'/g, "&#039;");
+
+                    const newWindow = window.open('', '_blank');
+                    if (newWindow) {
+                        newWindow.document.write(`
+                            <html>
+                            <head>
+                                <title>${doc.title}</title>
+                                <style>
+                                    body { font-family: monospace; white-space: pre-wrap; padding: 20px; background-color: #f9fafb; color: #1f2937; }
+                                </style>
+                            </head>
+                            <body>${safeText}</body>
+                            </html>
+                        `);
+                    }
+                } else if (['.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx'].includes(extension)) {
+                    window.open(`https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(absUrl)}`, '_blank');
+                } else {
+                    window.open(absUrl, '_blank');
+                }
+            } catch (error) {
+                alert('在线阅读失败，请尝试下载');
+            }
+        } else {
+            alert('该文献暂不提供在线阅读');
+        }
+    }
+
+    async function toggleApprove(docId) {
+        const docIndex = globalDocumentsCache.findIndex(d => d.id === docId);
+        if (docIndex === -1) return;
+
+        const doc = globalDocumentsCache[docIndex];
+        const currentStatus = doc.approved !== false;
+        const newStatus = !currentStatus;
+        const actionText = newStatus ? '通过审核' : '下架';
+
+        if (!confirm(`确定要${actionText}这篇文献吗？`)) return;
+
+        const newDocuments = [...globalDocumentsCache];
+        newDocuments[docIndex] = { ...doc, approved: newStatus };
+
+        try {
+            const response = await fetch('library/saveDocuments.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ documents: newDocuments })
+            });
+
+            const res = await response.json();
+
+            if (res.success) {
+                alert(`文献${actionText}成功`);
+                loadLibraryData();
+            } else {
+                alert('操作失败：' + (res.message || res.error || '未知错误'));
+            }
+        } catch (error) {
+            console.error(error);
+            alert('请求失败，请检查网络');
+        }
+    }
+
+    async function deleteDocument(id) {
+        if (!confirm('确定要删除这篇文献吗？此操作无法撤销。')) return;
+
+        const newDocuments = globalDocumentsCache.filter(doc => doc.id !== id);
+
+        try {
+            const response = await fetch('library/saveDocuments.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ documents: newDocuments })
+            });
+
+            const res = await response.json();
+
+            if (res.success) {
+                alert('文献删除成功');
+                loadLibraryData();
+            } else {
+                alert('删除失败：' + (res.message || res.error || '未知错误'));
+            }
+        } catch (error) {
+            console.error(error);
+            alert('请求失败，请检查网络');
         }
     }
 
@@ -1528,6 +2220,7 @@
 
         updateLimitInputPlaceholder();
     }
+
     function updateActionTypeOptions() {
         const actionCardTypeSelect = document.getElementById('action-card-type');
         const actionTypeSelect = document.getElementById('action-type');
@@ -1594,235 +2287,6 @@
         }
     }
 
-    async function loadTransactionsData() {
-        const tableBody = document.getElementById('transactions-table-body');
-        const res = await apiFetch('bank/getTransactions.php');
-
-        if (res.success && res.transactions) {
-            const searchTerm = document.getElementById('transaction-search').value.toLowerCase();
-            const typeFilter = document.getElementById('transaction-type-filter').value;
-
-            const filteredTransactions = res.transactions.filter(tx => {
-                const matchesSearch = (tx.id || '').toLowerCase().includes(searchTerm) ||
-                    (tx.username || '').toLowerCase().includes(searchTerm) ||
-                    (tx.description || '').toLowerCase().includes(searchTerm);
-                const txType = (tx.type || '').toLowerCase();
-                const matchesType = typeFilter === 'all' || txType === typeFilter;
-                return matchesSearch && matchesType;
-            });
-
-            if (filteredTransactions.length > 0) {
-                tableBody.innerHTML = filteredTransactions.map(tx => {
-                    const displayTime = tx.timestamp ? tx.timestamp.replace('T', ' ').slice(0, 19) : '-';
-                    const amount = parseFloat(tx.amount || 0);
-                    const isNegative = amount < 0;
-                    const typeMap = { 'deposit': '存款', 'withdraw': '取款', 'transfer': '转账', 'admin_adjust': '调账' };
-                    const typeText = typeMap[tx.type] || tx.type || '其他';
-
-                    return `
-                <tr class="hover:bg-gray-50 transition-colors">
-                    <td class="px-6 py-4 text-sm text-gray-500">${tx.id || '-'}</td>
-                    <td class="px-6 py-4 text-sm font-medium text-gray-800">${tx.username || '系统'}</td>
-                    <td class="px-6 py-4 text-sm text-gray-600">${typeText}</td>
-                    <td class="px-6 py-4 text-sm font-bold ${isNegative ? 'text-red-500' : 'text-green-500'}">
-                        ${amount > 0 ? '+' : ''}${amount.toFixed(2)}
-                    </td>
-                    <td class="px-6 py-4 text-sm text-gray-500">${displayTime}</td>
-                    <td class="px-6 py-4 text-sm text-gray-600">${tx.description || '-'}</td>
-                </tr>`;
-                }).join('');
-            } else {
-                tableBody.innerHTML = '<tr><td colspan="6" class="px-6 py-8 text-center text-gray-500">未找到匹配的交易记录</td></tr>';
-            }
-
-            const todayStr = new Date().toISOString().split('T')[0];
-            let todayCount = 0;
-            let todaySum = 0;
-            res.transactions.forEach(tx => {
-                if (tx.timestamp && tx.timestamp.startsWith(todayStr)) {
-                    todayCount++;
-                    todaySum += Math.abs(parseFloat(tx.amount || 0));
-                }
-            });
-            document.getElementById('bank-today-transactions').textContent = todayCount;
-            document.getElementById('bank-today-amount').textContent = '¥' + todaySum.toFixed(2);
-        }
-    }
-
-    async function checkAdminLogin() {
-        const res = await apiFetch('auth/getCurrentUser.php');
-        if (!res.success || res.user.role !== 'admin') {
-            window.location.href = 'index.html';
-        } else {
-            document.getElementById('admin-username').textContent = res.user.username;
-        }
-    }
-
-    async function loadDashboardData() {
-        const uRes = await apiFetch('users/getUsers.php');
-        const dRes = await apiFetch('library/getDocuments.php');
-        const bRes = await apiFetch('bank/getAllCards.php?page=1&pageSize=5');
-
-        if (uRes.success) {
-            globalUsersCache = uRes.users;
-            document.getElementById('total-users').textContent = globalUsersCache.length;
-
-            const now = new Date();
-            const year = now.getFullYear();
-            const month = String(now.getMonth() + 1).padStart(2, '0');
-            const day = String(now.getDate()).padStart(2, '0');
-            const todayStr = `${year}-${month}-${day}`;
-
-            let activeCount = 0;
-            globalUsersCache.forEach(u => {
-                if (u.lastLogin && u.lastLogin.startsWith(todayStr)) {
-                    activeCount++;
-                }
-            });
-
-            document.getElementById('active-users').textContent = activeCount;
-        }
-
-        if (dRes.success) {
-            globalDocumentsCache = dRes.documents;
-            document.getElementById('total-documents').textContent = globalDocumentsCache.length;
-        }
-        if (bRes.success) {
-            document.getElementById('total-accounts').textContent = bRes.total;
-        }
-
-        generateCharts();
-    }
-
-    function generateCharts() {
-        if (typeof Chart === 'undefined') return;
-        const userCtx = document.getElementById('userGrowthChart');
-        if (userCtx) {
-            if (userGrowthChartInstance) userGrowthChartInstance.destroy();
-            userGrowthChartInstance = new Chart(userCtx, {
-                type: 'line',
-                data: {
-                    labels: ['1月', '2月', '3月', '4月', '5月', '6月'],
-                    datasets: [{
-                        label: '用户人数',
-                        data: [globalUsersCache.length - 2, globalUsersCache.length - 1, globalUsersCache.length],
-                        borderColor: '#3E92CC',
-                        backgroundColor: 'rgba(62, 146, 204, 0.1)',
-                        fill: true,
-                        tension: 0.4
-                    }]
-                },
-                options: {responsive: true, maintainAspectRatio: false}
-            });
-        }
-        const docCtx = document.getElementById('documentCategoryChart');
-        if (docCtx) {
-            const counts = {};
-            globalDocumentsCache.forEach(d => counts[d.category] = (counts[d.category] || 0) + 1);
-            if (documentCategoryChartInstance) documentCategoryChartInstance.destroy();
-            documentCategoryChartInstance = new Chart(docCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: Object.keys(counts),
-                    datasets: [{
-                        data: Object.values(counts),
-                        backgroundColor: ['#0A2463', '#E6AF2E', '#3E92CC', '#2ECC71', '#9B59B6']
-                    }]
-                },
-                options: {responsive: true, maintainAspectRatio: false}
-            });
-        }
-    }
-
-    async function loadBankData(page = 1) {
-        currentBankPage = page;
-        const tableBody = document.getElementById('accounts-table-body');
-        const res = await apiFetch(`bank/getAllCards.php?page=${page}&pageSize=${bankPageSize}`, {method: 'GET'});
-
-        if (res.success) {
-            globalCardsCache = res.cards;
-            document.getElementById('bank-total-accounts').textContent = res.total;
-            let totalBalance = 0;
-            res.cards.forEach(c => totalBalance += parseFloat(c.balance || 0));
-            document.getElementById('bank-total-balance').textContent = '¥' + totalBalance.toLocaleString();
-            renderBankTable(res.cards);
-            renderBankPagination(res.total);
-        }
-    }
-
-    function renderBankTable(cards) {
-        const searchTerm = document.getElementById('account-search').value.toLowerCase();
-        const typeFilter = document.getElementById('card-type-filter').value;
-        const filtered = cards.filter(card => {
-            const matchesSearch = (card.username || '').toLowerCase().includes(searchTerm) ||
-                (card.cardNumber || '').toLowerCase().includes(searchTerm);
-            const matchesType = typeFilter === 'all' || card.cardType === typeFilter;
-            return matchesSearch && matchesType;
-        });
-        document.getElementById('accounts-table-body').innerHTML = filtered.map(card => `
-        <tr>
-            <td class="px-3 py-2">${card.username}</td>
-            <td class="px-3 py-2">${card.cardType === 'credit' ? '信用卡' : '借记卡'}</td>
-            <td class="px-3 py-2">${card.cardNumber}</td>
-            <td class="px-3 py-2">¥${parseFloat(card.balance).toFixed(2)}</td>
-            <td class="px-3 py-2">¥${parseFloat(card.creditLimit || 0).toFixed(2)}</td>
-            <td class="px-3 py-2">${(card.status === 'active' || !card.status) ? '正常' : '冻结'}</td>
-            <td class="px-3 py-2">${card.createdAt ? card.createdAt.replace('T', ' ').slice(0, 19) : '-'}</td>
-            <td class="px-6 py-4">
-                <button class="text-accent mr-3" onclick="editCard('${card.id}', '${card.userId}')">编辑</button>
-                <button class="text-red-500" onclick="deleteCard('${card.id}', '${card.userId}')">注销</button>
-            </td>
-        </tr>`).join('');
-    }
-
-    function renderBankPagination(total) {
-        const totalPages = Math.ceil(total / bankPageSize);
-        const container = document.getElementById('bank-pagination');
-        if (!container) return;
-        let html = '';
-        for (let i = 1; i <= totalPages; i++) {
-            html += `<button onclick="loadBankData(${i})" class="px-3 py-1 mx-1 border ${i === currentBankPage ? 'bg-primary text-white' : 'bg-white'}">${i}</button>`;
-        }
-        container.innerHTML = html;
-    }
-
-    async function loadUsersData() {
-        const tableBody = document.getElementById('users-table-body');
-        const res = await apiFetch('users/getUsers.php');
-        if (res.success) {
-            globalUsersCache = res.users;
-            renderUsersTable(globalUsersCache);
-        }
-    }
-
-    function renderUsersTable(users) {
-        const searchTerm = document.getElementById('user-search').value.toLowerCase();
-        const roleFilter = document.getElementById('user-role-filter').value;
-        const filtered = users.filter(user => {
-            const matchesSearch = (user.username || '').toLowerCase().includes(searchTerm) ||
-                (user.email || '').toLowerCase().includes(searchTerm);
-            const matchesRole = roleFilter === 'all' || user.role === roleFilter;
-            return matchesSearch && matchesRole;
-        });
-        document.getElementById('users-table-body').innerHTML = filtered.map(user => `
-        <tr>
-            <td class="px-6 py-4">${user.username || '-'}</td>
-            <td class="px-6 py-4">${user.email || '-'}</td>
-            <td class="px-6 py-4">${user.qq || '-'}</td>
-            <td class="px-6 py-4">${user.gender || '-'}</td>
-            <td class="px-6 py-4">${user.race || '-'}</td>
-            <td class="px-6 py-4">${user.age || '-'}</td>
-            <td class="px-6 py-4">${user.residence || '-'}</td>
-            <td class="px-6 py-4">${user.role === 'admin' ? '管理员' : '普通用户'}</td>
-            <td class="px-6 py-4">${user.createdAt ? user.createdAt.replace('T', ' ').slice(0, 19) : '-'}</td>
-            <td class="px-6 py-4">${user.lastLogin ? user.lastLogin.replace('T', ' ').slice(0, 19) : '-'}</td>
-            <td class="px-6 py-4">
-                <button class="text-accent mr-3" onclick="editUser('${user.id}')">编辑</button>
-                <button class="text-red-500" onclick="confirmDeleteUser('${user.id}', '${user.username}')">删除</button>
-            </td>
-        </tr>`).join('');
-    }
-
     function editUser(userId) {
         const user = globalUsersCache.find(u => u.id === userId);
         if (user) {
@@ -1875,265 +2339,82 @@
         if (res.success) {
             alert('删除成功');
             await loadUsersData();
-            await loadDashboardData();
+            updateDashboardUserStats();
         } else {
             alert('删除失败：' + res.error);
         }
     }
 
-    async function loadLibraryData() {
-        const res = await apiFetch('library/getDocuments.php');
+    async function loadPermissionTemplates() {
+        const res = await apiFetch('admin/getPermissionTemplates.php');
         if (res.success) {
-            globalDocumentsCache = res.documents;
-            renderDocumentsList();
-            document.getElementById('total-documents').textContent = globalDocumentsCache.length;
+            globalPermissionTemplates = res.templates || [];
+            renderPermissionTemplates();
+            updateTemplateOptions();
         }
     }
 
-    function renderDocumentsList() {
-        const list = document.getElementById('documents-list');
-        const searchTerm = document.getElementById('document-search').value.toLowerCase();
-        const categoryFilter = document.getElementById('document-category-filter').value;
-        const statusFilter = document.getElementById('document-status-filter').value;
+    function renderPermissionTemplates() {
+        const tbody = document.getElementById('permission-templates-table-body');
+        const searchTerm = document.getElementById('permission-templates-search').value.toLowerCase();
 
-        const filtered = globalDocumentsCache.filter(doc => {
-            const title = Array.isArray(doc.title) ? doc.title[0] : (doc.title || doc.name || '');
-            const author = Array.isArray(doc.author) ? doc.author[0] : (doc.author || doc.uploaderName || '');
+        const filtered = globalPermissionTemplates.filter(t =>
+            t.name.toLowerCase().includes(searchTerm) ||
+            (t.description || '').toLowerCase().includes(searchTerm)
+        );
 
-            const matchesSearch = title.toLowerCase().includes(searchTerm) ||
-                author.toLowerCase().includes(searchTerm);
+        tbody.innerHTML = filtered.map(t => `
+            <tr>
+                <td class="px-6 py-4 font-medium text-primary">${t.name}</td>
+                <td class="px-6 py-4">${translateLevel(t.level)}</td>
+                <td class="px-6 py-4 text-sm text-gray-500">${t.modules.join(', ')}</td>
+                <td class="px-6 py-4 text-gray-400 text-sm">${t.description || '-'}</td>
+                <td class="px-6 py-4 flex space-x-2">
+                    <button class="text-accent hover:text-blue-600" onclick="editTemplate('${t.id}')">编辑</button>
+                    <button class="text-red-500 hover:text-red-700" onclick="deleteTemplate('${t.id}')">删除</button>
+                </td>
+            </tr>
+        `).join('');
+    }
 
-            const docCategory = Array.isArray(doc.category) ? doc.category[0] : (doc.category || '其他');
-            const matchesCategory = categoryFilter === 'all' || docCategory === categoryFilter;
+    function editTemplate(id) {
+        const t = globalPermissionTemplates.find(x => x.id === id);
+        if (!t) return;
 
-            const isApproved = doc.approved !== false;
-            let matchesStatus = true;
-            if (statusFilter === 'approved') matchesStatus = isApproved;
-            if (statusFilter === 'pending') matchesStatus = !isApproved;
+        document.getElementById('permission-template-id').value = t.id;
+        document.getElementById('template-name').value = t.name;
+        document.getElementById('template-description').value = t.description || '';
+        document.getElementById('template-level').value = t.level;
 
-            return matchesSearch && matchesCategory && matchesStatus;
+        document.querySelectorAll('input[name="template-modules"]').forEach(cb => cb.checked = false);
+        if (t.modules) {
+            t.modules.forEach(m => {
+                const cb = document.getElementById('template-module-' + m);
+                if (cb) cb.checked = true;
+            });
+        }
+
+        document.getElementById('permission-template-modal-title').textContent = '编辑权限模板';
+        document.getElementById('permission-template-modal').classList.remove('hidden');
+    }
+
+    async function deleteTemplate(id) {
+        if (!confirm('确定删除此模板吗？')) return;
+        const newTemplates = globalPermissionTemplates.filter(t => t.id !== id);
+        await apiFetch('admin/savePermissionTemplates.php', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ templates: newTemplates })
         });
-
-        if (filtered.length === 0) {
-            list.innerHTML = '<div class="text-center text-gray-500 py-4">暂无文献数据</div>';
-            return;
-        }
-
-        list.innerHTML = filtered.map(doc => {
-            const title = Array.isArray(doc.title) ? doc.title[0] : (doc.title || doc.name || '无标题');
-            const author = Array.isArray(doc.author) ? doc.author[0] : (doc.author || doc.uploaderName || '未知作者');
-            const category = Array.isArray(doc.category) ? doc.category[0] : (doc.category || '其他');
-            const description = Array.isArray(doc.description) ? doc.description[0] : (doc.description || '暂无描述');
-
-            const isApproved = doc.approved !== false;
-
-            const statusBadge = isApproved
-                ? '<span class="px-2 py-0.5 rounded text-xs bg-green-100 text-green-800 ml-2">已发布</span>'
-                : '<span class="px-2 py-0.5 rounded text-xs bg-yellow-100 text-yellow-800 ml-2">待审核</span>';
-
-            const approveBtnText = isApproved ? '下架' : '通过';
-            const approveBtnIcon = isApproved ? 'fa-ban' : 'fa-check';
-            const approveBtnColor = isApproved ? 'text-orange-500 hover:text-orange-700' : 'text-green-500 hover:text-green-700';
-
-            return `
-            <div class="bg-gray-50 p-4 rounded-lg flex justify-between items-center hover:shadow-md transition-shadow">
-                <div class="flex-1">
-                    <div class="flex items-center space-x-2 mb-1">
-                        <h4 class="font-bold text-primary text-lg">${title}</h4>
-                        <span class="px-2 py-0.5 rounded text-xs bg-blue-100 text-blue-800">${category}</span>
-                        ${statusBadge}
-                    </div>
-                    <p class="text-sm text-gray-600 mb-1"><i class="fa fa-user mr-1"></i>${author}</p>
-                    <p class="text-xs text-gray-400 truncate w-2/3">${description}</p>
-                </div>
-                <div class="flex space-x-3 ml-4">
-                    <button class="${approveBtnColor} flex items-center" onclick="toggleApprove('${doc.id}')">
-                        <i class="fa ${approveBtnIcon} mr-1"></i> ${approveBtnText}
-                    </button>
-                    <button class="text-secondary hover:text-yellow-600 flex items-center" onclick="handlePreview('${doc.id}')">
-                        <i class="fa fa-eye mr-1"></i> 预览
-                    </button>
-                    <button class="text-accent hover:text-blue-600 flex items-center" onclick="handleDownload('${doc.id}')">
-                        <i class="fa fa-download mr-1"></i> 下载
-                    </button>
-                    <button class="text-red-500 hover:text-red-700 flex items-center" onclick="deleteDocument('${doc.id}')">
-                        <i class="fa fa-trash mr-1"></i> 删除
-                    </button>
-                </div>
-            </div>`;
-        }).join('');
+        await loadPermissionTemplates();
     }
 
-    async function deleteDocument(id) {
-        if (!confirm('确定要删除这篇文献吗？此操作无法撤销。')) return;
-
-        const newDocuments = globalDocumentsCache.filter(doc => doc.id !== id);
-
-        try {
-            const response = await fetch('library/saveDocuments.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ documents: newDocuments })
-            });
-
-            const res = await response.json();
-
-            if (res.success) {
-                alert('文献删除成功');
-                loadLibraryData();
-            } else {
-                alert('删除失败：' + (res.message || res.error || '未知错误'));
-            }
-        } catch (error) {
-            console.error(error);
-            alert('请求失败，请检查网络');
-        }
+    function updateTemplateOptions() {
+        const select = document.getElementById('admin-permission-template');
+        if (!select) return;
+        select.innerHTML = '<option value="">不使用模板 (自定义)</option>' +
+            globalPermissionTemplates.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
     }
-
-    document.addEventListener('DOMContentLoaded', function() {
-        document.getElementById('document-search').addEventListener('input', renderDocumentsList);
-        document.getElementById('document-category-filter').addEventListener('change', renderDocumentsList);
-        document.getElementById('document-status-filter').addEventListener('change', renderDocumentsList);
-        const uploadForm = document.getElementById('document-upload-form');
-        if (uploadForm) {
-            uploadForm.addEventListener('submit', async function(e) {
-                e.preventDefault();
-
-                const submitBtn = document.getElementById('submit-document-btn');
-                const originalText = submitBtn.innerText;
-                submitBtn.disabled = true;
-                submitBtn.innerText = '上传中...';
-
-                try {
-                    const formData = new FormData(this);
-
-                    const response = await fetch('library/upload-document.php', {
-                        method: 'POST',
-                        body: formData
-                    });
-
-                    const result = await response.json();
-
-                    if (result.success) {
-                        alert('文献上传成功');
-                        this.reset();
-                        document.getElementById('file-preview-container').classList.add('hidden');
-                        loadLibraryData();
-                    } else {
-                        alert('上传失败：' + (result.message || result.error || '未知错误'));
-                    }
-                } catch (error) {
-                    console.error(error);
-                    alert('上传请求发生错误');
-                } finally {
-                    submitBtn.disabled = false;
-                    submitBtn.innerText = originalText;
-                }
-            });
-        }
-
-        const addPermBtn = document.getElementById('add-admin-permission-btn');
-        if (addPermBtn) {
-            addPermBtn.addEventListener('click', () => {
-                document.getElementById('admin-permission-id').value = '';
-                document.getElementById('admin-permission-form').reset();
-                document.getElementById('admin-permission-user').disabled = false;
-                document.getElementById('admin-permission-modal-title').textContent = '任命管理员';
-                document.getElementById('admin-permission-modal').classList.remove('hidden');
-            });
-        }
-
-        const permSearch = document.getElementById('admin-permissions-search');
-        if (permSearch) {
-            permSearch.addEventListener('input', renderAdminPermissions);
-        }
-
-        const permForm = document.getElementById('admin-permission-form');
-        if (permForm) {
-            permForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-
-                const id = document.getElementById('admin-permission-id').value;
-                const userId = document.getElementById('admin-permission-user').value;
-
-                const userSelect = document.getElementById('admin-permission-user');
-                const userText = userSelect.options[userSelect.selectedIndex].text;
-                const username = userText.split(' (')[0];
-
-                const adminName = document.getElementById('admin-permission-name').value;
-                const level = document.getElementById('admin-permission-level').value;
-
-                const modules = [];
-                document.querySelectorAll('input[name="modules"]:checked').forEach(cb => modules.push(cb.value));
-
-                let newPerms = [...globalAdminPermissions];
-
-                if (id) {
-                    const idx = newPerms.findIndex(x => x.id === id);
-                    if (idx !== -1) {
-                        newPerms[idx] = { ...newPerms[idx], adminName, level, modules };
-                    }
-                } else {
-                    if (newPerms.find(p => p.userId === userId)) {
-                        alert('该用户已经是管理员了，请直接编辑。');
-                        return;
-                    }
-                    newPerms.push({
-                        id: 'adm_' + Date.now(),
-                        userId,
-                        username,
-                        adminName,
-                        level,
-                        modules,
-                        createdAt: new Date().toISOString().split('T')[0]
-                    });
-                }
-
-                const res = await apiFetch('admin/saveAdminPermissions.php', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ permissions: newPerms })
-                });
-
-                if (res.success) {
-                    alert('管理员权限保存成功');
-                    document.getElementById('admin-permission-modal').classList.add('hidden');
-                    loadAdminPermissions();
-                } else {
-                    alert('保存失败: ' + res.error);
-                }
-            });
-        }
-
-        const fileInput = document.getElementById('document-file');
-        if (fileInput) {
-            fileInput.addEventListener('change', function(e) {
-                const previewContainer = document.getElementById('file-preview-container');
-                if (this.files && this.files.length > 0) {
-                    previewContainer.classList.remove('hidden');
-                    document.getElementById('file-preview').innerText = `已选择文件: ${this.files[0].name} (${(this.files[0].size / 1024).toFixed(2)} KB)`;
-                } else {
-                    previewContainer.classList.add('hidden');
-                }
-            });
-        }
-
-        const uploadBtn = document.getElementById('upload-document-btn');
-        if (uploadBtn) {
-            uploadBtn.addEventListener('click', function() {
-                const panel = document.getElementById('document-upload-panel');
-                if (panel) {
-                    panel.scrollIntoView({ behavior: 'smooth' });
-                    const titleInput = document.getElementById('document-title');
-                    if (titleInput) titleInput.focus();
-                }
-            });
-        }
-    });
-
-    let globalAdminPermissions = [];
 
     async function loadAdminPermissions() {
         const [permRes, userRes] = await Promise.all([
@@ -2180,430 +2461,6 @@
         `).join('');
     }
 
-    function translateLevel(level) {
-        const map = {
-            'global_admin': '<span class="text-red-600 font-bold">全局管理员</span>',
-            'module_admin': '<span class="text-blue-600">模块管理员</span>',
-            'admin': '普通管理员'
-        };
-        return map[level] || level;
-    }
-
-    function loadSectionData(section) {
-        switch (section) {
-            case 'dashboard': loadDashboardData(); break;
-            case 'users': loadUsersData(); break;
-            case 'bank': loadBankData(); loadTransactionsData(); break;
-            case 'library': loadLibraryData(); break;
-            case 'permissions':
-                loadAdminPermissions();
-                loadPermissionTemplates();
-                break;
-        }
-    }
-
-    function getAbsoluteUrl(url) {
-        if (!url) return '';
-        try {
-            return new URL(url, window.location.href).href;
-        } catch (e) {
-            return url;
-        }
-    }
-
-    function getFileExtension(doc) {
-        if (doc.name) {
-            const parts = doc.name.split('.');
-            if(parts.length > 1) return '.' + parts.pop().toLowerCase();
-        }
-        if (doc.fileUrl) {
-            try {
-                const u = new URL(doc.fileUrl, window.location.href);
-                const parts = u.pathname.split('.');
-                if (parts.length > 1) return '.' + parts.pop().toLowerCase();
-            } catch(e) {}
-        }
-        return '.pdf';
-    }
-
-    function handleDownload(docId) {
-        const doc = globalDocumentsCache.find(d => d.id === docId);
-        if (!doc) return;
-
-        const fileUrl = doc.fileUrl || ('library/document-file.php?id=' + doc.id);
-        const absUrl = getAbsoluteUrl(fileUrl);
-
-        if (fileUrl && fileUrl !== '#') {
-            const link = document.createElement('a');
-            link.href = absUrl;
-            link.download = doc.name || 'document';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        } else {
-            alert('该文献暂不提供下载');
-        }
-    }
-
-    async function handlePreview(docId) {
-        const doc = globalDocumentsCache.find(d => d.id === docId);
-        if (!doc) return;
-
-        const fileUrl = doc.fileUrl || ('library/document-file.php?id=' + doc.id);
-        const absUrl = getAbsoluteUrl(fileUrl);
-        const extension = getFileExtension(doc);
-
-        if (fileUrl && fileUrl !== '#') {
-            try {
-                if (['.txt', '.md'].includes(extension)) {
-                    let textContent = '';
-                    const textResponse = await fetch(absUrl);
-                    if (!textResponse.ok) {
-                        throw new Error('fetch_failed');
-                    }
-                    textContent = await textResponse.text();
-
-                    const safeText = textContent
-                        .replace(/&/g, "&amp;")
-                        .replace(/</g, "&lt;")
-                        .replace(/>/g, "&gt;")
-                        .replace(/"/g, "&quot;")
-                        .replace(/'/g, "&#039;");
-
-                    const newWindow = window.open('', '_blank');
-                    if (newWindow) {
-                        newWindow.document.write(`
-                            <html>
-                            <head>
-                                <title>${doc.title}</title>
-                                <style>
-                                    body { font-family: monospace; white-space: pre-wrap; padding: 20px; background-color: #f9fafb; color: #1f2937; }
-                                </style>
-                            </head>
-                            <body>${safeText}</body>
-                            </html>
-                        `);
-                    }
-                } else if (['.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx'].includes(extension)) {
-                    window.open(`https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(absUrl)}`, '_blank');
-                } else {
-                    window.open(absUrl, '_blank');
-                }
-            } catch (error) {
-                alert('在线阅读失败，请尝试下载');
-                console.error(error);
-            }
-        } else {
-            alert('该文献暂不提供在线阅读');
-        }
-    }
-
-    async function toggleApprove(docId) {
-        const docIndex = globalDocumentsCache.findIndex(d => d.id === docId);
-        if (docIndex === -1) return;
-
-        const doc = globalDocumentsCache[docIndex];
-        const currentStatus = doc.approved !== false;
-        const newStatus = !currentStatus;
-        const actionText = newStatus ? '通过审核' : '下架';
-
-        if (!confirm(`确定要${actionText}这篇文献吗？`)) return;
-
-        const newDocuments = [...globalDocumentsCache];
-        newDocuments[docIndex] = { ...doc, approved: newStatus };
-
-        try {
-            const response = await fetch('library/saveDocuments.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ documents: newDocuments })
-            });
-
-            const res = await response.json();
-
-            if (res.success) {
-                alert(`文献${actionText}成功`);
-                loadLibraryData();
-            } else {
-                alert('操作失败：' + (res.message || res.error || '未知错误'));
-            }
-        } catch (error) {
-            console.error(error);
-            alert('请求失败，请检查网络');
-        }
-    }
-
-    document.addEventListener('DOMContentLoaded', function () {
-        checkAdminLogin();
-        loadDashboardData();
-        loadUsersData();
-        loadBankData();
-        loadTransactionsData();
-
-        document.querySelectorAll('.admin-nav-btn').forEach(btn => {
-            btn.addEventListener('click', function () {
-                const target = this.dataset.target;
-                document.querySelectorAll('.admin-nav-btn').forEach(b => b.classList.remove('bg-secondary', 'text-primary'));
-                this.classList.add('bg-secondary', 'text-primary');
-                document.querySelectorAll('.admin-section').forEach(s => s.classList.add('hidden'));
-                document.getElementById(target).classList.remove('hidden');
-                loadSectionData(target);
-            });
-        });
-
-        document.querySelectorAll('.close-modal').forEach(btn => {
-            btn.addEventListener('click', () => btn.closest('.fixed').classList.add('hidden'));
-        });
-
-        const openActionBtn = document.getElementById('open-action-modal-btn');
-        if (openActionBtn) {
-            openActionBtn.addEventListener('click', async () => {
-                const res = await apiFetch('bank/getAllCards.php?page=1&pageSize=9999');
-                if (res.success) {
-                    globalCardsCache = res.cards;
-                }
-                document.getElementById('account-action-modal').classList.remove('hidden');
-
-                const actionUserSelect = document.getElementById('action-username');
-                actionUserSelect.innerHTML = globalUsersCache.map(u =>
-                    `<option value="${u.id}">${u.username}</option>`
-                ).join('');
-
-                const searchInput = document.getElementById('recipient-search-keyword');
-                const searchSelect = document.getElementById('transfer-recipient-card');
-                if (searchInput) searchInput.value = '';
-                if (searchSelect) searchSelect.innerHTML = '<option value="">请先搜索...</option>';
-
-                document.getElementById('action-card-type').value = 'debit';
-                document.getElementById('action-type').value = 'deposit';
-
-                updateActionCardOptions();
-                updateActionTypeOptions();
-                document.getElementById('action-type').dispatchEvent(new Event('change'));
-            });
-        }
-
-        const actionUserSelect = document.getElementById('action-username');
-        if (actionUserSelect) {
-            actionUserSelect.addEventListener('change', updateActionCardOptions);
-        }
-
-        const actionCardTypeSelect = document.getElementById('action-card-type');
-        if (actionCardTypeSelect) {
-            actionCardTypeSelect.addEventListener('change', () => {
-                updateActionCardOptions();
-                updateActionTypeOptions();
-            });
-        }
-
-        const actionCardSelect = document.getElementById('action-card');
-        if (actionCardSelect) {
-            actionCardSelect.addEventListener('change', updateLimitInputPlaceholder);
-        }
-
-        document.getElementById('action-type').addEventListener('change', function () {
-            const val = this.value;
-            const limitContainer = document.getElementById('limit-adjust-container');
-            const transferContainer = document.getElementById('transfer-target-container');
-            const amountInputDiv = document.getElementById('action-amount').parentElement;
-
-            limitContainer.classList.add('hidden');
-            transferContainer.classList.add('hidden');
-            amountInputDiv.classList.remove('hidden');
-
-            document.getElementById('action-amount').required = true;
-            document.getElementById('action-new-limit').required = false;
-
-            if (val === 'adjust-limit') {
-                limitContainer.classList.remove('hidden');
-                amountInputDiv.classList.add('hidden');
-                document.getElementById('action-amount').required = false;
-                document.getElementById('action-new-limit').required = true;
-                updateLimitInputPlaceholder();
-            } else if (val === 'transfer') {
-                transferContainer.classList.remove('hidden');
-            }
-        });
-
-        const searchRecipientBtn = document.getElementById('search-recipient-btn');
-        if (searchRecipientBtn) {
-            searchRecipientBtn.addEventListener('click', async () => {
-                const keyword = document.getElementById('recipient-search-keyword').value.trim();
-                const select = document.getElementById('transfer-recipient-card');
-
-                if (!keyword) {
-                    alert('请输入搜索关键词');
-                    return;
-                }
-
-                select.innerHTML = '<option value="">搜索中...</option>';
-                const res = await apiFetch(`bank/searchRecipient.php?keyword=${encodeURIComponent(keyword)}`);
-                select.innerHTML = '';
-
-                if (res.success && res.results && res.results.length > 0) {
-                    select.add(new Option(`找到 ${res.results.length} 个结果 - 请选择`, ""));
-                    res.results.forEach(item => {
-                        const typeName = item.cardType === 'credit' ? '信用卡' : '借记卡';
-                        const text = `[${typeName}] ${item.holderName} - ${item.cardNumber}`;
-                        select.add(new Option(text, item.cardNumber));
-                    });
-                } else {
-                    select.add(new Option("未找到匹配的用户或卡片", ""));
-                }
-            });
-        }
-
-        document.getElementById('account-action-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            const actionType = document.getElementById('action-type').value;
-            const userId = document.getElementById('action-username').value;
-            const cardId = document.getElementById('action-card').value;
-            const amount = document.getElementById('action-amount').value;
-            const note = document.getElementById('action-note').value;
-            let url = '';
-
-            if (document.getElementById('action-card-type').value === 'debit' && actionType === 'adjust-limit') {
-                alert('借记卡不支持调整信用额度');
-                return;
-            }
-
-            if (actionType === 'deposit' || actionType === 'withdraw') {
-                const params = new URLSearchParams({
-                    cardId: cardId,
-                    userId: userId,
-                    amount: amount,
-                    action: actionType,
-                    description: note
-                });
-                url = `bank/updateBalance.php?${params.toString()}`;
-
-            } else if (actionType === 'adjust-limit') {
-                const newLimit = document.getElementById('action-new-limit').value;
-                const params = new URLSearchParams({
-                    id: cardId,
-                    userId: userId,
-                    creditLimit: newLimit,
-                    action: 'adjustLimit'
-                });
-                url = `bank/updateCard.php?${params.toString()}`;
-
-            } else if (actionType === 'transfer') {
-                const toCardNumber = document.getElementById('transfer-recipient-card').value;
-                if (!toCardNumber) {
-                    alert('请搜索并选择收款卡片');
-                    return;
-                }
-                const params = new URLSearchParams({
-                    userId: userId,
-                    toCardNumber: toCardNumber,
-                    amount: amount,
-                    fromCardId: cardId,
-                    description: note || '管理员转账'
-                });
-                url = `bank/transfer.php?${params.toString()}`;
-            }
-
-            const res = await apiFetch(url, { method: 'GET' });
-            if (res.success) {
-                alert('操作成功');
-                document.getElementById('account-action-modal').classList.add('hidden');
-                await loadBankData(currentBankPage);
-            } else {
-                alert('操作失败：' + res.error);
-            }
-        });
-
-        document.getElementById('edit-user-form').addEventListener('submit', handleEditUser);
-        document.getElementById('add-user-btn').addEventListener('click', () => document.getElementById('add-user-modal').classList.remove('hidden'));
-        document.getElementById('add-user-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const params = new URLSearchParams({
-                username: document.getElementById('add-username').value,
-                email: document.getElementById('add-email').value,
-                password: document.getElementById('add-password').value,
-                qq: document.getElementById('add-qq').value,
-                gender: document.getElementById('add-gender').value,
-                race: document.getElementById('add-race').value,
-                age: document.getElementById('add-age').value,
-                residence: document.getElementById('add-residence').value,
-                bio: document.getElementById('add-bio').value,
-                role: document.getElementById('add-role').value
-            });
-            const res = await apiFetch(`auth/register.php?${params.toString()}`, { method: 'GET' });
-            if (res.success) {
-                alert('添加成功');
-                document.getElementById('add-user-modal').classList.add('hidden');
-                loadUsersData();
-            } else {
-                alert(res.error);
-            }
-        });
-        document.getElementById('back-to-home').addEventListener('click', () => window.location.href = 'index.html');
-        document.getElementById('logout-btn').addEventListener('click', async () => { if (confirm('确定退出？')) await apiFetch('auth/logout.php'); window.location.href = 'index.html'; });
-
-        document.getElementById('open-card-btn').addEventListener('click', () => {
-            document.getElementById('open-card-modal').classList.remove('hidden');
-            const userSelect = document.getElementById('open-card-user');
-            userSelect.innerHTML = globalUsersCache.map(u => `<option value="${u.id}">${u.username}</option>`).join('');
-            const typeSelect = document.getElementById('open-card-type');
-            const limitInput = document.getElementById('open-card-credit-limit');
-            typeSelect.value = 'debit';
-            limitInput.value = 0;
-            limitInput.disabled = true;
-            limitInput.classList.add('bg-gray-100');
-        });
-        document.getElementById('open-card-type').addEventListener('change', function () {
-            const limitInput = document.getElementById('open-card-credit-limit');
-            if (this.value === 'debit') {
-                limitInput.value = 0;
-                limitInput.disabled = true;
-                limitInput.classList.add('bg-gray-100');
-            } else {
-                limitInput.value = 5000;
-                limitInput.disabled = false;
-                limitInput.classList.remove('bg-gray-100');
-            }
-        });
-        document.getElementById('open-card-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const params = new URLSearchParams({
-                userId: document.getElementById('open-card-user').value,
-                cardType: document.getElementById('open-card-type').value,
-                holderName: document.getElementById('open-card-holder-name').value,
-                balance: document.getElementById('open-card-initial-balance').value,
-                creditLimit: document.getElementById('open-card-credit-limit').value,
-                status: document.getElementById('open-card-status').value,
-                note: document.getElementById('open-card-note').value
-            });
-            const res = await apiFetch(`bank/createCard.php?${params.toString()}`, { method: 'GET' });
-            if (res.success) { alert('开卡成功'); document.getElementById('open-card-modal').classList.add('hidden'); await loadBankData(); } else { alert(res.error); }
-        });
-
-        document.getElementById('user-search').addEventListener('input', () => renderUsersTable(globalUsersCache));
-        document.getElementById('user-role-filter').addEventListener('change', () => renderUsersTable(globalUsersCache));
-        document.getElementById('account-search').addEventListener('input', () => renderBankTable(globalCardsCache));
-        document.getElementById('card-type-filter').addEventListener('change', () => renderBankTable(globalCardsCache));
-        if (document.getElementById('transaction-search')) document.getElementById('transaction-search').addEventListener('input', loadTransactionsData);
-        if (document.getElementById('transaction-type-filter')) document.getElementById('transaction-type-filter').addEventListener('change', loadTransactionsData);
-
-        document.getElementById('edit-card-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const params = new URLSearchParams({
-                id: document.getElementById('edit-card-id').value,
-                userId: document.getElementById('edit-card-userid').value,
-                holderName: document.getElementById('edit-card-holder').value,
-                balance: document.getElementById('edit-card-balance').value,
-                creditLimit: document.getElementById('edit-card-limit').value,
-                status: document.getElementById('edit-card-status').value
-            });
-            const res = await apiFetch(`bank/updateCard.php?${params.toString()}`, { method: 'GET' });
-            if (res.success) { alert('修改成功'); document.getElementById('edit-card-modal').classList.add('hidden'); await loadBankData(currentBankPage); } else { alert(res.error); }
-        });
-    });
-
     function editAdminPermission(id) {
         const p = globalAdminPermissions.find(x => x.id === id);
         if (!p) return;
@@ -2628,17 +2485,86 @@
     }
 
     async function deleteAdminPermission(id) {
-        if (!confirm('确定撤销该管理员的所有权限吗？')) return;
-        const newPerms = globalAdminPermissions.filter(p => p.id !== id);
+        if (!confirm('确定要撤销该管理员的职位吗？\n\n如果该用户没有其他管理员职位，其账号将自动降级为普通用户。')) {
+            return;
+        }
 
-        await apiFetch('admin/saveAdminPermissions.php', {
+        try {
+            const res = await apiFetch(`admin/deleteAdminPermission.php?id=${id}`, { method: 'GET' });
+
+            if (res.success) {
+                alert('撤职成功');
+                await loadAdminPermissions();
+                await loadAdminLogs();
+                if (!document.getElementById('users').classList.contains('hidden')) {
+                    await loadUsersData();
+                }
+            } else {
+                alert('操作失败: ' + res.error);
+            }
+        } catch (e) {
+            console.error(e);
+            alert('网络或服务器错误');
+        }
+    }
+
+    function translateLevel(level) {
+        const map = {
+            'global_admin': '<span class="text-red-600 font-bold">全局管理员</span>',
+            'module_admin': '<span class="text-blue-600">模块管理员</span>',
+            'admin': '普通管理员'
+        };
+        return map[level] || level;
+    }
+
+    async function loadAdminLogs() {
+        const res = await apiFetch('admin/getAdminLogs.php');
+        if (res.success) {
+            globalAdminLogs = res.logs || [];
+            renderAdminLogs();
+        }
+    }
+
+    function renderAdminLogs() {
+        const tbody = document.getElementById('admin-logs-table-body');
+        const searchInput = document.getElementById('admin-logs-search');
+        if (!tbody) return;
+        const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+
+        const sorted = [...globalAdminLogs].reverse();
+
+        const filtered = sorted.filter(l =>
+            (l.adminName || '').toLowerCase().includes(searchTerm) ||
+            (l.action || '').toLowerCase().includes(searchTerm) ||
+            (l.details || '').toLowerCase().includes(searchTerm)
+        );
+
+        tbody.innerHTML = filtered.map(l => `
+            <tr>
+                <td class="px-6 py-4 text-sm font-medium text-gray-900">${l.adminName || 'System'}</td>
+                <td class="px-6 py-4 text-sm text-gray-500">${l.action}</td>
+                <td class="px-6 py-4 text-sm text-gray-500">${l.details}</td>
+                <td class="px-6 py-4 text-sm text-gray-400">${l.timestamp}</td>
+            </tr>
+        `).join('');
+    }
+
+    async function logAction(action, details) {
+        const currentUser = document.getElementById('admin-username').textContent;
+        await apiFetch('admin/saveAdminLogs.php', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ permissions: newPerms })
+            body: JSON.stringify({
+                log: {
+                    adminName: currentUser,
+                    action: action,
+                    details: details,
+                    timestamp: new Date().toISOString().replace('T', ' ').slice(0, 19)
+                }
+            })
         });
-
-        loadAdminPermissions();
     }
+
 </script>
 </body>
 </html>

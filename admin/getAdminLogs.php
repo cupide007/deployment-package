@@ -1,5 +1,5 @@
 <?php
-require_once '../common.php';
+\RthRunner\Runtime::require_once_method('../common.php');
 $db = new Database('retinbox-main');
 
 $sessionId = $_SERVER['HTTP_X_SESSION_ID'] ?? $_COOKIE['sessionId'] ?? '';
