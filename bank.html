@@ -1132,6 +1132,33 @@
 
                 const recipientInput = document.getElementById('recipient-name');
                 const suggestionsBox = document.getElementById('recipient-suggestions');
+                const toAccSelect = document.getElementById('to-account');
+
+                async function loadRecipientCards(params) {
+                    let url = 'bank/getRecipientCards.php?';
+                    if (params.userId) url += `userId=${encodeURIComponent(params.userId)}`;
+                    else if (params.name) url += `name=${encodeURIComponent(params.name)}`;
+                    else return;
+
+                    toAccSelect.innerHTML = '<option value="">加载卡片中...</option>';
+
+                    const data = await apiCall(url, 'GET');
+
+                    toAccSelect.innerHTML = '';
+
+                    if (data.success && data.cards && data.cards.length > 0) {
+                        data.cards.forEach(card => {
+                            const typeText = card.cardType === 'debit' ? '借记' : '信用';
+                            const optionText = `${card.holderName} - ${card.cardNumber} (${typeText})`;
+                            const option = new Option(optionText, card.cardNumber);
+                            toAccSelect.add(option);
+                        });
+                        toAccSelect.dispatchEvent(new Event('change'));
+                    } else {
+                        toAccSelect.innerHTML = '<option value="">该用户下无可用卡片</option>';
+                    }
+                }
+
                 if(recipientInput) {
                     recipientInput.addEventListener('input', async () => {
                         const val = recipientInput.value.trim();
@@ -1150,22 +1177,33 @@
                                 const div = document.createElement('div');
                                 div.className = 'px-4 py-2 hover:bg-gray-100 cursor-pointer border-b border-gray-100';
                                 div.innerHTML = `<span class="font-bold text-primary">${r.holderName}</span> <span class="text-gray-500 text-sm">(${r.cardNumber})</span>`;
+
                                 div.onclick = () => {
                                     recipientInput.value = r.holderName;
-                                    const toSelect = document.getElementById('to-account');
-                                    toSelect.innerHTML = '';
-                                    const optionText = `${r.holderName} - ${r.cardNumber}`;
-                                    const option = new Option(optionText, r.cardNumber);
-                                    option.selected = true;
-                                    toSelect.add(option);
                                     suggestionsBox.classList.add('hidden');
+
+                                    if (r.userId) {
+                                        loadRecipientCards({ userId: r.userId });
+                                    } else {
+                                        loadRecipientCards({ name: r.holderName });
+                                    }
                                 };
                                 suggestionsBox.appendChild(div);
                             });
                         } else {
                             suggestionsBox.classList.remove('hidden');
-                            suggestionsBox.innerHTML = '<div class="px-4 py-2 text-gray-500 text-sm">未找到相关用户或该用户无借记卡</div>';
+                            suggestionsBox.innerHTML = '<div class="px-4 py-2 text-gray-500 text-sm">未找到相关用户</div>';
                         }
+                    });
+
+                    recipientInput.addEventListener('blur', () => {
+                        setTimeout(() => {
+                            suggestionsBox.classList.add('hidden');
+                            const val = recipientInput.value.trim();
+                            if (val && (toAccSelect.options.length <= 1 || toAccSelect.value === '')) {
+                                loadRecipientCards({ name: val });
+                            }
+                        }, 200);
                     });
 
                     document.addEventListener('click', (e) => {
@@ -1175,7 +1213,6 @@
                     });
                 }
                 const fromAccSelect = document.getElementById('from-account');
-                const toAccSelect = document.getElementById('to-account');
                 const transferAmtInput = document.getElementById('transfer-amount');
                 const recipientNameInput = document.getElementById('recipient-name');
 

@@ -45,18 +45,35 @@ if ($keyword !== '') {
         $userRaw = $db->get($uid);
         if (!$userRaw) continue;
         $u = json_decode($userRaw, true);
+        $username = $u['username'] ?? '';
 
-        if (isset($u['username']) && stripos($u['username'], $keyword) !== false) {
-            $acc = json_decode($db->get('bank_account_' . $u['id']) ?: '{}', true);
-            if (isset($acc['cards'])) {
-                foreach ($acc['cards'] as $card) {
-                    $results[] = [
-                        'cardNumber' => $card['cardNumber'],
-                        'holderName' => $card['holderName'] ?? $u['username'],
-                        'cardType'   => $card['cardType'],
-                        'userId'     => $u['id']
-                    ];
+        $acc = json_decode($db->get('bank_account_' . $uid) ?: '{}', true);
+        $cards = $acc['cards'] ?? [];
+
+        $isMatch = false;
+
+        if (stripos($username, $keyword) !== false) {
+            $isMatch = true;
+        }
+        else {
+            foreach ($cards as $card) {
+                if (isset($card['holderName']) && stripos($card['holderName'], $keyword) !== false) {
+                    $isMatch = true;
+                    break;
                 }
+            }
+        }
+
+        if ($isMatch) {
+            foreach ($cards as $card) {
+                if (($card['status'] ?? 'active') !== 'active') continue;
+
+                $results[] = [
+                    'cardNumber' => $card['cardNumber'],
+                    'holderName' => $card['holderName'] ?? $username,
+                    'cardType'   => $card['cardType'],
+                    'userId'     => $uid
+                ];
             }
         }
     }
