@@ -50,7 +50,7 @@ $newDoc = [
     'uploadDate' => date('c'),
     'uploaderId' => $userId,
     'uploaderName' => $uploaderName,
-    'approved' => true,
+    'approved' => false,
     'fileUrl' => 'library/document-file.php?id=' . $docId
 ];
 
@@ -60,5 +60,5 @@ array_unshift($documents, $newDoc);
 $db->set("lib_documents_global", json_encode($documents));
 $db->set("meta_{$docId}", json_encode($newDoc));
 
-jsonResponse(['success' => true, 'document' => $newDoc]);
+jsonResponse(['success' => true, 'document' => $newDoc, 'message' => '上传成功，请等待管理员审核']);
 ?>

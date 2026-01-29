@@ -902,6 +902,7 @@
                     currentUser = data.user;
                     document.getElementById('welcome-user').classList.remove('hidden');
                     document.getElementById('current-username').textContent = currentUser.username;
+                    bindEvents();
                     await initPage();
                 } else {
                     window.location.href = 'index.html';
@@ -911,7 +912,6 @@
             async function initPage() {
                 await Promise.all([fetchCards(), fetchTransactions()]);
                 updateUI();
-                bindEvents();
             }
 
             async function fetchCards() {
@@ -945,22 +945,14 @@
                         assets += balance;
                         debit += balance;
                     } else if (c.cardType === 'credit') {
-                        if (balance < 0) {
-                            assets += balance;
-                        }
                         const limit = parseFloat(c.creditLimit || 0);
-                        const available = limit - Math.abs(balance);
+                        const available = limit + balance;
                         totalAvailableCredit += available;
-
-                        // 总资产计算：如果要把信用卡的可用额度也计入总资产，取消下行注释
-                        // assets += available;
                     }
                 });
 
                 document.getElementById('total-assets').textContent = `¥${assets.toFixed(2)}`;
                 document.getElementById('debit-balance').textContent = `¥${debit.toFixed(2)}`;
-
-                // 更新显示为所有信用卡的可用额度总和
                 document.getElementById('credit-limit').textContent = `¥${totalAvailableCredit.toFixed(2)}`;
             }
 
@@ -975,7 +967,9 @@
                     const typeText = card.cardType === 'debit' ? '借记卡' : '信用卡';
                     const limit = parseFloat(card.creditLimit || 0);
                     const bal = parseFloat(card.balance);
-                    const displayBal = card.cardType === 'debit' ? `¥${bal.toFixed(2)}` : `¥${(limit - Math.abs(bal)).toFixed(2)}`;
+                    const displayBal = card.cardType === 'debit' ?
+                        `¥${bal.toFixed(2)}` :
+                        `¥${(limit + bal).toFixed(2)}`;
                     const label = card.cardType === 'debit' ? '余额' : '可用额度';
 
                     el.innerHTML = `

@@ -7,8 +7,9 @@ $sessionId = $_SERVER['HTTP_X_SESSION_ID'] ?? $_COOKIE['sessionId'] ?? '';
 if (!$sessionId) jsonError('未登录', 401);
 $sessionData = $db->get('sess_' . $sessionId);
 if (!$sessionData) jsonError('会话已过期', 401);
+$currentUser = json_decode($sessionData, true);
 
-$targetUserId = $_GET['userId'] ?? '';
+$targetUserId = $_GET['userId'] ?? $currentUser['userId'];
 if (!$targetUserId) jsonError('未指定用户ID');
 
 $userRaw = $db->get($targetUserId);
@@ -17,8 +18,14 @@ $user = json_decode($userRaw, true);
 
 $cardType = $_GET['cardType'] ?? 'debit';
 $holderName = trim($_GET['holderName'] ?? '') ?: ($user['username'] ?? '未知用户');
-$initialBalance = floatval($_GET['balance'] ?? 0);
-$creditLimit = floatval($_GET['creditLimit'] ?? ($cardType === 'credit' ? 5000 : 0));
+
+if ($cardType === 'credit') {
+    $initialBalance = 0;
+    $creditLimit = floatval($_GET['creditLimit'] ?? 5000);
+} else {
+    $initialBalance = floatval($_GET['balance'] ?? 0);
+    $creditLimit = 0;
+}
 
 do {
     $cardNumber = '4' . rand(100, 999) . rand(1000, 9999) . rand(1000, 9999) . rand(1000, 9999);
@@ -49,3 +56,4 @@ ob_clean();
 header('Content-Type: application/json; charset=utf-8');
 echo json_encode(['success' => true, 'card' => $newCard], JSON_UNESCAPED_UNICODE);
 exit;
+?>

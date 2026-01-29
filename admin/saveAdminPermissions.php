@@ -8,6 +8,16 @@ if (!$data || !isset($data['adminId'])) {
     exit;
 }
 
+$targetId = $data['adminId'];
+$userRaw = $db->get($targetId);
+if ($userRaw) {
+    $userObj = json_decode($userRaw, true);
+    if (($userObj['role'] ?? '') !== 'admin') {
+        $userObj['role'] = 'admin';
+        $db->set($targetId, json_encode($userObj));
+    }
+}
+
 $permissions = $db->get('admin_permissions_global');
 $permissionsList = $permissions ? json_decode($permissions, true) : [];
 

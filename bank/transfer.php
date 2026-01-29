@@ -15,7 +15,7 @@ $rawInput = file_get_contents('php://input');
 $input = json_decode($rawInput, true) ?? [];
 
 $fromCardId = $input['fromCardId'] ?? $_GET['fromCardId'] ?? $_GET['cardId'] ?? '';
-$toCardNumber = $input['toCardNumber'] ?? $_GET['toCardNumber'] ?? '';
+$toCardNumber = trim((string)($input['toCardNumber'] ?? $_GET['toCardNumber'] ?? ''));
 $targetUserId = $input['targetUserId'] ?? $_GET['targetUserId'] ?? '';
 $amount = floatval($input['amount'] ?? $_GET['amount'] ?? 0);
 $description = $input['description'] ?? $_GET['description'] ?? '转账';
@@ -54,8 +54,11 @@ if ($senderCard['cardType'] === 'credit') {
 if ($senderCard['cardType'] === 'debit') {
     if ($senderCard['balance'] < $totalDeduction) jsonError('余额不足');
 } else {
-    $currentDebt = ($senderCard['balance'] < 0) ? abs($senderCard['balance']) : 0;
-    if (($senderCard['creditLimit'] - $currentDebt) < $totalDeduction) jsonError('信用额度不足');
+    $currentBalance = $senderCard['balance'];
+    $limit = $senderCard['creditLimit'];
+    $available = $limit + $currentBalance;
+
+    if ($available < $totalDeduction) jsonError('信用额度不足');
 }
 
 $recipientId = '';
@@ -80,7 +83,7 @@ if ($recipientId === $senderId) {
 
 if ($toCardNumber) {
     foreach ($recipientAccount['cards'] as $index => $card) {
-        if ($card['cardNumber'] === $toCardNumber) {
+        if ((string)$card['cardNumber'] === $toCardNumber) {
             $recipientCardIndex = $index;
             break;
         }
@@ -96,7 +99,17 @@ if ($toCardNumber) {
 
 if ($recipientCardIndex === -1) jsonError('收款人没有可用的银行卡');
 $recipientCard = &$recipientAccount['cards'][$recipientCardIndex];
-$toCardNumber = $recipientCard['cardNumber'];
+
+$realToCardNumber = (string)$recipientCard['cardNumber'];
+$realFromCardNumber = (string)$senderCard['cardNumber'];
+
+if ($toCardNumber && $realToCardNumber !== $toCardNumber) {
+    jsonError('卡号匹配失败');
+}
+
+if ($realFromCardNumber === $realToCardNumber) {
+    jsonError('不能向同一张卡转账');
+}
 
 $senderCard['balance'] -= $totalDeduction;
 $recipientCard['balance'] += $amount;
@@ -112,7 +125,7 @@ $date = date('c');
 
 $txData = [
     'id' => $txId, 'type' => 'transfer', 'amount' => -$totalDeduction,
-    'description' => "转给 {$toCardNumber}: " . $description, 'timestamp' => $date
+    'description' => "转给 {$realToCardNumber}: " . $description, 'timestamp' => $date
 ];
 $senderTxKey = "bank_tx_" . $senderId;
 $senderTxs = json_decode($db->get($senderTxKey) ?: '[]', true);
@@ -126,12 +139,13 @@ $recTxData = [
 $recipientTxKey = "bank_tx_" . $recipientId;
 
 if ($senderId === $recipientId) {
-    $recipientTxs = json_decode($db->get($senderTxKey) ?: '[]', true);
+    array_unshift($senderTxs, $recTxData);
+    $db->set($senderTxKey, json_encode($senderTxs));
 } else {
     $recipientTxs = json_decode($db->get($recipientTxKey) ?: '[]', true);
+    array_unshift($recipientTxs, $recTxData);
+    $db->set($recipientTxKey, json_encode($recipientTxs));
 }
-array_unshift($recipientTxs, $recTxData);
-$db->set($recipientTxKey, json_encode($recipientTxs));
 
 $globalLogData = [
     'id' => $txId,
@@ -140,7 +154,7 @@ $globalLogData = [
     'type' => 'transfer',
     'amount' => $amount,
     'timestamp' => date('Y-m-d H:i:s'),
-    'description' => ($isAdmin ? "[管理员操作] " : "") . "用户转账: {$senderUsername} -> {$toCardNumber} ({$description})"
+    'description' => ($isAdmin ? "[管理员操作] " : "") . "用户转账: {$senderUsername} -> {$realToCardNumber} ({$description})"
 ];
 $globalLogsRaw = $db->get('bank_transactions');
 $globalLogs = $globalLogsRaw ? json_decode($globalLogsRaw, true) : [];
