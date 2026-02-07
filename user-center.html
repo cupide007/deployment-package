@@ -926,7 +926,15 @@
             profileForm.addEventListener('submit', async function (e) {
                 e.preventDefault();
 
+                // 获取当前用户ID
+                const userData = await getUserProfile();
+                if (!userData || !userData.id) {
+                    alert('无法获取用户信息，请刷新页面重试');
+                    return;
+                }
+
                 const payload = {
+                    id: userData.id, // 添加用户ID
                     username: document.getElementById('username').value,
                     gender: document.getElementById('gender').value,
                     bio: document.getElementById('bio').value,
@@ -938,8 +946,9 @@
                 };
 
                 try {
-                    // 调用 users/updateUser.php
-                    const result = await window.retinbox.request('users/updateUser', 'POST', payload);
+                    // 调用 users/updateUser.php（使用GET参数）
+                    const params = new URLSearchParams(payload).toString();
+                    const result = await window.retinbox.request(`users/updateUser?${params}`, 'GET');
 
                     if (result.success) {
                         document.getElementById('current-username').textContent = payload.username;

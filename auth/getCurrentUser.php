@@ -22,6 +22,7 @@ if (!$userRaw) {
 }
 
 $user = json_decode($userRaw, true);
+$user['id'] = $userId; // 确保返回用户ID
 unset($user['salt']);
 unset($user['hash']);
 

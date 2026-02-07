@@ -13,7 +13,14 @@ $currentUserRaw = $db->get($currentUserId);
 $currentUserData = $currentUserRaw ? json_decode($currentUserRaw, true) : [];
 $isAdmin = ($currentUserData['role'] ?? '') === 'admin';
 
+// 支持 GET 参数和 POST JSON
 $data = $_GET;
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $jsonInput = json_decode(file_get_contents('php://input'), true);
+    if ($jsonInput) {
+        $data = array_merge($data, $jsonInput);
+    }
+}
 $targetId = $data['id'] ?? '';
 if (!$targetId) jsonError('缺少用户ID');
 
