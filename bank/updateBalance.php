@@ -2,6 +2,9 @@
 require_once '../common.php';
 $db = new Database('retinbox-main');
 
+// 需要 bank 模块权限
+requireModulePermission($db, 'bank');
+
 $cardId = $_GET['cardId'] ?? '';
 $userId = $_GET['userId'] ?? '';
 $amount = floatval($_GET['amount'] ?? 0);

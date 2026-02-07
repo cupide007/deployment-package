@@ -8,8 +8,20 @@ if (!$sessionId) jsonError('未登录', 401);
 $sessionData = $db->get('sess_' . $sessionId);
 if (!$sessionData) jsonError('会话已过期', 401);
 $currentUser = json_decode($sessionData, true);
+$currentUserId = $currentUser['userId'];
 
-$targetUserId = $_GET['userId'] ?? $currentUser['userId'];
+// 获取当前用户信息以检查权限
+$currentUserRaw = $db->get($currentUserId);
+$currentUserData = $currentUserRaw ? json_decode($currentUserRaw, true) : [];
+$isAdmin = ($currentUserData['role'] ?? '') === 'admin';
+
+$targetUserId = $_GET['userId'] ?? $currentUserId;
+
+// 如果目标用户不是自己，必须是管理员
+if ($targetUserId !== $currentUserId && !$isAdmin) {
+    jsonError('无权为其他用户创建银行卡', 403);
+}
+
 if (!$targetUserId) jsonError('未指定用户ID');
 
 $userRaw = $db->get($targetUserId);

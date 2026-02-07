@@ -2,17 +2,8 @@
 require_once '../common.php';
 $db = new Database('retinbox-main');
 
-$sessionId = $_SERVER['HTTP_X_SESSION_ID'] ?? $_COOKIE['sessionId'] ?? '';
-$sessionData = $db->get('sess_' . $sessionId);
-$session = json_decode($sessionData, true);
-$userId = $session['userId'] ?? '';
-
-$userRaw = $db->get($userId);
-$user = json_decode($userRaw, true);
-
-if (!$user || $user['role'] !== 'admin') {
-    jsonError('无权访问', 403);
-}
+// 需要 bank 模块权限
+requireModulePermission($db, 'bank');
 
 $page = intval($_GET['page'] ?? 1);
 $pageSize = intval($_GET['pageSize'] ?? 5);

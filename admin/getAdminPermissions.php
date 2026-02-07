@@ -2,8 +2,8 @@
 require_once '../common.php';
 $db = new Database('retinbox-main');
 
-$sessionId = $_SERVER['HTTP_X_SESSION_ID'] ?? $_COOKIE['sessionId'] ?? '';
-if (!$sessionId) jsonError('未登录', 401);
+// 需要 permissions 模块权限
+requireModulePermission($db, 'permissions');
 
 $permsRaw = $db->get('sys_admin_permissions');
 $permissions = $permsRaw ? json_decode($permsRaw, true) : [];

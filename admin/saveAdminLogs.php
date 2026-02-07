@@ -1,6 +1,9 @@
 <?php
-\RthRunner\Runtime::require_once_method('../common.php');
+require_once '../common.php';
 $db = new Database('retinbox-main');
+
+// 需要 permissions 模块权限
+requireModulePermission($db, 'permissions');
 
 $data = getJsonInput();
 
@@ -27,6 +30,6 @@ if (count($logsList) > 500) {
 
 $db->set('sys_admin_logs', json_encode($logsList));
 
-\RthRunner\header('Content-Type: application/json');
+header('Content-Type: application/json');
 echo json_encode(['success' => true]);
 ?>

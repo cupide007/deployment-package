@@ -30,7 +30,16 @@ $debitCard = &$account['cards'][$debitIndex];
 if (($creditCard['cardType'] ?? '') !== 'credit') jsonError('目标卡片不是信用卡');
 if (($debitCard['cardType'] ?? '') !== 'debit') jsonError('支付账户必须是借记卡');
 if ($debitCard['balance'] < $amount) jsonError('还款账户余额不足');
-if (($creditCard['balance'] + $amount) > 0) jsonError('还款金额超出欠款额');
+
+// 信用卡 balance < 0 表示有欠款
+$currentDebt = -$creditCard['balance']; // 欠款额（正数）
+if ($creditCard['balance'] >= 0) {
+    jsonError('信用卡没有欠款，无需还款');
+}
+if ($amount > $currentDebt) {
+    jsonError('还款金额超出欠款额，当前欠款: ' . $currentDebt);
+}
+
 $debitCard['balance'] -= $amount;
 $creditCard['balance'] += $amount;
 $db->set($accountKey, json_encode($account));

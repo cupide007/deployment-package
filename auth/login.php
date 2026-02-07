@@ -46,7 +46,8 @@ $sessionData = [
 ];
 $db->set('sess_' . $sessionId, json_encode($sessionData));
 
-setcookie('sessionId', $sessionId, time() + 86400 * 7, '/', '', true, true);
+$isSecure = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on';
+setcookie('sessionId', $sessionId, time() + 86400 * 7, '/', '', $isSecure, true);
 
 unset($user['salt']);
 unset($user['hash']);

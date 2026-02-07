@@ -1,9 +1,9 @@
 <?php
-\RthRunner\Runtime::require_once_method('../common.php');
+require_once '../common.php';
 $db = new Database('retinbox-main');
 
-$sessionId = $_SERVER['HTTP_X_SESSION_ID'] ?? $_COOKIE['sessionId'] ?? '';
-if (!$sessionId) jsonError('未登录', 401);
+// 需要 permissions 模块权限（查看日志）
+requireModulePermission($db, 'permissions');
 
 $logsRaw = $db->get('sys_admin_logs');
 $logs = $logsRaw ? json_decode($logsRaw, true) : [];

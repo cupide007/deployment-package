@@ -1,5 +1,5 @@
 <?php
-\RthRunner\Runtime::require_once_method('../common.php');
+require_once '../common.php';
 $db = new Database('retinbox-main');
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -10,8 +10,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     jsonError('Method Not Allowed', 405);
 }
 
-$sessionId = $_SERVER['HTTP_X_SESSION_ID'] ?? $_COOKIE['sessionId'] ?? '';
-if (!$sessionId) jsonError('未登录', 401);
+// 需要 permissions 模块权限
+requireModulePermission($db, 'permissions');
 
 $data = [];
 
@@ -29,6 +29,6 @@ if (!is_array($templates)) {
 
 $db->set('sys_permission_templates', json_encode($templates));
 
-\RthRunner\header('Content-Type: application/json');
+header('Content-Type: application/json');
 echo json_encode(['success' => true, 'count' => count($templates)]);
 ?>

@@ -1,6 +1,9 @@
 <?php
-\RthRunner\Runtime::require_once_method('../common.php');
+require_once '../common.php';
 $db = new Database('retinbox-main');
+
+// 需要 permissions 模块权限
+requireModulePermission($db, 'permissions');
 
 $params = [];
 if (isset($_REQUEST['payload'])) {
@@ -13,7 +16,7 @@ if (empty($params) && (isset($_REQUEST['adminId']) || isset($_REQUEST['userId'])
     $params = array_merge($params, $_REQUEST);
 }
 if (empty($params)) {
-    $rawInput = \RthRunner\file_get_contents('php://input');
+    $rawInput = file_get_contents('php://input');
     $jsonInput = json_decode($rawInput, true);
     if (is_array($jsonInput)) {
         if (isset($jsonInput['query'])) {
@@ -25,7 +28,7 @@ if (empty($params)) {
 }
 
 if (empty($params) || (!isset($params['adminId']) && !isset($params['userId']))) {
-    \RthRunner\header('Content-Type: application/json');
+    header('Content-Type: application/json');
     echo json_encode(['success' => false, 'error' => "Data incomplete (missing adminId)."]);
     exit;
 }
@@ -101,7 +104,7 @@ if (!$found) {
 
 $db->set('sys_admin_permissions', json_encode($permissionsList));
 
-\RthRunner\header('Content-Type: application/json');
+header('Content-Type: application/json');
 echo json_encode(['success' => true, 'saved_modules' => $modules]);
 exit;
 ?>

@@ -1,6 +1,9 @@
 <?php
-\RthRunner\Runtime::require_once_method('../common.php');
+require_once '../common.php';
 $db = new Database('retinbox-main');
+
+// 需要 permissions 模块权限
+requireModulePermission($db, 'permissions');
 
 $templatesRaw = $db->get('sys_permission_templates');
 

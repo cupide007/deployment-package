@@ -86,7 +86,9 @@ class RetinboxAPI {
   }
   async createBankAccount() { return this.request('bank/createAccount', 'POST'); }
   async getBankAccount() { return this.request('bank/getAccount').then(r => r.account); }
-  async addTransaction(amount, type, description) { return this.request('bank/addTransaction', 'POST', { amount, type, description }); }
+  // 注意: addTransaction 接口暂未实现，银行交易通过 transfer/updateBalance 接口进行
+  async getCards() { return this.request('bank/getCards').then(r => r.cards || []); }
+  async getTransactions() { return this.request('bank/getTransactions').then(r => r.transactions || []); }
   async addLibraryRecord(bookId, bookTitle) { return this.request('library/addRecord', 'POST', { bookId, bookTitle }); }
   async getLibraryRecords() { return this.request('library/getRecords').then(r => r.records || []); }
   async updateUserSettings(data) { return this.request('settings/updateSettings', 'POST', data); }
