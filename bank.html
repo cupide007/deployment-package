@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,10 +8,10 @@
     <link rel="icon" href="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f4bb.png">
     <!-- Tailwind CSS v3 -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome -->
-    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <!-- Font Awesome (本地) -->
+    <link href="fonts/font-awesome.min.css" rel="stylesheet">
     <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="js/chart.min.js"></script>
     <!-- Retinbox 配置 -->
     <script src="retinbox-config.js"></script>
     <!-- 统一的 Tailwind 配置 -->
@@ -118,6 +119,7 @@
         }
     </style>
 </head>
+
 <body class="bg-gray-100 font-sans">
     <!-- 顶部导航栏 -->
     <nav id="main-nav" class="bg-primary text-light shadow-lg fixed w-full z-50 transition-all duration-300">
@@ -133,7 +135,8 @@
             </div>
             <div class="flex items-center space-x-4">
                 <span id="welcome-user" class="hidden">欢迎，<span id="current-username"></span></span>
-                <button id="logout-btn" class="bg-gray-700 text-light px-4 py-2 rounded-md hover:bg-gray-600 transition-all duration-200 font-medium">
+                <button id="logout-btn"
+                    class="bg-gray-700 text-light px-4 py-2 rounded-md hover:bg-gray-600 transition-all duration-200 font-medium">
                     出国
                 </button>
                 <button id="mobile-menu-btn" class="md:hidden text-2xl">
@@ -169,16 +172,19 @@
                             为安提斯特公民提供安全、便捷的金融服务，管理您的虚拟资产。
                         </p>
                         <div class="flex flex-wrap gap-4">
-                            <button id="open-account-btn" class="bg-secondary text-primary px-6 py-3 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium text-lg">
+                            <button id="open-account-btn"
+                                class="bg-secondary text-primary px-6 py-3 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium text-lg">
                                 办理银行卡
                             </button>
-                            <button id="view-transactions-btn" class="bg-transparent border-2 border-light text-light px-6 py-3 rounded-md hover:bg-light hover:text-primary transition-all duration-200 font-medium text-lg">
+                            <button id="view-transactions-btn"
+                                class="bg-transparent border-2 border-light text-light px-6 py-3 rounded-md hover:bg-light hover:text-primary transition-all duration-200 font-medium text-lg">
                                 查看交易记录
                             </button>
                         </div>
                     </div>
                     <div class="md:w-1/2 flex justify-center animate-float">
-                        <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/cb84f055384c4766bcbcd12fb0a99578~tplv-a9rns2rl98-image.image?lk3s=8e244e95&rcl=202601202312037748F98E243C1F231D4E&rrcfp=f06b921b&x-expires=1771513966&x-signature=giP5KXxOUmZcUibFeHLetfVQI4Y%3D" alt="安提斯特国家银行" class="w-64 h-64 md:w-80 md:h-80 object-cover rounded-lg shadow-2xl">
+                        <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/cb84f055384c4766bcbcd12fb0a99578~tplv-a9rns2rl98-image.image?lk3s=8e244e95&rcl=202601202312037748F98E243C1F231D4E&rrcfp=f06b921b&x-expires=1771513966&x-signature=giP5KXxOUmZcUibFeHLetfVQI4Y%3D"
+                            alt="安提斯特国家银行" class="w-64 h-64 md:w-80 md:h-80 object-cover rounded-lg shadow-2xl">
                     </div>
                 </div>
             </div>
@@ -194,37 +200,43 @@
                             <h3 class="text-xl font-bold text-primary mb-6 border-b border-gray-300 pb-2">银行服务</h3>
                             <ul class="space-y-2">
                                 <li>
-                                    <button id="tab-accounts" class="w-full text-left px-4 py-3 rounded-md bg-primary text-light font-medium hover:bg-opacity-90 transition-colors duration-200 flex items-center">
+                                    <button id="tab-accounts"
+                                        class="w-full text-left px-4 py-3 rounded-md bg-primary text-light font-medium hover:bg-opacity-90 transition-colors duration-200 flex items-center">
                                         <i class="fa fa-credit-card mr-3"></i>
                                         我的账户
                                     </button>
                                 </li>
                                 <li>
-                                    <button id="tab-new-card" class="w-full text-left px-4 py-3 rounded-md hover:bg-gray-200 transition-colors duration-200 flex items-center">
+                                    <button id="tab-new-card"
+                                        class="w-full text-left px-4 py-3 rounded-md hover:bg-gray-200 transition-colors duration-200 flex items-center">
                                         <i class="fa fa-plus-circle mr-3"></i>
                                         办理新卡
                                     </button>
                                 </li>
                                 <li>
-                                    <button id="tab-transactions" class="w-full text-left px-4 py-3 rounded-md hover:bg-gray-200 transition-colors duration-200 flex items-center">
+                                    <button id="tab-transactions"
+                                        class="w-full text-left px-4 py-3 rounded-md hover:bg-gray-200 transition-colors duration-200 flex items-center">
                                         <i class="fa fa-exchange mr-3"></i>
                                         交易记录
                                     </button>
                                 </li>
                                 <li>
-                                    <button id="tab-transfer" class="w-full text-left px-4 py-3 rounded-md hover:bg-gray-200 transition-colors duration-200 flex items-center">
+                                    <button id="tab-transfer"
+                                        class="w-full text-left px-4 py-3 rounded-md hover:bg-gray-200 transition-colors duration-200 flex items-center">
                                         <i class="fa fa-arrow-right mr-3"></i>
                                         转账汇款
                                     </button>
                                 </li>
                                 <li>
-                                    <button id="tab-statistics" class="w-full text-left px-4 py-3 rounded-md hover:bg-gray-200 transition-colors duration-200 flex items-center">
+                                    <button id="tab-statistics"
+                                        class="w-full text-left px-4 py-3 rounded-md hover:bg-gray-200 transition-colors duration-200 flex items-center">
                                         <i class="fa fa-bar-chart mr-3"></i>
                                         财务统计
                                     </button>
                                 </li>
                                 <li>
-                                    <button id="tab-repayment" class="w-full text-left px-4 py-3 rounded-md hover:bg-gray-200 transition-colors duration-200 flex items-center">
+                                    <button id="tab-repayment"
+                                        class="w-full text-left px-4 py-3 rounded-md hover:bg-gray-200 transition-colors duration-200 flex items-center">
                                         <i class="fa fa-credit-card mr-3"></i>
                                         信用卡还款
                                     </button>
@@ -260,12 +272,15 @@
                                 <h3 class="text-xl font-bold text-gray-800 mb-4">我的银行卡</h3>
                                 <div id="cards-container" class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <!-- 示例卡片 -->
-                                    <div class="bg-gradient-to-r from-primary to-accent rounded-lg shadow-lg p-6 text-white card-shine relative overflow-hidden">
+                                    <div
+                                        class="bg-gradient-to-r from-primary to-accent rounded-lg shadow-lg p-6 text-white card-shine relative overflow-hidden">
                                         <div class="absolute top-4 right-4">
-                                            <span class="bg-secondary text-primary text-xs font-bold px-2 py-1 rounded">借记卡</span>
+                                            <span
+                                                class="bg-secondary text-primary text-xs font-bold px-2 py-1 rounded">借记卡</span>
                                         </div>
                                         <div class="mb-6">
-                                            <img src="https://p9-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/6a9bbecde6c24ec4b9fd8b26c263ab54~tplv-a9rns2rl98-image.image?lk3s=8e244e95&rcl=202601202312037748F98E243C1F231D4E&rrcfp=f06b921b&x-expires=1771513965&x-signature=BR2pSwvk0BUY9Xk2se6VkW25DMQ%3D" alt="安提斯特国徽" class="h-10 w-10 opacity-80">
+                                            <img src="https://p9-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/6a9bbecde6c24ec4b9fd8b26c263ab54~tplv-a9rns2rl98-image.image?lk3s=8e244e95&rcl=202601202312037748F98E243C1F231D4E&rrcfp=f06b921b&x-expires=1771513965&x-signature=BR2pSwvk0BUY9Xk2se6VkW25DMQ%3D"
+                                                alt="安提斯特国徽" class="h-10 w-10 opacity-80">
                                         </div>
                                         <div class="mb-4">
                                             <p class="text-sm opacity-80 mb-1">卡号</p>
@@ -288,7 +303,8 @@
                                     </div>
 
                                     <!-- 添加新卡卡片 -->
-                                    <div id="add-card-placeholder" class="border-2 border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center justify-center text-center cursor-pointer hover:border-primary transition-colors duration-200 h-64">
+                                    <div id="add-card-placeholder"
+                                        class="border-2 border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center justify-center text-center cursor-pointer hover:border-primary transition-colors duration-200 h-64">
                                         <div class="text-5xl text-gray-300 mb-4">
                                             <i class="fa fa-plus-circle"></i>
                                         </div>
@@ -308,7 +324,8 @@
                                     <h3 class="text-xl font-medium text-gray-800 mb-4">选择卡类型</h3>
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <!-- 借记卡选项 -->
-                                        <div class="border border-gray-200 rounded-lg p-6 hover:border-primary hover:shadow-md transition-all duration-200 cursor-pointer card-option" data-type="debit">
+                                        <div class="border border-gray-200 rounded-lg p-6 hover:border-primary hover:shadow-md transition-all duration-200 cursor-pointer card-option"
+                                            data-type="debit">
                                             <div class="flex items-start">
                                                 <div class="bg-primary bg-opacity-10 rounded-full p-3 mr-4">
                                                     <i class="fa fa-credit-card text-primary text-xl"></i>
@@ -335,7 +352,8 @@
                                         </div>
 
                                         <!-- 信用卡选项 -->
-                                        <div class="border border-gray-200 rounded-lg p-6 hover:border-secondary hover:shadow-md transition-all duration-200 cursor-pointer card-option" data-type="credit">
+                                        <div class="border border-gray-200 rounded-lg p-6 hover:border-secondary hover:shadow-md transition-all duration-200 cursor-pointer card-option"
+                                            data-type="credit">
                                             <div class="flex items-start">
                                                 <div class="bg-secondary bg-opacity-10 rounded-full p-3 mr-4">
                                                     <i class="fa fa-credit-card text-secondary text-xl"></i>
@@ -368,26 +386,35 @@
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div>
                                             <label for="card-holder" class="block text-gray-700 mb-2">持卡人姓名</label>
-                                            <input type="text" id="card-holder" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required>
+                                            <input type="text" id="card-holder"
+                                                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                                                required>
                                         </div>
                                         <div>
                                             <label for="card-type" class="block text-gray-700 mb-2">卡类型</label>
-                                            <input type="text" id="card-type" class="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-100" readonly>
+                                            <input type="text" id="card-type"
+                                                class="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-100"
+                                                readonly>
                                         </div>
                                     </div>
 
                                     <div>
                                         <label for="card-purpose" class="block text-gray-700 mb-2">办卡用途</label>
-                                        <textarea id="card-purpose" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" placeholder="请简要说明您办卡的主要用途..."></textarea>
+                                        <textarea id="card-purpose" rows="3"
+                                            class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                                            placeholder="请简要说明您办卡的主要用途..."></textarea>
                                     </div>
 
                                     <div class="flex items-center">
                                         <input type="checkbox" id="agree-terms" class="mr-2" required>
-                                        <label for="agree-terms" class="text-gray-700">我已阅读并同意<a href="#" id="terms-link" class="text-primary hover:underline">《安提斯特国家银行服务条款》</a></label>
+                                        <label for="agree-terms" class="text-gray-700">我已阅读并同意<a href="#"
+                                                id="terms-link"
+                                                class="text-primary hover:underline">《安提斯特国家银行服务条款》</a></label>
                                     </div>
 
                                     <div class="text-center">
-                                        <button type="submit" class="bg-primary text-white px-8 py-3 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium">
+                                        <button type="submit"
+                                            class="bg-primary text-white px-8 py-3 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium">
                                             提交申请
                                         </button>
                                     </div>
@@ -403,10 +430,13 @@
                                 <!-- 筛选选项 -->
                                 <div class="flex flex-col md:flex-row gap-4 mb-6">
                                     <div class="flex-grow">
-                                        <input type="text" id="transaction-search" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" placeholder="搜索交易记录...">
+                                        <input type="text" id="transaction-search"
+                                            class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                                            placeholder="搜索交易记录...">
                                     </div>
                                     <div>
-                                        <select id="transaction-filter" class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+                                        <select id="transaction-filter"
+                                            class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
                                             <option value="all">全部交易</option>
                                             <option value="deposit">存款</option>
                                             <option value="withdraw">取款</option>
@@ -443,10 +473,12 @@
                                         显示 <span id="showing-records">0</span> 条记录，共 <span id="total-records">0</span> 条
                                     </div>
                                     <div class="flex space-x-2">
-                                        <button id="prev-page" class="px-4 py-2 border border-gray-300 rounded-md bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                                        <button id="prev-page"
+                                            class="px-4 py-2 border border-gray-300 rounded-md bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
                                             上一页
                                         </button>
-                                        <button id="next-page" class="px-4 py-2 border border-gray-300 rounded-md bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                                        <button id="next-page"
+                                            class="px-4 py-2 border border-gray-300 rounded-md bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
                                             下一页
                                         </button>
                                     </div>
@@ -462,8 +494,11 @@
                                 <form id="transfer-form" class="space-y-6">
                                     <div class="space-y-4">
                                         <div>
-                                            <label for="from-account" class="block text-gray-700 mb-2">付款账户（请选择您的借记卡）</label>
-                                            <select id="from-account" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required>
+                                            <label for="from-account"
+                                                class="block text-gray-700 mb-2">付款账户（请选择您的借记卡）</label>
+                                            <select id="from-account"
+                                                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                                                required>
                                                 <option value="">请选择付款账户</option>
                                                 <!-- 账户选项将通过JavaScript动态添加 -->
                                             </select>
@@ -471,13 +506,20 @@
                                         <div>
                                             <label for="recipient-name" class="block text-gray-700 mb-2">收款人姓名</label>
                                             <div class="relative">
-                                                <input type="text" id="recipient-name" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" placeholder="请输入收款人姓名...">
-                                                <div id="recipient-suggestions" class="absolute w-full bg-white border border-gray-300 rounded-md shadow-lg mt-1 z-10 hidden max-h-60 overflow-y-auto"></div>
+                                                <input type="text" id="recipient-name"
+                                                    class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                                                    placeholder="请输入收款人姓名...">
+                                                <div id="recipient-suggestions"
+                                                    class="absolute w-full bg-white border border-gray-300 rounded-md shadow-lg mt-1 z-10 hidden max-h-60 overflow-y-auto">
+                                                </div>
                                             </div>
                                         </div>
                                         <div>
-                                            <label for="to-account" class="block text-gray-700 mb-2">收款账户（收款人借记卡）</label>
-                                            <select id="to-account" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required>
+                                            <label for="to-account"
+                                                class="block text-gray-700 mb-2">收款账户（收款人借记卡）</label>
+                                            <select id="to-account"
+                                                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                                                required>
                                                 <option value="">请先输入收款人姓名</option>
                                             </select>
                                         </div>
@@ -487,13 +529,17 @@
                                         <label for="transfer-amount" class="block text-gray-700 mb-2">转账金额</label>
                                         <div class="relative">
                                             <span class="absolute left-4 top-2 text-gray-500">¥</span>
-                                            <input type="number" id="transfer-amount" min="0.01" step="0.01" class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" placeholder="请输入转账金额" required>
+                                            <input type="number" id="transfer-amount" min="0.01" step="0.01"
+                                                class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                                                placeholder="请输入转账金额" required>
                                         </div>
                                     </div>
 
                                     <div>
                                         <label for="transfer-description" class="block text-gray-700 mb-2">转账说明</label>
-                                        <textarea id="transfer-description" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" placeholder="请输入转账说明..."></textarea>
+                                        <textarea id="transfer-description" rows="3"
+                                            class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                                            placeholder="请输入转账说明..."></textarea>
                                     </div>
 
                                     <div class="bg-gray-50 p-4 rounded-lg">
@@ -527,7 +573,8 @@
                                     </div>
 
                                     <div class="text-center">
-                                        <button type="submit" class="bg-primary text-white px-8 py-3 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium">
+                                        <button type="submit"
+                                            class="bg-primary text-white px-8 py-3 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium">
                                             确认转账
                                         </button>
                                     </div>
@@ -543,7 +590,8 @@
                                 <!-- 统计时间范围选择 -->
                                 <div class="flex flex-col md:flex-row gap-4 mb-8">
                                     <div class="flex-grow">
-                                        <select id="statistics-period" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+                                        <select id="statistics-period"
+                                            class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
                                             <option value="7">最近7天</option>
                                             <option value="30" selected>最近30天</option>
                                             <option value="90">最近90天</option>
@@ -552,7 +600,8 @@
                                         </select>
                                     </div>
                                     <div>
-                                        <button id="refresh-statistics" class="px-4 py-2 bg-primary text-white rounded-md hover:bg-opacity-90 transition-all duration-200 flex items-center">
+                                        <button id="refresh-statistics"
+                                            class="px-4 py-2 bg-primary text-white rounded-md hover:bg-opacity-90 transition-all duration-200 flex items-center">
                                             <i class="fa fa-refresh mr-2"></i>
                                             刷新数据
                                         </button>
@@ -627,7 +676,9 @@
                                 <form id="repayment-form" class="space-y-6">
                                     <div>
                                         <h3 class="text-lg font-medium text-gray-800 mb-4">选择信用卡</h3>
-                                        <select id="credit-card-select" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required>
+                                        <select id="credit-card-select"
+                                            class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                                            required>
                                             <option value="">请选择要还款的信用卡</option>
                                             <!-- 信用卡选项将通过JavaScript动态添加 -->
                                         </select>
@@ -654,11 +705,13 @@
                                             </div>
                                             <div>
                                                 <span class="text-gray-600">本期应还：</span>
-                                                <span id="repayment-amount-due" class="font-medium text-red-600">-</span>
+                                                <span id="repayment-amount-due"
+                                                    class="font-medium text-red-600">-</span>
                                             </div>
                                             <div>
                                                 <span class="text-gray-600">最低还款额：</span>
-                                                <span id="repayment-min-amount" class="font-medium text-orange-600">-</span>
+                                                <span id="repayment-min-amount"
+                                                    class="font-medium text-orange-600">-</span>
                                             </div>
                                         </div>
                                     </div>
@@ -666,7 +719,9 @@
                                     <!-- 选择还款账户 -->
                                     <div>
                                         <h3 class="text-lg font-medium text-gray-800 mb-4">选择还款账户</h3>
-                                        <select id="debit-card-select" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required>
+                                        <select id="debit-card-select"
+                                            class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                                            required>
                                             <option value="">请选择还款账户（借记卡）</option>
                                             <!-- 借记卡选项将通过JavaScript动态添加 -->
                                         </select>
@@ -676,14 +731,18 @@
                                         <label for="repayment-amount" class="block text-gray-700 mb-2">还款金额</label>
                                         <div class="relative">
                                             <span class="absolute left-4 top-2 text-gray-500">¥</span>
-                                            <input type="number" id="repayment-amount" min="0.01" step="0.01" class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" placeholder="请输入还款金额" required>
+                                            <input type="number" id="repayment-amount" min="0.01" step="0.01"
+                                                class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                                                placeholder="请输入还款金额" required>
                                         </div>
                                         <div id="repayment-error" class="mt-1 text-sm text-red-600 hidden"></div>
                                         <div class="mt-2 flex space-x-2">
-                                            <button type="button" id="pay-min-btn" class="text-sm text-orange-600 hover:text-orange-700">
+                                            <button type="button" id="pay-min-btn"
+                                                class="text-sm text-orange-600 hover:text-orange-700">
                                                 最低还款额
                                             </button>
-                                            <button type="button" id="pay-full-btn" class="text-sm text-green-600 hover:text-green-700">
+                                            <button type="button" id="pay-full-btn"
+                                                class="text-sm text-green-600 hover:text-green-700">
                                                 全额还款
                                             </button>
                                         </div>
@@ -706,13 +765,15 @@
                                             </div>
                                             <div>
                                                 <span class="text-gray-600">实付金额：</span>
-                                                <span id="confirm-total-amount" class="font-medium text-primary">¥0.00</span>
+                                                <span id="confirm-total-amount"
+                                                    class="font-medium text-primary">¥0.00</span>
                                             </div>
                                         </div>
                                     </div>
 
                                     <div class="text-center">
-                                        <button type="submit" class="bg-primary text-white px-8 py-3 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium">
+                                        <button type="submit"
+                                            class="bg-primary text-white px-8 py-3 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium">
                                             确认还款
                                         </button>
                                     </div>
@@ -758,7 +819,8 @@
     </footer>
 
     <!-- 办理新卡成功模态框 -->
-    <div id="card-success-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
+    <div id="card-success-modal"
+        class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
         <div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 overflow-hidden animate-fade-in">
             <div class="bg-green-500 text-white p-4 flex justify-between items-center">
                 <h2 class="text-xl font-bold">申请成功</h2>
@@ -774,11 +836,15 @@
                 <p class="text-gray-600 mb-6">您的卡片将在1-2个工作日内处理完成，请注意查收。</p>
                 <div class="bg-gray-100 p-4 rounded-lg mb-6 text-left">
                     <p class="font-medium text-gray-800 mb-2">申请信息</p>
-                    <p class="text-gray-600 mb-1"><span class="font-medium">卡号：</span><span id="new-card-number">**** **** **** ****</span></p>
-                    <p class="text-gray-600 mb-1"><span class="font-medium">持卡人：</span><span id="new-card-holder">用户名</span></p>
-                    <p class="text-gray-600"><span class="font-medium">卡类型：</span><span id="new-card-type">借记卡</span></p>
+                    <p class="text-gray-600 mb-1"><span class="font-medium">卡号：</span><span id="new-card-number">****
+                            **** **** ****</span></p>
+                    <p class="text-gray-600 mb-1"><span class="font-medium">持卡人：</span><span
+                            id="new-card-holder">用户名</span></p>
+                    <p class="text-gray-600"><span class="font-medium">卡类型：</span><span id="new-card-type">借记卡</span>
+                    </p>
                 </div>
-                <button id="view-new-card-btn" class="bg-primary text-white px-6 py-3 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium text-lg">
+                <button id="view-new-card-btn"
+                    class="bg-primary text-white px-6 py-3 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium text-lg">
                     查看卡片
                 </button>
             </div>
@@ -830,7 +896,8 @@
                 </div>
             </div>
             <div class="bg-gray-50 p-4 flex justify-end">
-                <button id="agree-terms-btn" class="bg-primary text-white px-6 py-2 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium">
+                <button id="agree-terms-btn"
+                    class="bg-primary text-white px-6 py-2 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium">
                     我已阅读并同意
                 </button>
             </div>
@@ -838,7 +905,8 @@
     </div>
 
     <!-- 转账成功模态框 -->
-    <div id="transfer-success-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
+    <div id="transfer-success-modal"
+        class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
         <div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 overflow-hidden animate-fade-in">
             <div class="bg-green-500 text-white p-4 flex justify-between items-center">
                 <h2 class="text-xl font-bold">转账成功</h2>
@@ -851,18 +919,24 @@
                     <i class="fa fa-check-circle"></i>
                 </div>
                 <h3 class="text-2xl font-bold text-gray-800 mb-2">您的转账已成功处理！</h3>
-                <p class="text-gray-600 mb-6">资金已转入收款人账户，交易号：<span id="transfer-id" class="font-medium">TRX123456789</span></p>
+                <p class="text-gray-600 mb-6">资金已转入收款人账户，交易号：<span id="transfer-id"
+                        class="font-medium">TRX123456789</span></p>
                 <div class="bg-gray-100 p-4 rounded-lg mb-6 text-left">
                     <p class="font-medium text-gray-800 mb-2">转账信息</p>
-                    <p class="text-gray-600 mb-1"><span class="font-medium">收款账户：</span><span id="transfer-to-account">**** **** **** ****</span></p>
-                    <p class="text-gray-600 mb-1"><span class="font-medium">收款人：</span><span id="transfer-to-name">收款人</span></p>
-                    <p class="text-gray-600"><span class="font-medium">转账金额：</span><span id="transfer-amount-display">¥0.00</span></p>
+                    <p class="text-gray-600 mb-1"><span class="font-medium">收款账户：</span><span
+                            id="transfer-to-account">**** **** **** ****</span></p>
+                    <p class="text-gray-600 mb-1"><span class="font-medium">收款人：</span><span
+                            id="transfer-to-name">收款人</span></p>
+                    <p class="text-gray-600"><span class="font-medium">转账金额：</span><span
+                            id="transfer-amount-display">¥0.00</span></p>
                 </div>
                 <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                    <button id="view-transfer-detail-btn" class="bg-primary text-white px-6 py-3 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium">
+                    <button id="view-transfer-detail-btn"
+                        class="bg-primary text-white px-6 py-3 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium">
                         查看详情
                     </button>
-                    <button id="new-transfer-btn" class="bg-white border border-primary text-primary px-6 py-3 rounded-md hover:bg-gray-50 transition-all duration-200 font-medium">
+                    <button id="new-transfer-btn"
+                        class="bg-white border border-primary text-primary px-6 py-3 rounded-md hover:bg-gray-50 transition-all duration-200 font-medium">
                         再次转账
                     </button>
                 </div>
@@ -871,7 +945,7 @@
     </div>
     <!-- JavaScript -->
     <script>
-        document.addEventListener('DOMContentLoaded', async function() {
+        document.addEventListener('DOMContentLoaded', async function () {
             let currentUser = null;
             let currentCards = [];
             let currentTransactions = [];
@@ -998,11 +1072,11 @@
             function renderTransactions() {
                 const tbody = document.getElementById('transactions-table-body');
                 const recentBody = document.getElementById('recent-transactions-body');
-                if(tbody) tbody.innerHTML = '';
-                if(recentBody) recentBody.innerHTML = '';
+                if (tbody) tbody.innerHTML = '';
+                if (recentBody) recentBody.innerHTML = '';
 
                 if (currentTransactions.length === 0) {
-                    if(tbody) tbody.innerHTML = '<tr><td colspan="5" class="py-8 text-center text-gray-500">暂无交易记录</td></tr>';
+                    if (tbody) tbody.innerHTML = '<tr><td colspan="5" class="py-8 text-center text-gray-500">暂无交易记录</td></tr>';
                     return;
                 }
 
@@ -1011,19 +1085,19 @@
                     row.className = 'border-b hover:bg-gray-50';
 
                     const date = new Date(tx.timestamp);
-                    const dateStr = `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+                    const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
                     const amount = parseFloat(tx.amount);
                     const colorClass = amount > 0 ? 'text-green-600' : 'text-red-600';
                     const sign = amount > 0 ? '+' : '';
 
                     let typeName = tx.type;
                     let typeClass = 'bg-gray-100 text-gray-800';
-                    if(tx.type === 'deposit') { typeName='存款'; typeClass='bg-green-100 text-green-800'; }
-                    if(tx.type === 'withdraw') { typeName='取款'; typeClass='bg-red-100 text-red-800'; }
-                    if(tx.type === 'transfer') { typeName='转账'; typeClass='bg-blue-100 text-blue-800'; }
-                    if(tx.type === 'repayment') { typeName='还款'; typeClass='bg-yellow-100 text-yellow-800'; }
+                    if (tx.type === 'deposit') { typeName = '存款'; typeClass = 'bg-green-100 text-green-800'; }
+                    if (tx.type === 'withdraw') { typeName = '取款'; typeClass = 'bg-red-100 text-red-800'; }
+                    if (tx.type === 'transfer') { typeName = '转账'; typeClass = 'bg-blue-100 text-blue-800'; }
+                    if (tx.type === 'repayment') { typeName = '还款'; typeClass = 'bg-yellow-100 text-yellow-800'; }
 
-                    if(tbody) {
+                    if (tbody) {
                         row.innerHTML = `
                         <td class="py-3 px-4">${dateStr}</td>
                         <td class="py-3 px-4"><span class="px-2 py-1 rounded-full text-xs font-medium ${typeClass}">${typeName}</span></td>
@@ -1050,26 +1124,26 @@
                 const tabs = ['accounts', 'new-card', 'transactions', 'transfer', 'statistics', 'repayment'];
                 tabs.forEach(t => {
                     const btn = document.getElementById(`tab-${t}`);
-                    if(!btn) return;
+                    if (!btn) return;
                     btn.addEventListener('click', () => {
                         tabs.forEach(x => {
                             const p = document.getElementById(`panel-${x}`);
                             const b = document.getElementById(`tab-${x}`);
-                            if(p) p.classList.add('hidden');
-                            if(b) {
+                            if (p) p.classList.add('hidden');
+                            if (b) {
                                 b.classList.remove('bg-primary', 'text-light');
                                 b.classList.add('hover:bg-gray-200');
                             }
                         });
                         const targetPanel = document.getElementById(`panel-${t}`);
-                        if(targetPanel) targetPanel.classList.remove('hidden');
+                        if (targetPanel) targetPanel.classList.remove('hidden');
                         btn.classList.add('bg-primary', 'text-light');
                         btn.classList.remove('hover:bg-gray-200');
                     });
                 });
 
                 document.querySelectorAll('.card-option').forEach(el => {
-                    el.addEventListener('click', function() {
+                    el.addEventListener('click', function () {
                         document.querySelectorAll('.card-option').forEach(o => {
                             o.classList.remove('border-primary', 'shadow-md');
                             o.classList.add('border-gray-200');
@@ -1084,7 +1158,7 @@
                 });
 
                 const appForm = document.getElementById('card-application-form');
-                if(appForm) {
+                if (appForm) {
                     appForm.addEventListener('submit', async e => {
                         e.preventDefault();
                         const type = document.getElementById('card-type').dataset.value;
@@ -1102,7 +1176,7 @@
                             document.getElementById('new-card-number').textContent = formatCardNumber(data.card.cardNumber);
                             document.getElementById('new-card-holder').textContent = data.card.holderName;
                             document.getElementById('new-card-type').textContent = type === 'debit' ? '借记卡' : '信用卡';
-                            if(modal) modal.classList.remove('hidden');
+                            if (modal) modal.classList.remove('hidden');
                             await fetchCards();
                         } else {
                             alert(data.error || '办卡失败');
@@ -1111,10 +1185,10 @@
                 }
 
                 const closeSuccess = document.getElementById('close-success-modal');
-                if(closeSuccess) closeSuccess.addEventListener('click', () => document.getElementById('card-success-modal').classList.add('hidden'));
+                if (closeSuccess) closeSuccess.addEventListener('click', () => document.getElementById('card-success-modal').classList.add('hidden'));
 
                 const viewNewCardBtn = document.getElementById('view-new-card-btn');
-                if(viewNewCardBtn) {
+                if (viewNewCardBtn) {
                     viewNewCardBtn.addEventListener('click', () => {
                         document.getElementById('card-success-modal').classList.add('hidden');
                         document.getElementById('tab-accounts').click();
@@ -1123,7 +1197,7 @@
                 }
 
                 const viewTransferDetailBtn = document.getElementById('view-transfer-detail-btn');
-                if(viewTransferDetailBtn) {
+                if (viewTransferDetailBtn) {
                     viewTransferDetailBtn.addEventListener('click', () => {
                         document.getElementById('transfer-success-modal').classList.add('hidden');
                         document.getElementById('tab-transactions').click();
@@ -1159,7 +1233,7 @@
                     }
                 }
 
-                if(recipientInput) {
+                if (recipientInput) {
                     recipientInput.addEventListener('input', async () => {
                         const val = recipientInput.value.trim();
                         if (val.length < 1) {
@@ -1242,7 +1316,7 @@
                 if (recipientNameInput) recipientNameInput.addEventListener('input', syncTransferInfo);
 
                 const transForm = document.getElementById('transfer-form');
-                if(transForm) {
+                if (transForm) {
                     transForm.addEventListener('submit', async e => {
                         e.preventDefault();
                         const fromCardId = document.getElementById('from-account').value;
@@ -1255,7 +1329,7 @@
 
                         if (data.success) {
                             const modal = document.getElementById('transfer-success-modal');
-                            if(modal) {
+                            if (modal) {
                                 document.getElementById('transfer-amount-display').textContent = `¥${amount}`;
                                 document.getElementById('transfer-to-account').textContent = toCardNumber;
                                 document.getElementById('transfer-to-name').textContent = document.getElementById('recipient-name').value;
@@ -1270,11 +1344,11 @@
                     });
                 }
                 const closeTransModal = document.getElementById('close-transfer-modal');
-                if(closeTransModal) closeTransModal.addEventListener('click', () => document.getElementById('transfer-success-modal').classList.add('hidden'));
+                if (closeTransModal) closeTransModal.addEventListener('click', () => document.getElementById('transfer-success-modal').classList.add('hidden'));
 
                 const creditCardSelect = document.getElementById('credit-card-select');
                 if (creditCardSelect) {
-                    creditCardSelect.addEventListener('change', function() {
+                    creditCardSelect.addEventListener('change', function () {
                         const selectedCardId = this.value;
                         const selectedCard = currentCards.find(c => c.id === selectedCardId);
 
@@ -1307,7 +1381,7 @@
 
                 const debitCardSelect = document.getElementById('debit-card-select');
                 if (debitCardSelect) {
-                    debitCardSelect.addEventListener('change', function() {
+                    debitCardSelect.addEventListener('change', function () {
                         const text = this.options[this.selectedIndex]?.text || '未选择';
                         document.getElementById('confirm-debit-card').textContent = text;
                     });
@@ -1315,7 +1389,7 @@
 
                 const repaymentAmountInput = document.getElementById('repayment-amount');
                 if (repaymentAmountInput) {
-                    repaymentAmountInput.addEventListener('input', function() {
+                    repaymentAmountInput.addEventListener('input', function () {
                         const val = parseFloat(this.value) || 0;
                         document.getElementById('confirm-repayment-amount').textContent = `¥${val.toFixed(2)}`;
                         document.getElementById('confirm-total-amount').textContent = `¥${val.toFixed(2)}`;
@@ -1347,7 +1421,7 @@
                 }
 
                 const repayForm = document.getElementById('repayment-form');
-                if(repayForm) {
+                if (repayForm) {
                     repayForm.addEventListener('submit', async e => {
                         e.preventDefault();
                         const creditCardId = document.getElementById('credit-card-select').value;
@@ -1386,7 +1460,7 @@
                 });
 
                 const menuBtn = document.getElementById('mobile-menu-btn');
-                if(menuBtn) {
+                if (menuBtn) {
                     menuBtn.addEventListener('click', () => {
                         document.getElementById('mobile-menu').classList.toggle('hidden');
                     });
@@ -1397,13 +1471,13 @@
                 const fromSelect = document.getElementById('from-account');
                 const creditSelect = document.getElementById('credit-card-select');
                 const debitSelect = document.getElementById('debit-card-select');
-                if(fromSelect) fromSelect.innerHTML = '<option value="">请选择付款账户</option>';
-                if(creditSelect) creditSelect.innerHTML = '<option value="">请选择信用卡</option>';
-                if(debitSelect) debitSelect.innerHTML = '<option value="">请选择还款账户</option>';
+                if (fromSelect) fromSelect.innerHTML = '<option value="">请选择付款账户</option>';
+                if (creditSelect) creditSelect.innerHTML = '<option value="">请选择信用卡</option>';
+                if (debitSelect) debitSelect.innerHTML = '<option value="">请选择还款账户</option>';
 
                 currentCards.forEach(c => {
                     const label = `${formatCardNumber(c.cardNumber)} (${c.cardType === 'debit' ? '借记卡' : '信用卡'})`;
-                    if(fromSelect) fromSelect.add(new Option(label, c.id));
+                    if (fromSelect) fromSelect.add(new Option(label, c.id));
                     if (c.cardType === 'credit' && creditSelect) creditSelect.add(new Option(label, c.id));
                     if (c.cardType === 'debit' && debitSelect) debitSelect.add(new Option(label, c.id));
                 });
@@ -1479,4 +1553,5 @@
         });
     </script>
 </body>
+
 </html>

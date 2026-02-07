@@ -8,12 +8,12 @@
     <link rel="icon" href="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f4bb.png">
     <!-- Tailwind CSS v3 -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome -->
-    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <!-- Font Awesome (本地) -->
+    <link href="fonts/font-awesome.min.css" rel="stylesheet">
     <!-- Retinbox 配置 -->
     <script src="retinbox-config.js"></script>
     <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="js/chart.min.js"></script>
     <!-- 统一的 Tailwind 配置 -->
     <script>
         tailwind.config = {
@@ -1936,11 +1936,16 @@
             if (openActionBtn) {
                 openActionBtn.addEventListener('click', async () => {
                     const res = await apiFetch('bank/getAllCards.php?page=1&pageSize=9999');
-                    if (res.success) { globalCardsCache = res.cards; }
+                    if (res.success) {
+                        globalCardsCache = res.cards;
+                        globalBankUsersCache = res.users || []; // 同步更新银行用户缓存
+                    }
 
                     document.getElementById('account-action-modal').classList.remove('hidden');
                     const actionUserSelect = document.getElementById('action-username');
-                    actionUserSelect.innerHTML = globalUsersCache.map(u => `<option value="${u.id}">${u.username}</option>`).join('');
+                    // 使用银行模块返回的用户列表，避免依赖用户管理权限
+                    const usersToUse = globalBankUsersCache.length > 0 ? globalBankUsersCache : globalUsersCache;
+                    actionUserSelect.innerHTML = usersToUse.map(u => `<option value="${u.id}">${u.username}</option>`).join('');
 
                     document.getElementById('action-card-type').value = 'debit';
                     document.getElementById('action-type').value = 'deposit';

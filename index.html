@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>安提斯特虚拟国 - 欢迎来到安提斯特</title>
     <link rel="icon" href="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f4bb.png">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="fonts/font-awesome.min.css" rel="stylesheet">
     <script src="retinbox-config.js"></script>
     <script src="init-data.js"></script>
     <script>
@@ -75,344 +76,377 @@
         }
     </style>
 </head>
+
 <body class="bg-gray-100 font-sans">
-<nav id="main-nav" class="bg-primary text-light shadow-lg fixed w-full z-50 transition-all duration-300">
-    <div class="container mx-auto px-4 py-3 flex justify-between items-center">
-        <div class="flex items-center space-x-2">
-            <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/d8ddf5e8d8c84316a653dcb93cf61629~tplv-a9rns2rl98-image.image?lk3s=8e244e95&rcl=202601202312037748F98E243C1F231D4E&rrcfp=f06b921b&x-expires=1771513966&x-signature=gxZfK%2BBdsU1IDbMR4LFDmEH2PhA%3D" alt="安提斯特国旗" class="h-10 w-10 rounded-full">
-            <span class="text-xl font-bold">安提斯特虚拟国</span>
+    <nav id="main-nav" class="bg-primary text-light shadow-lg fixed w-full z-50 transition-all duration-300">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/d8ddf5e8d8c84316a653dcb93cf61629~tplv-a9rns2rl98-image.image?lk3s=8e244e95&rcl=202601202312037748F98E243C1F231D4E&rrcfp=f06b921b&x-expires=1771513966&x-signature=gxZfK%2BBdsU1IDbMR4LFDmEH2PhA%3D"
+                    alt="安提斯特国旗" class="h-10 w-10 rounded-full">
+                <span class="text-xl font-bold">安提斯特虚拟国</span>
+            </div>
+            <div class="hidden md:flex space-x-6">
+                <a href="#home" class="hover:text-secondary transition-colors duration-200">首页</a>
+                <a href="#about" class="hover:text-secondary transition-colors duration-200">国家介绍</a>
+                <a href="bank.html" class="nav-bank hidden hover:text-secondary transition-colors duration-200">国家银行</a>
+                <a href="library.html"
+                    class="nav-library hidden hover:text-secondary transition-colors duration-200">国家图书馆</a>
+                <a href="user-center.html"
+                    class="nav-user-center hidden hover:text-secondary transition-colors duration-200">用户中心</a>
+                <a href="admin.html"
+                    class="nav-admin hidden hover:text-secondary transition-colors duration-200 font-bold text-accent">后台管理</a>
+            </div>
+            <div class="flex items-center space-x-4">
+                <button id="login-btn"
+                    class="bg-secondary text-primary px-4 py-2 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium">
+                    回国登记
+                </button>
+                <button id="logout-btn"
+                    class="hidden bg-gray-700 text-light px-4 py-2 rounded-md hover:bg-gray-600 transition-all duration-200 font-medium">
+                    出国
+                </button>
+                <button id="mobile-menu-btn" class="md:hidden text-2xl">
+                    <i class="fa fa-bars"></i>
+                </button>
+            </div>
         </div>
-        <div class="hidden md:flex space-x-6">
-            <a href="#home" class="hover:text-secondary transition-colors duration-200">首页</a>
-            <a href="#about" class="hover:text-secondary transition-colors duration-200">国家介绍</a>
-            <a href="bank.html" class="nav-bank hidden hover:text-secondary transition-colors duration-200">国家银行</a>
-            <a href="library.html" class="nav-library hidden hover:text-secondary transition-colors duration-200">国家图书馆</a>
-            <a href="user-center.html" class="nav-user-center hidden hover:text-secondary transition-colors duration-200">用户中心</a>
-            <a href="admin.html" class="nav-admin hidden hover:text-secondary transition-colors duration-200 font-bold text-accent">后台管理</a>
+        <div id="mobile-menu" class="hidden md:hidden bg-primary border-t border-gray-700 animate-slide-down">
+            <div class="container mx-auto px-4 py-2 flex flex-col space-y-3">
+                <a href="#home" class="py-2 hover:text-secondary transition-colors duration-200">首页</a>
+                <a href="#about" class="py-2 hover:text-secondary transition-colors duration-200">国家介绍</a>
+                <a href="bank.html"
+                    class="nav-bank hidden py-2 hover:text-secondary transition-colors duration-200">国家银行</a>
+                <a href="library.html"
+                    class="nav-library hidden py-2 hover:text-secondary transition-colors duration-200">国家图书馆</a>
+                <a href="user-center.html"
+                    class="nav-user-center hidden py-2 hover:text-secondary transition-colors duration-200">用户中心</a>
+                <a href="admin.html"
+                    class="nav-admin hidden hover:text-secondary transition-colors duration-200 font-bold text-accent">后台管理</a>
+            </div>
         </div>
-        <div class="flex items-center space-x-4">
-            <button id="login-btn" class="bg-secondary text-primary px-4 py-2 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium">
-                回国登记
-            </button>
-            <button id="logout-btn" class="hidden bg-gray-700 text-light px-4 py-2 rounded-md hover:bg-gray-600 transition-all duration-200 font-medium">
-                出国
-            </button>
-            <button id="mobile-menu-btn" class="md:hidden text-2xl">
-                <i class="fa fa-bars"></i>
-            </button>
-        </div>
-    </div>
-    <div id="mobile-menu" class="hidden md:hidden bg-primary border-t border-gray-700 animate-slide-down">
-        <div class="container mx-auto px-4 py-2 flex flex-col space-y-3">
-            <a href="#home" class="py-2 hover:text-secondary transition-colors duration-200">首页</a>
-            <a href="#about" class="py-2 hover:text-secondary transition-colors duration-200">国家介绍</a>
-            <a href="bank.html" class="nav-bank hidden py-2 hover:text-secondary transition-colors duration-200">国家银行</a>
-            <a href="library.html" class="nav-library hidden py-2 hover:text-secondary transition-colors duration-200">国家图书馆</a>
-            <a href="user-center.html" class="nav-user-center hidden py-2 hover:text-secondary transition-colors duration-200">用户中心</a>
-            <a href="admin.html" class="nav-admin hidden hover:text-secondary transition-colors duration-200 font-bold text-accent">后台管理</a>
-        </div>
-    </div>
-</nav>
+    </nav>
 
-<div id="auth-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
-    <div class="bg-light rounded-lg shadow-xl w-full max-w-md mx-4 overflow-hidden animate-fade-in max-h-[90vh] overflow-y-auto">
-        <div class="bg-primary text-light p-4 flex justify-between items-center">
-            <h2 id="auth-modal-title" class="text-xl font-bold">回国登记</h2>
-            <button id="close-auth-modal" class="text-2xl hover:text-secondary transition-colors duration-200">
-                <i class="fa fa-times"></i>
-            </button>
-        </div>
-        <div class="p-6">
-            <form id="login-form" class="space-y-4">
-                <div>
-                    <label for="login-username" class="block text-gray-700 mb-2">邮箱/用户名</label>
-                    <input type="text" id="login-username" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required placeholder="请输入您的邮箱或用户名">
-                </div>
-                <div>
-                    <label for="login-password" class="block text-gray-700 mb-2">密码</label>
-                    <input type="password" id="login-password" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required>
-                </div>
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center">
-                        <input type="checkbox" id="remember-me" class="mr-2">
-                        <label for="remember-me" class="text-gray-700">记住我</label>
+    <div id="auth-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
+        <div
+            class="bg-light rounded-lg shadow-xl w-full max-w-md mx-4 overflow-hidden animate-fade-in max-h-[90vh] overflow-y-auto">
+            <div class="bg-primary text-light p-4 flex justify-between items-center">
+                <h2 id="auth-modal-title" class="text-xl font-bold">回国登记</h2>
+                <button id="close-auth-modal" class="text-2xl hover:text-secondary transition-colors duration-200">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="p-6">
+                <form id="login-form" class="space-y-4">
+                    <div>
+                        <label for="login-username" class="block text-gray-700 mb-2">邮箱/用户名</label>
+                        <input type="text" id="login-username"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                            required placeholder="请输入您的邮箱或用户名">
                     </div>
-                    <button type="button" id="show-register-form" class="text-primary hover:text-accent transition-colors duration-200">
-                        注册国籍
-                    </button>
-                </div>
-                <button type="submit" class="w-full bg-primary text-light py-2 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium">
-                    登录
-                </button>
-            </form>
-
-            <form id="register-form" class="space-y-4 hidden">
-                <div>
-                    <label for="register-username" class="block text-gray-700 mb-2">用户名</label>
-                    <input type="text" id="register-username" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required>
-                </div>
-                <div>
-                    <label for="register-email" class="block text-gray-700 mb-2">邮箱</label>
-                    <input type="email" id="register-email" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required>
-                </div>
-                <div>
-                    <label for="register-password" class="block text-gray-700 mb-2">密码</label>
-                    <input type="password" id="register-password" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required>
-                </div>
-                <div class="flex items-center justify-between">
-                    <button type="button" id="show-login-form" class="text-primary hover:text-accent transition-colors duration-200">
-                        已有账号？回国登记
-                    </button>
-                </div>
-                <button type="submit" class="w-full bg-primary text-light py-2 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium">
-                    注册国籍
-                </button>
-            </form>
-        </div>
-    </div>
-</div>
-
-<main class="pt-16">
-    <section id="home" class="bg-gradient-primary min-h-screen flex items-center relative overflow-hidden">
-        <div class="absolute inset-0 opacity-10">
-            <div class="absolute top-10 left-10 w-40 h-40 rounded-full bg-secondary"></div>
-            <div class="absolute bottom-10 right-10 w-60 h-60 rounded-full bg-accent"></div>
-            <div class="absolute top-1/2 left-1/3 w-20 h-20 rounded-full bg-secondary"></div>
-        </div>
-        <div class="container mx-auto px-4 py-16 relative z-10">
-            <div class="flex flex-col md:flex-row items-center justify-between">
-                <div class="md:w-1/2 text-light mb-10 md:mb-0 animate-slide-up">
-                    <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 text-shadow">
-                        欢迎来到<br><span class="text-secondary">安提斯特虚拟国</span>
-                    </h1>
-                    <p class="text-xl mb-8 max-w-lg">
-                        加入我们的虚拟国度，体验成人版的过家家游戏。在这里，您可以拥有自己的虚拟身份，参与国家建设，结交志同道合的朋友。
-                    </p>
-                    <div class="flex flex-wrap gap-4">
-                        <button id="hero-login-btn" class="bg-secondary text-primary px-6 py-3 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium text-lg">
-                            回国登记
-                        </button>
-                        <button id="hero-register-btn" class="bg-transparent border-2 border-light text-light px-6 py-3 rounded-md hover:bg-light hover:text-primary transition-all duration-200 font-medium text-lg">
+                    <div>
+                        <label for="login-password" class="block text-gray-700 mb-2">密码</label>
+                        <input type="password" id="login-password"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                            required>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <input type="checkbox" id="remember-me" class="mr-2">
+                            <label for="remember-me" class="text-gray-700">记住我</label>
+                        </div>
+                        <button type="button" id="show-register-form"
+                            class="text-primary hover:text-accent transition-colors duration-200">
                             注册国籍
                         </button>
                     </div>
-                </div>
-                <div class="md:w-1/2 flex justify-center animate-float">
-                    <img src="https://p9-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/6a9bbecde6c24ec4b9fd8b26c263ab54~tplv-a9rns2rl98-image.image?lk3s=8e244e95&rcl=202601202312037748F98E243C1F231D4E&rrcfp=f06b921b&x-expires=1771513965&x-signature=BR2pSwvk0BUY9Xk2se6VkW25DMQ%3D" alt="安提斯特国徽" class="w-64 h-64 md:w-80 md:h-80 lg:w-96 lg:h-96 rounded-full shadow-2xl border-4 border-secondary">
-                </div>
-            </div>
-        </div>
-    </section>
+                    <button type="submit"
+                        class="w-full bg-primary text-light py-2 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium">
+                        登录
+                    </button>
+                </form>
 
-    <section id="about" class="py-16 bg-light">
-        <div class="container mx-auto px-4">
-            <div class="text-center mb-12">
-                <h2 class="text-3xl md:text-4xl font-bold text-primary mb-4">安提斯特虚拟国介绍</h2>
-                <div class="w-24 h-1 bg-secondary mx-auto"></div>
-            </div>
-            <div class="max-w-4xl mx-auto">
-                <div class="bg-white rounded-lg shadow-lg p-8 mb-8">
-                    <h3 class="text-2xl font-bold text-primary mb-4">什么是虚拟国？</h3>
-                    <p class="text-gray-700 mb-6">
-                        虚拟国是一种成人版的过家家游戏，参与者在网络平台上模拟国家的运作和管理。在安提斯特虚拟国，您可以拥有自己的虚拟身份，参与国家建设，体验不同的社会角色。
-                    </p>
-                    <p class="text-gray-700 mb-6">
-                        我们提供了完整的虚拟国家体系，包括政府机构、经济系统、文化活动等，让您能够全方位体验国家治理和社会生活。
-                    </p>
-                </div>
-                <div class="bg-white rounded-lg shadow-lg p-8">
-                    <h3 class="text-2xl font-bold text-primary mb-4">加入我们</h3>
-                    <p class="text-gray-700 mb-6">
-                        注册安提斯特国籍，成为我们虚拟国家的一员。您将获得公民身份，可以参与国家事务，享受公民权利，为国家发展贡献自己的力量。
-                    </p>
-                    <div class="text-center">
-                        <a href="library.html" class="inline-block bg-primary text-light px-6 py-3 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium text-lg">
-                            了解更多？立马前往安提斯特国家图书馆！
-                        </a>
+                <form id="register-form" class="space-y-4 hidden">
+                    <div>
+                        <label for="register-username" class="block text-gray-700 mb-2">用户名</label>
+                        <input type="text" id="register-username"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                            required>
                     </div>
-                </div>
-            </div>
-        </div>
-    </section>
-</main>
-
-<footer class="bg-primary text-light py-8">
-    <div class="container mx-auto px-4">
-        <div class="flex flex-col md:flex-row justify-between items-center">
-            <div class="mb-4 md:mb-0">
-                <div class="flex items-center space-x-2">
-                    <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/d8ddf5e8d8c84316a653dcb93cf61629~tplv-a9rns2rl98-image.image?lk3s=8e244e95&rcl=202601202312037748F98E243C1F231D4E&rrcfp=f06b921b&x-expires=1771513966&x-signature=gxZfK%2BBdsU1IDbMR4LFDmEH2PhA%3D" alt="安提斯特国旗" class="h-8 w-8 rounded-full">
-                    <span class="text-lg font-bold">安提斯特虚拟国</span>
-                </div>
-                <p class="text-sm text-gray-300 mt-2">
-                    © 2025 安提斯特虚拟国. 保留所有权利.
-                </p>
+                    <div>
+                        <label for="register-email" class="block text-gray-700 mb-2">邮箱</label>
+                        <input type="email" id="register-email"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                            required>
+                    </div>
+                    <div>
+                        <label for="register-password" class="block text-gray-700 mb-2">密码</label>
+                        <input type="password" id="register-password"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                            required>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <button type="button" id="show-login-form"
+                            class="text-primary hover:text-accent transition-colors duration-200">
+                            已有账号？回国登记
+                        </button>
+                    </div>
+                    <button type="submit"
+                        class="w-full bg-primary text-light py-2 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium">
+                        注册国籍
+                    </button>
+                </form>
             </div>
         </div>
     </div>
-</footer>
 
-<script>
-    document.addEventListener('DOMContentLoaded', async function() {
-        try {
-            const res = await window.retinbox.request('auth/getCurrentUser');
-            const user = res.user;
+    <main class="pt-16">
+        <section id="home" class="bg-gradient-primary min-h-screen flex items-center relative overflow-hidden">
+            <div class="absolute inset-0 opacity-10">
+                <div class="absolute top-10 left-10 w-40 h-40 rounded-full bg-secondary"></div>
+                <div class="absolute bottom-10 right-10 w-60 h-60 rounded-full bg-accent"></div>
+                <div class="absolute top-1/2 left-1/3 w-20 h-20 rounded-full bg-secondary"></div>
+            </div>
+            <div class="container mx-auto px-4 py-16 relative z-10">
+                <div class="flex flex-col md:flex-row items-center justify-between">
+                    <div class="md:w-1/2 text-light mb-10 md:mb-0 animate-slide-up">
+                        <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 text-shadow">
+                            欢迎来到<br><span class="text-secondary">安提斯特虚拟国</span>
+                        </h1>
+                        <p class="text-xl mb-8 max-w-lg">
+                            加入我们的虚拟国度，体验成人版的过家家游戏。在这里，您可以拥有自己的虚拟身份，参与国家建设，结交志同道合的朋友。
+                        </p>
+                        <div class="flex flex-wrap gap-4">
+                            <button id="hero-login-btn"
+                                class="bg-secondary text-primary px-6 py-3 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium text-lg">
+                                回国登记
+                            </button>
+                            <button id="hero-register-btn"
+                                class="bg-transparent border-2 border-light text-light px-6 py-3 rounded-md hover:bg-light hover:text-primary transition-all duration-200 font-medium text-lg">
+                                注册国籍
+                            </button>
+                        </div>
+                    </div>
+                    <div class="md:w-1/2 flex justify-center animate-float">
+                        <img src="https://p9-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/6a9bbecde6c24ec4b9fd8b26c263ab54~tplv-a9rns2rl98-image.image?lk3s=8e244e95&rcl=202601202312037748F98E243C1F231D4E&rrcfp=f06b921b&x-expires=1771513965&x-signature=BR2pSwvk0BUY9Xk2se6VkW25DMQ%3D"
+                            alt="安提斯特国徽"
+                            class="w-64 h-64 md:w-80 md:h-80 lg:w-96 lg:h-96 rounded-full shadow-2xl border-4 border-secondary">
+                    </div>
+                </div>
+            </div>
+        </section>
 
-            if (user) {
-                document.getElementById('login-btn').classList.add('hidden');
-                document.getElementById('logout-btn').classList.remove('hidden');
-                document.querySelectorAll('.nav-bank, .nav-library, .nav-user-center').forEach(el => {
-                    el.classList.remove('hidden');
-                });
+        <section id="about" class="py-16 bg-light">
+            <div class="container mx-auto px-4">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl md:text-4xl font-bold text-primary mb-4">安提斯特虚拟国介绍</h2>
+                    <div class="w-24 h-1 bg-secondary mx-auto"></div>
+                </div>
+                <div class="max-w-4xl mx-auto">
+                    <div class="bg-white rounded-lg shadow-lg p-8 mb-8">
+                        <h3 class="text-2xl font-bold text-primary mb-4">什么是虚拟国？</h3>
+                        <p class="text-gray-700 mb-6">
+                            虚拟国是一种成人版的过家家游戏，参与者在网络平台上模拟国家的运作和管理。在安提斯特虚拟国，您可以拥有自己的虚拟身份，参与国家建设，体验不同的社会角色。
+                        </p>
+                        <p class="text-gray-700 mb-6">
+                            我们提供了完整的虚拟国家体系，包括政府机构、经济系统、文化活动等，让您能够全方位体验国家治理和社会生活。
+                        </p>
+                    </div>
+                    <div class="bg-white rounded-lg shadow-lg p-8">
+                        <h3 class="text-2xl font-bold text-primary mb-4">加入我们</h3>
+                        <p class="text-gray-700 mb-6">
+                            注册安提斯特国籍，成为我们虚拟国家的一员。您将获得公民身份，可以参与国家事务，享受公民权利，为国家发展贡献自己的力量。
+                        </p>
+                        <div class="text-center">
+                            <a href="library.html"
+                                class="inline-block bg-primary text-light px-6 py-3 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium text-lg">
+                                了解更多？立马前往安提斯特国家图书馆！
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
 
-                if (user.role === 'admin') {
-                    document.querySelectorAll('.nav-admin').forEach(el => {
+    <footer class="bg-primary text-light py-8">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <div class="flex items-center space-x-2">
+                        <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/d8ddf5e8d8c84316a653dcb93cf61629~tplv-a9rns2rl98-image.image?lk3s=8e244e95&rcl=202601202312037748F98E243C1F231D4E&rrcfp=f06b921b&x-expires=1771513966&x-signature=gxZfK%2BBdsU1IDbMR4LFDmEH2PhA%3D"
+                            alt="安提斯特国旗" class="h-8 w-8 rounded-full">
+                        <span class="text-lg font-bold">安提斯特虚拟国</span>
+                    </div>
+                    <p class="text-sm text-gray-300 mt-2">
+                        © 2025 安提斯特虚拟国. 保留所有权利.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async function () {
+            try {
+                const res = await window.retinbox.request('auth/getCurrentUser');
+                const user = res.user;
+
+                if (user) {
+                    document.getElementById('login-btn').classList.add('hidden');
+                    document.getElementById('logout-btn').classList.remove('hidden');
+                    document.querySelectorAll('.nav-bank, .nav-library, .nav-user-center').forEach(el => {
                         el.classList.remove('hidden');
                     });
-                }
 
-                document.getElementById('hero-login-btn').textContent = '进入用户中心';
-                document.getElementById('hero-login-btn').onclick = function() {
-                    window.location.href = 'user-center.html';
-                };
-                document.getElementById('hero-register-btn').classList.add('hidden');
-            }
-        } catch (e) {
-            console.error(e);
-        }
-
-        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-        const mobileMenu = document.getElementById('mobile-menu');
-
-        mobileMenuBtn.addEventListener('click', function() {
-            mobileMenu.classList.toggle('hidden');
-        });
-
-        const authModal = document.getElementById('auth-modal');
-        const closeAuthModal = document.getElementById('close-auth-modal');
-        const loginBtn = document.getElementById('login-btn');
-        const heroLoginBtn = document.getElementById('hero-login-btn');
-        const heroRegisterBtn = document.getElementById('hero-register-btn');
-
-        function openModal(mode = 'login') {
-            authModal.classList.remove('hidden');
-            if (mode === 'login') {
-                showLoginForm();
-            } else {
-                showRegisterForm();
-            }
-        }
-
-        function closeModal() {
-            authModal.classList.add('hidden');
-        }
-
-        if (loginBtn) loginBtn.addEventListener('click', () => openModal('login'));
-        if (heroLoginBtn && heroLoginBtn.textContent.trim() !== '进入用户中心') heroLoginBtn.addEventListener('click', () => openModal('login'));
-        if (heroRegisterBtn) heroRegisterBtn.addEventListener('click', () => openModal('register'));
-        closeAuthModal.addEventListener('click', closeModal);
-
-        authModal.addEventListener('click', function(e) {
-            if (e.target === authModal) {
-                closeModal();
-            }
-        });
-
-        const loginForm = document.getElementById('login-form');
-        const registerForm = document.getElementById('register-form');
-        const showRegisterBtn = document.getElementById('show-register-form');
-        const showLoginBtn = document.getElementById('show-login-form');
-        const modalTitle = document.getElementById('auth-modal-title');
-
-        function showLoginForm() {
-            loginForm.classList.remove('hidden');
-            registerForm.classList.add('hidden');
-            modalTitle.textContent = '回国登记';
-        }
-
-        function showRegisterForm() {
-            loginForm.classList.add('hidden');
-            registerForm.classList.remove('hidden');
-            modalTitle.textContent = '注册国籍';
-        }
-
-        showRegisterBtn.addEventListener('click', showRegisterForm);
-        showLoginBtn.addEventListener('click', showLoginForm);
-
-        loginForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const btn = loginForm.querySelector('button[type="submit"]');
-            const originalText = btn.textContent;
-            btn.textContent = '登录中...';
-            btn.disabled = true;
-
-            const email = document.getElementById('login-username').value;
-            const pass = document.getElementById('login-password').value;
-
-            try {
-                const res = await window.retinbox.login(email, pass);
-                if (res.success) {
-                    if (res.user && res.user.role === 'admin') {
-                        window.location.href = 'admin.html';
-                    } else {
-                        window.location.href = 'user-center.html';
+                    if (user.role === 'admin') {
+                        document.querySelectorAll('.nav-admin').forEach(el => {
+                            el.classList.remove('hidden');
+                        });
                     }
+
+                    document.getElementById('hero-login-btn').textContent = '进入用户中心';
+                    document.getElementById('hero-login-btn').onclick = function () {
+                        window.location.href = 'user-center.html';
+                    };
+                    document.getElementById('hero-register-btn').classList.add('hidden');
                 }
-            } catch (err) {
-                alert(err.message || '登录失败');
-            } finally {
-                btn.textContent = originalText;
-                btn.disabled = false;
+            } catch (e) {
+                console.error(e);
             }
-        });
 
-        registerForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const btn = registerForm.querySelector('button[type="submit"]');
-            const originalText = btn.textContent;
-            btn.textContent = '注册中...';
-            btn.disabled = true;
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            const mobileMenu = document.getElementById('mobile-menu');
 
-            const username = document.getElementById('register-username').value;
-            const email = document.getElementById('register-email').value;
-            const pass = document.getElementById('register-password').value;
-
-            try {
-                const res = await window.retinbox.register(email, pass, username);
-                if (res.success) {
-                    alert('注册成功，请登录');
-                    showLoginForm();
-                    document.getElementById('login-username').value = email;
-                }
-            } catch (err) {
-                alert(err.message || '注册失败');
-            } finally {
-                btn.textContent = originalText;
-                btn.disabled = false;
-            }
-        });
-
-        const logoutBtn = document.getElementById('logout-btn');
-        if (logoutBtn) {
-            logoutBtn.addEventListener('click', async function() {
-                await window.retinbox.logout();
-                window.location.reload();
+            mobileMenuBtn.addEventListener('click', function () {
+                mobileMenu.classList.toggle('hidden');
             });
-        }
 
-        window.addEventListener('scroll', function() {
-            const nav = document.getElementById('main-nav');
-            if (window.scrollY > 50) {
-                nav.classList.add('py-2');
-                nav.classList.remove('py-3');
-                nav.classList.add('bg-opacity-95');
-            } else {
-                nav.classList.add('py-3');
-                nav.classList.remove('py-2');
-                nav.classList.remove('bg-opacity-95');
+            const authModal = document.getElementById('auth-modal');
+            const closeAuthModal = document.getElementById('close-auth-modal');
+            const loginBtn = document.getElementById('login-btn');
+            const heroLoginBtn = document.getElementById('hero-login-btn');
+            const heroRegisterBtn = document.getElementById('hero-register-btn');
+
+            function openModal(mode = 'login') {
+                authModal.classList.remove('hidden');
+                if (mode === 'login') {
+                    showLoginForm();
+                } else {
+                    showRegisterForm();
+                }
             }
+
+            function closeModal() {
+                authModal.classList.add('hidden');
+            }
+
+            if (loginBtn) loginBtn.addEventListener('click', () => openModal('login'));
+            if (heroLoginBtn && heroLoginBtn.textContent.trim() !== '进入用户中心') heroLoginBtn.addEventListener('click', () => openModal('login'));
+            if (heroRegisterBtn) heroRegisterBtn.addEventListener('click', () => openModal('register'));
+            closeAuthModal.addEventListener('click', closeModal);
+
+            authModal.addEventListener('click', function (e) {
+                if (e.target === authModal) {
+                    closeModal();
+                }
+            });
+
+            const loginForm = document.getElementById('login-form');
+            const registerForm = document.getElementById('register-form');
+            const showRegisterBtn = document.getElementById('show-register-form');
+            const showLoginBtn = document.getElementById('show-login-form');
+            const modalTitle = document.getElementById('auth-modal-title');
+
+            function showLoginForm() {
+                loginForm.classList.remove('hidden');
+                registerForm.classList.add('hidden');
+                modalTitle.textContent = '回国登记';
+            }
+
+            function showRegisterForm() {
+                loginForm.classList.add('hidden');
+                registerForm.classList.remove('hidden');
+                modalTitle.textContent = '注册国籍';
+            }
+
+            showRegisterBtn.addEventListener('click', showRegisterForm);
+            showLoginBtn.addEventListener('click', showLoginForm);
+
+            loginForm.addEventListener('submit', async function (e) {
+                e.preventDefault();
+                const btn = loginForm.querySelector('button[type="submit"]');
+                const originalText = btn.textContent;
+                btn.textContent = '登录中...';
+                btn.disabled = true;
+
+                const email = document.getElementById('login-username').value;
+                const pass = document.getElementById('login-password').value;
+
+                try {
+                    const res = await window.retinbox.login(email, pass);
+                    if (res.success) {
+                        if (res.user && res.user.role === 'admin') {
+                            window.location.href = 'admin.html';
+                        } else {
+                            window.location.href = 'user-center.html';
+                        }
+                    }
+                } catch (err) {
+                    alert(err.message || '登录失败');
+                } finally {
+                    btn.textContent = originalText;
+                    btn.disabled = false;
+                }
+            });
+
+            registerForm.addEventListener('submit', async function (e) {
+                e.preventDefault();
+                const btn = registerForm.querySelector('button[type="submit"]');
+                const originalText = btn.textContent;
+                btn.textContent = '注册中...';
+                btn.disabled = true;
+
+                const username = document.getElementById('register-username').value;
+                const email = document.getElementById('register-email').value;
+                const pass = document.getElementById('register-password').value;
+
+                try {
+                    const res = await window.retinbox.register(email, pass, username);
+                    if (res.success) {
+                        alert('注册成功，请登录');
+                        showLoginForm();
+                        document.getElementById('login-username').value = email;
+                    }
+                } catch (err) {
+                    alert(err.message || '注册失败');
+                } finally {
+                    btn.textContent = originalText;
+                    btn.disabled = false;
+                }
+            });
+
+            const logoutBtn = document.getElementById('logout-btn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', async function () {
+                    await window.retinbox.logout();
+                    window.location.reload();
+                });
+            }
+
+            window.addEventListener('scroll', function () {
+                const nav = document.getElementById('main-nav');
+                if (window.scrollY > 50) {
+                    nav.classList.add('py-2');
+                    nav.classList.remove('py-3');
+                    nav.classList.add('bg-opacity-95');
+                } else {
+                    nav.classList.add('py-3');
+                    nav.classList.remove('py-2');
+                    nav.classList.remove('bg-opacity-95');
+                }
+            });
         });
-    });
-</script>
+    </script>
 </body>
+
 </html>
