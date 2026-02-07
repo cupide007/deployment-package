@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Security-Policy"
-        content="default-src 'self' https: data: blob: 'unsafe-inline' 'unsafe-eval'; img-src 'self' https: data: blob:; media-src 'self' https: data: blob:; script-src 'self' https: 'unsafe-inline' 'unsafe-eval'; style-src 'self' https: 'unsafe-inline'; font-src 'self' https: data:;">
+        content="default-src * 'self' data: blob: 'unsafe-inline' 'unsafe-eval'; img-src * 'self' data: blob: 'unsafe-inline'; media-src * 'self' data: blob:; script-src * 'self' 'unsafe-inline' 'unsafe-eval'; style-src * 'self' 'unsafe-inline'; font-src * 'self' data:;">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
     <script src="retinbox-config.js"></script>
@@ -343,9 +343,8 @@
 
                                 <div class="flex flex-col items-center mb-8">
                                     <div
-                                        class="relative w-96 h-60 bg-white rounded-lg id-card-shadow gold-border overflow-hidden animate-float">
-                                        <div id="id-card-front"
-                                            class="absolute inset-0 paper-texture p-4 flex flex-col">
+                                        class="relative w-[420px] min-h-[300px] bg-white rounded-lg id-card-shadow gold-border animate-float">
+                                        <div id="id-card-front" class="paper-texture p-4 flex flex-col h-full">
                                             <div class="flex justify-between items-start mb-4">
                                                 <div>
                                                     <h3 class="text-2xl font-bold text-primary font-medieval">安提斯特虚拟国
@@ -388,7 +387,7 @@
                                                 </div>
                                             </div>
 
-                                            <div class="mt-4 pt-2 border-t border-gray-300">
+                                            <div class="mt-auto pt-3 border-t border-gray-300">
                                                 <div class="text-xs text-gray-600 mb-1">身份证号</div>
                                                 <div class="font-mono text-sm font-medium text-gray-900" id="id-number">
                                                     ANT-XXXX-XXXX-XXXX</div>
@@ -413,9 +412,8 @@
                                 <h2 class="text-2xl font-bold text-primary mb-6">安提斯特护照</h2>
 
                                 <div class="flex flex-col items-center mb-8">
-                                    <div class="relative w-96 h-64 passport-shadow animate-float">
-                                        <div id="passport-page"
-                                            class="absolute inset-0 bg-white rounded-lg overflow-hidden border-2 border-gray-300">
+                                    <div class="relative w-[420px] passport-shadow animate-float">
+                                        <div id="passport-page" class="bg-white rounded-lg border-2 border-gray-300">
                                             <div class="bg-primary text-white p-3 flex justify-between items-center">
                                                 <h3 class="text-xl font-bold font-medieval">PASSPORT</h3>
                                                 <img src="flag.png" crossorigin="anonymous" alt="安提斯特国旗"
@@ -434,9 +432,9 @@
                                                     </div>
                                                 </div>
 
-                                                <div class="flex mb-6">
+                                                <div class="flex mb-4">
                                                     <div
-                                                        class="w-28 h-36 bg-gray-200 rounded border border-gray-300 overflow-hidden mr-6 flex-shrink-0">
+                                                        class="w-24 h-32 bg-gray-200 rounded border border-gray-300 overflow-hidden mr-4 flex-shrink-0">
                                                         <i class="fa fa-user text-5xl text-gray-400 flex items-center justify-center h-full"
                                                             id="passport-avatar-icon"></i>
                                                         <img id="passport-avatar-img" crossorigin="anonymous"
@@ -468,15 +466,16 @@
                                                     </div>
                                                 </div>
 
-                                                <div class="grid grid-cols-2 gap-4 mb-4">
+                                                <div class="grid grid-cols-2 gap-4 mb-2">
                                                     <div>
                                                         <p class="text-xs text-gray-600 mb-1">护照号</p>
-                                                        <p class="font-mono font-medium text-gray-900"
+                                                        <p class="font-mono font-medium text-gray-900 text-sm"
                                                             id="passport-number">P-ANT-XXXX-XXXX</p>
                                                     </div>
                                                     <div>
                                                         <p class="text-xs text-gray-600 mb-1">有效期至</p>
-                                                        <p class="font-medium text-gray-900" id="passport-expiry">-</p>
+                                                        <p class="font-medium text-gray-900 text-sm"
+                                                            id="passport-expiry">-</p>
                                                     </div>
                                                 </div>
 
@@ -1157,8 +1156,15 @@
                     document.getElementById('passport-dob').textContent = dob.toISOString().split('T')[0];
                     document.getElementById('passport-number').textContent = `P-ANT-${userData.id || '0000'}`;
 
-                    // 机读码逻辑 (简化)
-                    document.getElementById('passport-mrz').textContent = `P<ANT${(userData.username || 'UNKNOWN').toUpperCase()}<<<<<<<<<<<<<<<<<<`;
+                    // 有效期至10年后
+                    const expiry = new Date();
+                    expiry.setFullYear(expiry.getFullYear() + 10);
+                    document.getElementById('passport-expiry').textContent = expiry.toISOString().split('T')[0];
+
+                    // 机读码逻辑 (简化) - 使用文本内容而不是 HTML
+                    const name = (userData.username || 'UNKNOWN').toUpperCase().replace(/[^A-Z]/g, '');
+                    const mrz = 'P<ANT' + name + '<'.repeat(Math.max(0, 24 - name.length - 5));
+                    document.getElementById('passport-mrz').textContent = mrz;
                 }
             }
 
