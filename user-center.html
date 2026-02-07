@@ -1,16 +1,14 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data: blob: 'unsafe-inline' 'unsafe-eval'; img-src 'self' https: data: blob:; script-src 'self' https: 'unsafe-inline' 'unsafe-eval'; style-src 'self' https: 'unsafe-inline'; font-src 'self' https: data:;">
-    <!-- Tailwind CSS v3 -->
+    <meta http-equiv="Content-Security-Policy"
+        content="default-src * 'self' data: blob: 'unsafe-inline' 'unsafe-eval'; img-src * 'self' data: blob: 'unsafe-inline'; media-src * 'self' data: blob:; script-src * 'self' 'unsafe-inline' 'unsafe-eval'; style-src * 'self' 'unsafe-inline'; font-src * 'self' data:;">
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome -->
-    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
-    <!-- Retinbox 配置 -->
+    <link href="fonts/font-awesome.min.css" rel="stylesheet">
     <script src="retinbox-config.js"></script>
-    <!-- 统一的 Tailwind 配置 -->
     <script>
         tailwind.config = {
             theme: {
@@ -32,9 +30,6 @@
                         'fade-in': 'fadeIn 1s ease-in-out',
                         'slide-up': 'slideUp 0.5s ease-out',
                         'slide-down': 'slideDown 0.5s ease-out',
-                        'slide-left': 'slideLeft 0.5s ease-out',
-                        'slide-right': 'slideRight 0.5s ease-out',
-                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
                     },
                     keyframes: {
                         float: {
@@ -53,67 +48,31 @@
                             '0%': { transform: 'translateY(-20px)', opacity: '0' },
                             '100%': { transform: 'translateY(0)', opacity: '1' },
                         },
-                        slideLeft: {
-                            '0%': { transform: 'translateX(20px)', opacity: '0' },
-                            '100%': { transform: 'translateX(0)', opacity: '1' },
-                        },
-                        slideRight: {
-                            '0%': { transform: 'translateX(-20px)', opacity: '0' },
-                            '100%': { transform: 'translateX(0)', opacity: '1' },
-                        },
                     },
                 }
             }
         }
     </script>
-    <!-- 引入html2canvas和jsPDF库 -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="html2canvas.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style type="text/tailwindcss">
         @layer utilities {
-            .text-shadow {
-                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-            }
-            .text-shadow-sm {
-                text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
-            }
-            .bg-gradient-primary {
-                background: linear-gradient(135deg, theme('colors.primary'), theme('colors.accent'));
-            }
-            .border-gradient {
-                border-image: linear-gradient(to right, theme('colors.secondary'), theme('colors.accent')) 1;
-            }
-            .glass-effect {
-                background: rgba(255, 250, 255, 0.1);
-                backdrop-filter: blur(10px);
-                -webkit-backdrop-filter: blur(10px);
-                border: 1px solid rgba(255, 250, 255, 0.2);
-            }
-            .paper-texture {
-                background-color: #f8f5e6;
-                background-image: url("paper-texture.svg");
-            }
-            .gold-border {
-                border: 2px solid #E6AF2E;
-                box-shadow: 0 0 10px rgba(230, 175, 46, 0.3);
-            }
-            .id-card-shadow {
-                box-shadow: 0 0 20px rgba(0, 0, 0, 0.3), 0 0 60px rgba(230, 175, 46, 0.1);
-            }
-            .passport-shadow {
-                box-shadow: 0 0 30px rgba(0, 0, 0, 0.4), 0 0 80px rgba(10, 36, 99, 0.2);
-            }
+            .text-shadow { text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); }
+            .bg-gradient-primary { background: linear-gradient(135deg, theme('colors.primary'), theme('colors.accent')); }
+            .gold-border { border: 2px solid #E6AF2E; box-shadow: 0 0 10px rgba(230, 175, 46, 0.3); }
+            .paper-texture { background-color: #f8f5e6; }
+            .id-card-shadow { box-shadow: 0 0 20px rgba(0, 0, 0, 0.3), 0 0 60px rgba(230, 175, 46, 0.1); }
+            .passport-shadow { box-shadow: 0 0 30px rgba(0, 0, 0, 0.4), 0 0 80px rgba(10, 36, 99, 0.2); }
         }
     </style>
-    <!-- Google Fonts - Cinzel for medieval feel -->
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;800&display=swap" rel="stylesheet">
 </head>
+
 <body class="bg-gray-100 font-sans">
-    <!-- 顶部导航栏 -->
     <nav id="main-nav" class="bg-primary text-light shadow-lg fixed w-full z-50 transition-all duration-300">
         <div class="container mx-auto px-4 py-3 flex justify-between items-center">
             <div class="flex items-center space-x-2">
-                <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/d8ddf5e8d8c84316a653dcb93cf61629~tplv-a9rns2rl98-image.image?lk3s=8e244e95&rcl=202601202312037748F98E243C1F231D4E&rrcfp=f06b921b&x-expires=1771513966&x-signature=gxZfK%2BBdsU1IDbMR4LFDmEH2PhA%3D" alt="安提斯特国旗" class="h-10 w-10 rounded-full">
+                <img src="flag.png" crossorigin="anonymous" alt="安提斯特国旗" class="h-10 w-10 rounded-full">
                 <span class="text-xl font-bold">安提斯特虚拟国</span>
             </div>
             <div class="hidden md:flex space-x-6">
@@ -124,7 +83,8 @@
             </div>
             <div class="flex items-center space-x-4">
                 <span id="welcome-user" class="hidden">欢迎，<span id="current-username"></span></span>
-                <button id="logout-btn" class="bg-gray-700 text-light px-4 py-2 rounded-md hover:bg-gray-600 transition-all duration-200 font-medium">
+                <button id="logout-btn"
+                    class="bg-gray-700 text-light px-4 py-2 rounded-md hover:bg-gray-600 transition-all duration-200 font-medium">
                     出国
                 </button>
                 <button id="mobile-menu-btn" class="md:hidden text-2xl">
@@ -132,7 +92,6 @@
                 </button>
             </div>
         </div>
-        <!-- 移动端菜单 -->
         <div id="mobile-menu" class="hidden md:hidden bg-primary border-t border-gray-700 animate-slide-down">
             <div class="container mx-auto px-4 py-2 flex flex-col space-y-3">
                 <a href="index.html" class="py-2 hover:text-secondary transition-colors duration-200">首页</a>
@@ -143,9 +102,7 @@
         </div>
     </nav>
 
-    <!-- 主内容 -->
     <main class="pt-16">
-        <!-- 用户中心顶部横幅 -->
         <section class="bg-gradient-primary py-16 relative overflow-hidden">
             <div class="absolute inset-0 opacity-10">
                 <div class="absolute top-10 left-10 w-40 h-40 rounded-full bg-secondary"></div>
@@ -161,10 +118,12 @@
                             管理您的个人信息，查看您的虚拟身份凭证。
                         </p>
                         <div class="flex flex-wrap gap-4">
-                            <button id="view-id-card-btn" class="bg-secondary text-primary px-6 py-3 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium text-lg">
+                            <button id="view-id-card-btn"
+                                class="bg-secondary text-primary px-6 py-3 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium text-lg">
                                 查看身份证
                             </button>
-                            <button id="view-passport-btn" class="bg-transparent border-2 border-light text-light px-6 py-3 rounded-md hover:bg-light hover:text-primary transition-all duration-200 font-medium text-lg">
+                            <button id="view-passport-btn"
+                                class="bg-transparent border-2 border-light text-light px-6 py-3 rounded-md hover:bg-light hover:text-primary transition-all duration-200 font-medium text-lg">
                                 查看护照
                             </button>
                         </div>
@@ -172,12 +131,15 @@
                     <div class="md:w-1/2 flex justify-center animate-float">
                         <div class="relative">
                             <div class="w-48 h-48 md:w-64 md:h-64 rounded-full bg-white p-2 shadow-2xl">
-                                <div class="w-full h-full rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
+                                <div
+                                    class="w-full h-full rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
                                     <i class="fa fa-user-circle text-9xl text-gray-400" id="user-avatar-icon"></i>
-                                    <img id="user-avatar-img" class="w-full h-full object-cover hidden" alt="用户头像">
+                                    <img id="user-avatar-img" crossorigin="anonymous"
+                                        class="w-full h-full object-cover hidden" alt="用户头像">
                                 </div>
                             </div>
-                            <div class="absolute -bottom-4 -right-4 bg-secondary text-primary rounded-full w-16 h-16 flex items-center justify-center shadow-lg cursor-pointer hover:bg-opacity-90 transition-all duration-200" id="change-avatar-btn">
+                            <div class="absolute -bottom-4 -right-4 bg-secondary text-primary rounded-full w-16 h-16 flex items-center justify-center shadow-lg cursor-pointer hover:bg-opacity-90 transition-all duration-200"
+                                id="change-avatar-btn">
                                 <i class="fa fa-camera text-2xl"></i>
                             </div>
                         </div>
@@ -186,41 +148,44 @@
             </div>
         </section>
 
-        <!-- 用户中心选项卡 -->
         <section class="py-12 bg-white">
             <div class="container mx-auto px-4">
                 <div class="flex flex-col md:flex-row gap-8">
-                    <!-- 左侧选项卡导航 -->
                     <div class="md:w-1/4">
                         <div class="bg-gray-100 rounded-lg shadow-md p-4 sticky top-20">
                             <h3 class="text-xl font-bold text-primary mb-6 border-b border-gray-300 pb-2">账户管理</h3>
                             <ul class="space-y-2">
                                 <li>
-                                    <button id="tab-profile" class="w-full text-left px-4 py-3 rounded-md bg-primary text-light font-medium hover:bg-opacity-90 transition-colors duration-200 flex items-center">
+                                    <button id="tab-profile"
+                                        class="w-full text-left px-4 py-3 rounded-md bg-primary text-light font-medium hover:bg-opacity-90 transition-colors duration-200 flex items-center">
                                         <i class="fa fa-user mr-3"></i>
                                         个人信息
                                     </button>
                                 </li>
                                 <li>
-                                    <button id="tab-security" class="w-full text-left px-4 py-3 rounded-md hover:bg-gray-200 transition-colors duration-200 flex items-center">
+                                    <button id="tab-security"
+                                        class="w-full text-left px-4 py-3 rounded-md hover:bg-gray-200 transition-colors duration-200 flex items-center">
                                         <i class="fa fa-lock mr-3"></i>
                                         账户安全
                                     </button>
                                 </li>
                                 <li>
-                                    <button id="tab-id-card" class="w-full text-left px-4 py-3 rounded-md hover:bg-gray-200 transition-colors duration-200 flex items-center">
+                                    <button id="tab-id-card"
+                                        class="w-full text-left px-4 py-3 rounded-md hover:bg-gray-200 transition-colors duration-200 flex items-center">
                                         <i class="fa fa-id-card mr-3"></i>
                                         身份证
                                     </button>
                                 </li>
                                 <li>
-                                    <button id="tab-passport" class="w-full text-left px-4 py-3 rounded-md hover:bg-gray-200 transition-colors duration-200 flex items-center">
+                                    <button id="tab-passport"
+                                        class="w-full text-left px-4 py-3 rounded-md hover:bg-gray-200 transition-colors duration-200 flex items-center">
                                         <i class="fa fa-book mr-3"></i>
                                         护照
                                     </button>
                                 </li>
                                 <li>
-                                    <button id="tab-notifications" class="w-full text-left px-4 py-3 rounded-md hover:bg-gray-200 transition-colors duration-200 flex items-center">
+                                    <button id="tab-notifications"
+                                        class="w-full text-left px-4 py-3 rounded-md hover:bg-gray-200 transition-colors duration-200 flex items-center">
                                         <i class="fa fa-bell mr-3"></i>
                                         通知设置
                                     </button>
@@ -229,33 +194,38 @@
                         </div>
                     </div>
 
-                    <!-- 右侧内容区域 -->
                     <div class="md:w-3/4">
-                        <!-- 个人信息面板 -->
                         <div id="panel-profile" class="animate-fade-in">
                             <div class="bg-white rounded-lg shadow-md p-6 mb-8">
                                 <h2 class="text-2xl font-bold text-primary mb-6">个人信息</h2>
-                                
+
                                 <form id="profile-form" class="space-y-6">
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div>
                                             <label for="username" class="block text-gray-700 mb-2">用户名</label>
-                                            <input type="text" id="username" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required>
+                                            <input type="text" id="username"
+                                                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                                                required>
                                         </div>
                                         <div>
                                             <label for="email" class="block text-gray-700 mb-2">邮箱</label>
-                                            <input type="email" id="email" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required>
+                                            <input type="email" id="email"
+                                                class="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-100 cursor-not-allowed"
+                                                readonly title="邮箱暂不可修改">
                                         </div>
                                     </div>
-                                    
+
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div>
                                             <label for="qq" class="block text-gray-700 mb-2">QQ号码</label>
-                                            <input type="text" id="qq" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required>
+                                            <input type="text" id="qq"
+                                                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
                                         </div>
                                         <div>
                                             <label for="gender" class="block text-gray-700 mb-2">性别</label>
-                                            <select id="gender" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required>
+                                            <select id="gender"
+                                                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                                                required>
                                                 <option value="">请选择</option>
                                                 <option value="男">男</option>
                                                 <option value="女">女</option>
@@ -263,11 +233,12 @@
                                             </select>
                                         </div>
                                     </div>
-                                    
+
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div>
                                             <label for="race" class="block text-gray-700 mb-2">种族</label>
-                                            <select id="race" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required>
+                                            <select id="race"
+                                                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
                                                 <option value="">请选择</option>
                                                 <option value="人类">人类</option>
                                                 <option value="精灵">精灵</option>
@@ -279,22 +250,29 @@
                                         </div>
                                         <div>
                                             <label for="age" class="block text-gray-700 mb-2">年龄</label>
-                                            <input type="number" id="age" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" min="1" max="150" required>
+                                            <input type="number" id="age"
+                                                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                                                min="1" max="150">
                                         </div>
                                     </div>
-                                    
+
                                     <div>
                                         <label for="residence" class="block text-gray-700 mb-2">居住地</label>
-                                        <input type="text" id="residence" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" placeholder="例如：首都安提斯特城" required>
+                                        <input type="text" id="residence"
+                                            class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                                            placeholder="例如：首都安提斯特城">
                                     </div>
-                                    
+
                                     <div>
                                         <label for="bio" class="block text-gray-700 mb-2">个人简介</label>
-                                        <textarea id="bio" rows="4" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" placeholder="介绍一下自己吧..."></textarea>
+                                        <textarea id="bio" rows="4"
+                                            class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                                            placeholder="介绍一下自己吧..."></textarea>
                                     </div>
-                                    
+
                                     <div class="flex justify-end">
-                                        <button type="submit" class="bg-primary text-white px-6 py-3 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium">
+                                        <button type="submit"
+                                            class="bg-primary text-white px-6 py-3 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium">
                                             保存更改
                                         </button>
                                     </div>
@@ -302,37 +280,43 @@
                             </div>
                         </div>
 
-                        <!-- 账户安全面板 -->
                         <div id="panel-security" class="hidden animate-fade-in">
                             <div class="bg-white rounded-lg shadow-md p-6">
                                 <h2 class="text-2xl font-bold text-primary mb-6">账户安全</h2>
-                                
+
                                 <div class="space-y-8">
-                                    <!-- 修改密码 -->
                                     <div class="border-b border-gray-200 pb-8">
                                         <h3 class="text-xl font-medium text-gray-800 mb-4">修改密码</h3>
                                         <form id="change-password-form" class="space-y-4">
                                             <div>
-                                                <label for="current-password" class="block text-gray-700 mb-2">当前密码</label>
-                                                <input type="password" id="current-password" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required>
+                                                <label for="current-password"
+                                                    class="block text-gray-700 mb-2">当前密码</label>
+                                                <input type="password" id="current-password"
+                                                    class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                                                    required>
                                             </div>
                                             <div>
                                                 <label for="new-password" class="block text-gray-700 mb-2">新密码</label>
-                                                <input type="password" id="new-password" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required>
+                                                <input type="password" id="new-password"
+                                                    class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                                                    required>
                                             </div>
                                             <div>
-                                                <label for="confirm-password" class="block text-gray-700 mb-2">确认新密码</label>
-                                                <input type="password" id="confirm-password" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required>
+                                                <label for="confirm-password"
+                                                    class="block text-gray-700 mb-2">确认新密码</label>
+                                                <input type="password" id="confirm-password"
+                                                    class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                                                    required>
                                             </div>
                                             <div class="flex justify-end">
-                                                <button type="submit" class="bg-primary text-white px-6 py-2 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium">
+                                                <button type="submit"
+                                                    class="bg-gray-400 text-white px-6 py-2 rounded-md hover:bg-gray-500 transition-all duration-200 font-medium">
                                                     更新密码
                                                 </button>
                                             </div>
                                         </form>
                                     </div>
-                                    
-                                    <!-- 登录设备 -->
+
                                     <div>
                                         <h3 class="text-xl font-medium text-gray-800 mb-4">最近登录设备</h3>
                                         <div class="space-y-4">
@@ -342,27 +326,10 @@
                                                         <i class="fa fa-desktop text-primary text-xl"></i>
                                                     </div>
                                                     <div>
-                                                        <p class="font-medium text-gray-800">Windows 10 - Chrome</p>
-                                                        <p class="text-sm text-gray-500">当前设备 - 刚刚登录</p>
+                                                        <p class="font-medium text-gray-800">当前设备</p>
+                                                        <p class="text-sm text-gray-500">刚刚登录</p>
                                                     </div>
                                                 </div>
-                                                <button class="text-gray-400 hover:text-gray-600">
-                                                    <i class="fa fa-ellipsis-v"></i>
-                                                </button>
-                                            </div>
-                                            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                                                <div class="flex items-center">
-                                                    <div class="bg-accent bg-opacity-10 rounded-full p-3 mr-4">
-                                                        <i class="fa fa-mobile text-accent text-xl"></i>
-                                                    </div>
-                                                    <div>
-                                                        <p class="font-medium text-gray-800">Android - Chrome</p>
-                                                        <p class="text-sm text-gray-500">2天前 - IP: 192.168.1.1</p>
-                                                    </div>
-                                                </div>
-                                                <button class="text-gray-400 hover:text-gray-600">
-                                                    <i class="fa fa-ellipsis-v"></i>
-                                                </button>
                                             </div>
                                         </div>
                                     </div>
@@ -370,66 +337,68 @@
                             </div>
                         </div>
 
-                        <!-- 身份证面板 -->
                         <div id="panel-id-card" class="hidden animate-fade-in">
                             <div class="bg-white rounded-lg shadow-md p-6">
                                 <h2 class="text-2xl font-bold text-primary mb-6">安提斯特身份证</h2>
-                                
+
                                 <div class="flex flex-col items-center mb-8">
-                                    <!-- 身份证卡片 -->
-                                    <div class="relative w-96 h-60 bg-white rounded-lg id-card-shadow gold-border overflow-hidden animate-float">
-                                        <!-- 身份证正面 -->
-                                        <div id="id-card-front" class="absolute inset-0 paper-texture p-4 flex flex-col">
+                                    <div
+                                        class="relative w-[420px] min-h-[300px] bg-white rounded-lg id-card-shadow gold-border animate-float">
+                                        <div id="id-card-front" class="paper-texture p-4 flex flex-col h-full">
                                             <div class="flex justify-between items-start mb-4">
                                                 <div>
-                                                    <h3 class="text-2xl font-bold text-primary font-medieval">安提斯特虚拟国</h3>
+                                                    <h3 class="text-2xl font-bold text-primary font-medieval">安提斯特虚拟国
+                                                    </h3>
                                                     <p class="text-lg text-gray-800">身份证</p>
                                                 </div>
-                                                <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/d8ddf5e8d8c84316a653dcb93cf61629~tplv-a9rns2rl98-image.image?lk3s=8e244e95&rcl=202601202312037748F98E243C1F231D4E&rrcfp=f06b921b&x-expires=1771513966&x-signature=gxZfK%2BBdsU1IDbMR4LFDmEH2PhA%3D" crossorigin="anonymous" alt="安提斯特国旗" class="h-12 w-12 rounded">
+                                                <img src="flag.png" crossorigin="anonymous" alt="安提斯特国旗"
+                                                    class="h-12 w-12 rounded">
                                             </div>
-                                            
+
                                             <div class="flex flex-1">
-                                                <!-- 左侧照片区域 -->
-                                                <div class="w-24 h-32 bg-gray-200 rounded border border-gray-300 overflow-hidden mr-4 flex-shrink-0">
-                                                    <i class="fa fa-user text-4xl text-gray-400 flex items-center justify-center h-full" id="id-avatar-icon"></i>
-                                                    <img id="id-avatar-img" class="w-full h-full object-cover hidden" alt="用户头像">
+                                                <div
+                                                    class="w-24 h-32 bg-gray-200 rounded border border-gray-300 overflow-hidden mr-4 flex-shrink-0">
+                                                    <i class="fa fa-user text-4xl text-gray-400 flex items-center justify-center h-full"
+                                                        id="id-avatar-icon"></i>
+                                                    <img id="id-avatar-img" crossorigin="anonymous"
+                                                        class="w-full h-full object-cover hidden" alt="用户头像">
                                                 </div>
-                                                
-                                                <!-- 右侧信息区域 -->
+
                                                 <div class="flex-1">
                                                     <div class="grid grid-cols-2 gap-y-2 text-sm">
                                                         <div class="text-gray-600">姓名：</div>
                                                         <div class="font-medium text-gray-900" id="id-name">用户名</div>
-                                                        
+
                                                         <div class="text-gray-600">性别：</div>
                                                         <div class="font-medium text-gray-900" id="id-gender">-</div>
-                                                        
+
                                                         <div class="text-gray-600">种族：</div>
                                                         <div class="font-medium text-gray-900" id="id-race">-</div>
-                                                        
+
                                                         <div class="text-gray-600">年龄：</div>
                                                         <div class="font-medium text-gray-900" id="id-age">-</div>
-                                                        
+
                                                         <div class="text-gray-600">国籍：</div>
                                                         <div class="font-medium text-gray-900">安提斯特</div>
-                                                        
+
                                                         <div class="text-gray-600">居住地：</div>
                                                         <div class="font-medium text-gray-900" id="id-residence">-</div>
                                                     </div>
                                                 </div>
                                             </div>
-                                            
-                                            <!-- 底部身份证号 -->
-                                            <div class="mt-4 pt-2 border-t border-gray-300">
+
+                                            <div class="mt-auto pt-3 border-t border-gray-300">
                                                 <div class="text-xs text-gray-600 mb-1">身份证号</div>
-                                                <div class="font-mono text-sm font-medium text-gray-900" id="id-number">ANT-XXXX-XXXX-XXXX</div>
+                                                <div class="font-mono text-sm font-medium text-gray-900" id="id-number">
+                                                    ANT-XXXX-XXXX-XXXX</div>
                                             </div>
                                         </div>
                                     </div>
-                                    
+
                                     <div class="mt-6 text-center">
                                         <p class="text-gray-600 mb-4">这是您在安提斯特虚拟国的官方身份证明，请妥善保管。</p>
-                                        <button id="download-id-card-btn" class="bg-primary text-white px-6 py-3 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium flex items-center mx-auto">
+                                        <button id="download-id-card-btn"
+                                            class="bg-primary text-white px-6 py-3 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium flex items-center mx-auto">
                                             <i class="fa fa-download mr-2"></i>
                                             下载身份证
                                         </button>
@@ -438,23 +407,19 @@
                             </div>
                         </div>
 
-                        <!-- 护照面板 -->
                         <div id="panel-passport" class="hidden animate-fade-in">
                             <div class="bg-white rounded-lg shadow-md p-6">
                                 <h2 class="text-2xl font-bold text-primary mb-6">安提斯特护照</h2>
-                                
+
                                 <div class="flex flex-col items-center mb-8">
-                                    <!-- 护照封面和内页 -->
-                                    <div class="relative w-96 h-64 passport-shadow animate-float">
-                                        <!-- 护照内页 -->
-                                        <div id="passport-page" class="absolute inset-0 bg-white rounded-lg overflow-hidden border-2 border-gray-300">
-                                            <!-- 顶部 -->
+                                    <div class="relative w-[420px] passport-shadow animate-float">
+                                        <div id="passport-page" class="bg-white rounded-lg border-2 border-gray-300">
                                             <div class="bg-primary text-white p-3 flex justify-between items-center">
                                                 <h3 class="text-xl font-bold font-medieval">PASSPORT</h3>
-                                                <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/d8ddf5e8d8c84316a653dcb93cf61629~tplv-a9rns2rl98-image.image?lk3s=8e244e95&rcl=202601202312037748F98E243C1F231D4E&rrcfp=f06b921b&x-expires=1771513966&x-signature=gxZfK%2BBdsU1IDbMR4LFDmEH2PhA%3D" crossorigin="anonymous" alt="安提斯特国旗" class="h-8 w-8 rounded">
+                                                <img src="flag.png" crossorigin="anonymous" alt="安提斯特国旗"
+                                                    class="h-8 w-8 rounded">
                                             </div>
-                                            
-                                            <!-- 内容区域 -->
+
                                             <div class="p-4">
                                                 <div class="flex justify-between items-start mb-4">
                                                     <div>
@@ -466,20 +431,22 @@
                                                         <p class="font-bold text-lg text-gray-900">P</p>
                                                     </div>
                                                 </div>
-                                                
-                                                <div class="flex mb-6">
-                                                    <!-- 左侧照片区域 -->
-                                                    <div class="w-28 h-36 bg-gray-200 rounded border border-gray-300 overflow-hidden mr-6 flex-shrink-0">
-                                                        <i class="fa fa-user text-5xl text-gray-400 flex items-center justify-center h-full" id="passport-avatar-icon"></i>
-                                                        <img id="passport-avatar-img" class="w-full h-full object-cover hidden" alt="用户头像">
+
+                                                <div class="flex mb-4">
+                                                    <div
+                                                        class="w-24 h-32 bg-gray-200 rounded border border-gray-300 overflow-hidden mr-4 flex-shrink-0">
+                                                        <i class="fa fa-user text-5xl text-gray-400 flex items-center justify-center h-full"
+                                                            id="passport-avatar-icon"></i>
+                                                        <img id="passport-avatar-img" crossorigin="anonymous"
+                                                            class="w-full h-full object-cover hidden" alt="用户头像">
                                                     </div>
-                                                    
-                                                    <!-- 右侧信息区域 -->
+
                                                     <div class="flex-1">
                                                         <div class="space-y-2 text-sm">
                                                             <div class="grid grid-cols-2 gap-x-4">
                                                                 <div class="text-gray-600">姓名</div>
-                                                                <div class="font-medium text-gray-900" id="passport-full-name">-</div>
+                                                                <div class="font-medium text-gray-900"
+                                                                    id="passport-full-name">-</div>
                                                             </div>
                                                             <div class="grid grid-cols-2 gap-x-4">
                                                                 <div class="text-gray-600">国籍</div>
@@ -487,39 +454,45 @@
                                                             </div>
                                                             <div class="grid grid-cols-2 gap-x-4">
                                                                 <div class="text-gray-600">出生日期</div>
-                                                                <div class="font-medium text-gray-900" id="passport-dob">-</div>
+                                                                <div class="font-medium text-gray-900"
+                                                                    id="passport-dob">-</div>
                                                             </div>
                                                             <div class="grid grid-cols-2 gap-x-4">
                                                                 <div class="text-gray-600">性别</div>
-                                                                <div class="font-medium text-gray-900" id="passport-gender">-</div>
+                                                                <div class="font-medium text-gray-900"
+                                                                    id="passport-gender">-</div>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </div>
-                                                
-                                                <!-- 护照号和有效期 -->
-                                                <div class="grid grid-cols-2 gap-4 mb-4">
+
+                                                <div class="grid grid-cols-2 gap-4 mb-2">
                                                     <div>
                                                         <p class="text-xs text-gray-600 mb-1">护照号</p>
-                                                        <p class="font-mono font-medium text-gray-900" id="passport-number">P-ANT-XXXX-XXXX</p>
+                                                        <p class="font-mono font-medium text-gray-900 text-sm"
+                                                            id="passport-number">P-ANT-XXXX-XXXX</p>
                                                     </div>
                                                     <div>
                                                         <p class="text-xs text-gray-600 mb-1">有效期至</p>
-                                                        <p class="font-medium text-gray-900" id="passport-expiry">-</p>
+                                                        <p class="font-medium text-gray-900 text-sm"
+                                                            id="passport-expiry">-</p>
                                                     </div>
                                                 </div>
-                                                
-                                                <!-- 机读码 -->
+
                                                 <div class="bg-gray-100 p-2 rounded">
-                                                    <p class="font-mono text-xs text-gray-800" id="passport-mrz">P<ANTISTER<<<<<<<<<<<<<<<<<<<<<<< XXXX123456ANT<<<<<<<<<<<<<<< 250120261234567890123456789012345678</p>
+                                                    <p class="font-mono text-xs text-gray-800 break-all"
+                                                        id="passport-mrz">P<ANTISTER<<<<<<<<<<<<<<<<<<<<<<<
+                                                            XXXX123456ANT<<<<<<<<<<<<<<<
+                                                            250120261234567890123456789012345678</p>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                    
+
                                     <div class="mt-6 text-center">
                                         <p class="text-gray-600 mb-4">这是您在安提斯特虚拟国的官方护照，可用于虚拟世界的国际旅行。</p>
-                                        <button id="download-passport-btn" class="bg-primary text-white px-6 py-3 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium flex items-center mx-auto">
+                                        <button id="download-passport-btn"
+                                            class="bg-primary text-white px-6 py-3 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium flex items-center mx-auto">
                                             <i class="fa fa-download mr-2"></i>
                                             下载护照
                                         </button>
@@ -528,11 +501,10 @@
                             </div>
                         </div>
 
-                        <!-- 通知设置面板 -->
                         <div id="panel-notifications" class="hidden animate-fade-in">
                             <div class="bg-white rounded-lg shadow-md p-6">
                                 <h2 class="text-2xl font-bold text-primary mb-6">通知设置</h2>
-                                
+
                                 <form id="notifications-form" class="space-y-6">
                                     <div class="p-4 bg-gray-50 rounded-lg">
                                         <h3 class="text-lg font-medium text-gray-800 mb-4">通知偏好</h3>
@@ -543,8 +515,11 @@
                                                     <p class="text-sm text-gray-600">接收重要的账户和安全通知</p>
                                                 </div>
                                                 <label class="relative inline-flex items-center cursor-pointer">
-                                                    <input type="checkbox" id="email-notifications" class="sr-only peer" checked>
-                                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary peer-focus:ring-opacity-50 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                                                    <input type="checkbox" id="email-notifications" class="sr-only peer"
+                                                        checked>
+                                                    <div
+                                                        class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary peer-focus:ring-opacity-50 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary">
+                                                    </div>
                                                 </label>
                                             </div>
                                             <div class="flex items-center justify-between">
@@ -553,8 +528,11 @@
                                                     <p class="text-sm text-gray-600">在网站上接收系统通知</p>
                                                 </div>
                                                 <label class="relative inline-flex items-center cursor-pointer">
-                                                    <input type="checkbox" id="system-notifications" class="sr-only peer" checked>
-                                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary peer-focus:ring-opacity-50 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                                                    <input type="checkbox" id="system-notifications"
+                                                        class="sr-only peer" checked>
+                                                    <div
+                                                        class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary peer-focus:ring-opacity-50 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary">
+                                                    </div>
                                                 </label>
                                             </div>
                                             <div class="flex items-center justify-between">
@@ -563,19 +541,24 @@
                                                     <p class="text-sm text-gray-600">接收关于国家活动和事件的提醒</p>
                                                 </div>
                                                 <label class="relative inline-flex items-center cursor-pointer">
-                                                    <input type="checkbox" id="activity-notifications" class="sr-only peer">
-                                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary peer-focus:ring-opacity-50 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                                                    <input type="checkbox" id="activity-notifications"
+                                                        class="sr-only peer">
+                                                    <div
+                                                        class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary peer-focus:ring-opacity-50 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary">
+                                                    </div>
                                                 </label>
                                             </div>
                                         </div>
                                     </div>
-                                    
+
                                     <div>
                                         <h3 class="text-lg font-medium text-gray-800 mb-4">通知频率</h3>
                                         <div class="space-y-4">
                                             <div>
-                                                <label for="notification-frequency" class="block text-gray-700 mb-2">电子邮件通知频率</label>
-                                                <select id="notification-frequency" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+                                                <label for="notification-frequency"
+                                                    class="block text-gray-700 mb-2">电子邮件通知频率</label>
+                                                <select id="notification-frequency"
+                                                    class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
                                                     <option value="immediately">立即</option>
                                                     <option value="daily">每日摘要</option>
                                                     <option value="weekly">每周摘要</option>
@@ -583,9 +566,10 @@
                                             </div>
                                         </div>
                                     </div>
-                                    
+
                                     <div class="flex justify-end">
-                                        <button type="submit" class="bg-primary text-white px-6 py-3 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium">
+                                        <button type="submit"
+                                            class="bg-primary text-white px-6 py-3 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium">
                                             保存设置
                                         </button>
                                     </div>
@@ -598,13 +582,12 @@
         </section>
     </main>
 
-    <!-- 页脚 -->
     <footer class="bg-primary text-light py-8">
         <div class="container mx-auto px-4">
             <div class="flex flex-col md:flex-row justify-between items-center">
                 <div class="mb-4 md:mb-0">
                     <div class="flex items-center space-x-2">
-                        <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/d8ddf5e8d8c84316a653dcb93cf61629~tplv-a9rns2rl98-image.image?lk3s=8e244e95&rcl=202601202312037748F98E243C1F231D4E&rrcfp=f06b921b&x-expires=1771513966&x-signature=gxZfK%2BBdsU1IDbMR4LFDmEH2PhA%3D" alt="安提斯特国旗" class="h-8 w-8 rounded-full">
+                        <img src="flag.png" crossorigin="anonymous" alt="安提斯特国旗" class="h-8 w-8 rounded-full">
                         <span class="text-lg font-bold">安提斯特虚拟国</span>
                     </div>
                     <p class="text-sm text-gray-300 mt-2">
@@ -629,9 +612,8 @@
         </div>
     </footer>
 
-    <!-- 模态框 -->
-    <!-- 更改头像模态框 -->
-    <div id="change-avatar-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
+    <div id="change-avatar-modal"
+        class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
         <div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 overflow-hidden animate-fade-in">
             <div class="bg-primary text-white p-4 flex justify-between items-center">
                 <h2 class="text-xl font-bold">更改头像</h2>
@@ -641,7 +623,8 @@
             </div>
             <div class="p-6">
                 <div class="flex flex-col items-center mb-6">
-                    <div class="w-32 h-32 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden mb-4">
+                    <div
+                        class="w-32 h-32 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden mb-4">
                         <i class="fa fa-user-circle text-5xl text-gray-400" id="preview-avatar-icon"></i>
                         <img id="preview-avatar-img" class="w-full h-full object-cover hidden" alt="预览头像">
                     </div>
@@ -649,13 +632,17 @@
                 </div>
                 <form id="avatar-form" class="space-y-4">
                     <div>
-                        <input type="file" id="avatar-input" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" accept=".jpg,.jpeg,.png" required>
+                        <input type="file" id="avatar-input"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                            accept=".jpg,.jpeg,.png" required>
                     </div>
                     <div class="flex justify-center space-x-4">
-                        <button type="button" class="close-modal px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-all duration-200 font-medium">
+                        <button type="button"
+                            class="close-modal px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-all duration-200 font-medium">
                             取消
                         </button>
-                        <button type="submit" class="bg-primary text-white px-6 py-2 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium">
+                        <button type="submit"
+                            class="bg-primary text-white px-6 py-2 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium">
                             确认更改
                         </button>
                     </div>
@@ -664,7 +651,6 @@
         </div>
     </div>
 
-    <!-- 操作成功模态框 -->
     <div id="success-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
         <div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 overflow-hidden animate-fade-in">
             <div class="bg-green-500 text-white p-4 flex justify-between items-center">
@@ -679,757 +665,522 @@
                 </div>
                 <h3 class="text-2xl font-bold text-gray-800 mb-2" id="success-title">操作成功</h3>
                 <p class="text-gray-600 mb-6" id="success-message">您的操作已成功完成。</p>
-                <button class="close-modal bg-primary text-white px-6 py-3 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium">
+                <button
+                    class="close-modal bg-primary text-white px-6 py-3 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium">
                     确定
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- JavaScript -->
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        function showSuccessModal(title, msg) {
+            const modal = document.getElementById('success-modal');
+            if (modal) {
+                document.getElementById('success-title').textContent = title || '操作成功';
+                document.getElementById('success-message').textContent = msg || '您的操作已成功完成。';
+                modal.classList.remove('hidden');
+            } else {
+                alert((title || '操作成功') + ": " + (msg || ''));
+            }
+        }
+
+        document.querySelectorAll('.close-modal').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.getElementById('change-avatar-modal').classList.add('hidden');
+                document.getElementById('success-modal').classList.add('hidden');
+            });
+        });
+
+        document.addEventListener('DOMContentLoaded', function () {
             let cachedUserData = null;
 
-            async function callCloudFunction(name, ...args) {
-                if (window.safeCallCloudFunction) {
-                    return window.safeCallCloudFunction(name, ...args);
-                }
-                if (window.retinboxCloudFunctions && typeof window.retinboxCloudFunctions[name] === 'function') {
-                    return window.retinboxCloudFunctions[name](...args);
-                }
-                throw new Error('云函数未初始化');
-            }
-
-            function buildPayload(data) {
-                const payload = Object.fromEntries(
-                    Object.entries(data).filter(([, value]) => value !== undefined)
-                );
-                if (Object.keys(payload).length === 0) {
-                    payload.updatedAt = new Date().toISOString();
-                }
-                return payload;
-            }
-
-            async function getCurrentUser() {
-                try {
-                    const currentUser = await window.checkLoginStatusSafely();
-                    if (currentUser) {
-                        return currentUser;
-                    }
-                } catch (error) {
-                    console.warn('获取登录状态失败:', error);
-                }
-                const localUser = sessionStorage.getItem('currentUser');
-                return localUser ? JSON.parse(localUser) : null;
-            }
-
+            // 获取当前用户信息 (从 SessionStorage 或 API)
             async function getUserProfile() {
-                const currentUser = await getCurrentUser();
-                if (!currentUser || !currentUser.id) {
-                    return null;
-                }
                 try {
-                    const result = await callCloudFunction('getUser', currentUser.id);
-                    if (result && result.user) {
-                        cachedUserData = { ...currentUser, ...result.user };
+                    // 调用 auth/getCurrentUser.php
+                    const response = await window.retinbox.request('auth/getCurrentUser');
+                    if (response.success && response.user) {
+                        cachedUserData = response.user;
                         return cachedUserData;
                     }
                 } catch (error) {
                     console.warn('获取用户资料失败:', error);
                 }
-                return cachedUserData || currentUser;
+
+                // 降级：从 SessionStorage 读取
+                const localUser = sessionStorage.getItem('currentUser');
+                if (localUser) {
+                    cachedUserData = JSON.parse(localUser);
+                    return cachedUserData;
+                }
+
+                return null;
             }
 
-            checkLoginStatus();
-            
+            // 处理头像 URL
+            function normalizeAvatarUrl(avatarUrl) {
+                if (!avatarUrl) return null;
+                if (!avatarUrl.startsWith('data:') && !avatarUrl.startsWith('http')) {
+                    return `users/avatar-file.php?name=${encodeURIComponent(avatarUrl)}`;
+                }
+                return avatarUrl;
+            }
+
+            function updateAvatarViews(avatarURL) {
+                const els = ['user-avatar', 'id-avatar', 'passport-avatar', 'preview-avatar'];
+                els.forEach(prefix => {
+                    const icon = document.getElementById(prefix + '-icon');
+                    const img = document.getElementById(prefix + '-img');
+
+                    if (avatarURL) {
+                        icon.classList.add('hidden');
+                        // 关键点1：先设置跨域许可
+                        img.setAttribute('crossorigin', 'anonymous');
+                        // 关键点2：加时间戳，强制刷新图片缓存
+                        const cleanURL = avatarURL.includes('?')
+                            ? `${avatarURL}&t=${new Date().getTime()}`
+                            : `${avatarURL}?t=${new Date().getTime()}`;
+                        img.src = cleanURL;
+                        img.classList.remove('hidden');
+                    } else {
+                        img.classList.add('hidden');
+                        icon.classList.remove('hidden');
+                    }
+                });
+            }
+
+            // 加载用户数据并填充表单
+            async function loadUserData() {
+                const userData = await getUserProfile();
+
+                if (userData) {
+                    // 填充基本信息
+                    document.getElementById('username').value = userData.username || '';
+                    document.getElementById('email').value = userData.email || ''; // 注意：后端 getCurrentUser.php 可能会 unset email
+                    document.getElementById('bio').value = userData.bio || '';
+                    document.getElementById('gender').value = userData.gender || '';
+
+                    // 填充扩展信息 (目前后端不支持，填充空或尝试读取)
+                    document.getElementById('qq').value = userData.qq || '';
+                    document.getElementById('race').value = userData.race || '';
+                    document.getElementById('age').value = userData.age || '';
+                    document.getElementById('residence').value = userData.residence || '';
+
+                    // 头像
+                    if (userData.avatar) {
+                        updateAvatarViews(normalizeAvatarUrl(userData.avatar));
+                    }
+
+                    // 填充通知设置 (如果后端提供了设置接口)
+                    try {
+                        const settings = await window.retinbox.getUserSettings();
+                        if (settings) {
+                            if (settings.notifications) {
+                                document.getElementById('email-notifications').checked = settings.notifications.email !== false;
+                                document.getElementById('system-notifications').checked = settings.notifications.system !== false;
+                                document.getElementById('activity-notifications').checked = settings.notifications.activity || false;
+                            }
+                            if (settings.notificationFrequency) {
+                                document.getElementById('notification-frequency').value = settings.notificationFrequency;
+                            }
+                        }
+                    } catch (e) {
+                        console.log("无法加载用户设置或后端未实现该接口");
+                    }
+                }
+            }
+
+            // 检查登录状态
+            async function checkLoginStatus() {
+                // 等待 API 初始化
+                let attempts = 0;
+                while (!window.retinbox && attempts < 10) {
+                    await new Promise(r => setTimeout(r, 100));
+                    attempts++;
+                }
+
+                if (!window.retinbox) {
+                    console.error("Retinbox API 初始化失败");
+                    return;
+                }
+
+                const user = await getUserProfile();
+                if (!user) {
+                    window.location.href = 'index.html';
+                } else {
+                    document.getElementById('welcome-user').classList.remove('hidden');
+                    document.getElementById('current-username').textContent = user.username;
+                    initPage();
+                }
+            }
+
             // 移动端菜单切换
             const mobileMenuBtn = document.getElementById('mobile-menu-btn');
             const mobileMenu = document.getElementById('mobile-menu');
-            
-            mobileMenuBtn.addEventListener('click', function() {
+
+            mobileMenuBtn.addEventListener('click', function () {
                 mobileMenu.classList.toggle('hidden');
             });
-            
+
             // 退出登录
             const logoutBtn = document.getElementById('logout-btn');
-            
-            logoutBtn.addEventListener('click', function() {
-                sessionStorage.removeItem('currentUser');
+
+            logoutBtn.addEventListener('click', async function () {
+                try {
+                    await window.retinbox.logout();
+                } catch (e) { console.error(e); }
                 window.location.href = 'index.html';
             });
-            
-            // 选项卡切换
+
+            // 选项卡切换逻辑 (保持不变)
             const tabs = ['profile', 'security', 'id-card', 'passport', 'notifications'];
             const tabButtons = tabs.map(tab => document.getElementById(`tab-${tab}`));
             const panels = tabs.map(tab => document.getElementById(`panel-${tab}`));
-            
-            // 确保所有面板都已正确获取
-            const validPanels = panels.filter(panel => panel !== null);
-            const validTabButtons = tabButtons.filter(button => button !== null);
-            
-            if (validPanels.length === 0 || validTabButtons.length === 0) {
-                console.error('无法找到选项卡元素');
-                return;
-            }
-            
-            // 初始化：隐藏所有面板，只显示第一个
+
+            const validPanels = panels.filter(p => p !== null);
+            const validTabButtons = tabButtons.filter(b => b !== null);
+
             validPanels.forEach((panel, index) => {
-                if (index > 0) {
-                    panel.classList.add('hidden');
-                } else {
-                    panel.classList.remove('hidden');
-                }
+                if (index > 0) panel.classList.add('hidden');
+                else panel.classList.remove('hidden');
             });
-            
+
             validTabButtons.forEach((button, index) => {
                 if (!button) return;
-                
-                button.addEventListener('click', function() {
-                    // 隐藏所有面板
-                    validPanels.forEach(panel => {
-                        if (panel) panel.classList.add('hidden');
-                    });
-                    
-                    // 移除所有选项卡的活动状态
+                button.addEventListener('click', function () {
+                    validPanels.forEach(panel => panel && panel.classList.add('hidden'));
                     validTabButtons.forEach(btn => {
                         if (btn) {
                             btn.classList.remove('bg-primary', 'text-light');
                             btn.classList.add('hover:bg-gray-200');
                         }
                     });
-                    
-                    // 显示当前面板
-                    if (validPanels[index]) {
-                        validPanels[index].classList.remove('hidden');
-                    }
-                    
-                    // 添加当前选项卡的活动状态
+                    if (validPanels[index]) validPanels[index].classList.remove('hidden');
                     button.classList.add('bg-primary', 'text-light');
                     button.classList.remove('hover:bg-gray-200');
-                    
-                    // 如果是身份证或护照面板，更新证件信息
-                    if (tabs[index] === 'id-card') {
-                        updateIdCard();
-                    } else if (tabs[index] === 'passport') {
-                        updatePassport();
-                    }
+
+                    if (tabs[index] === 'id-card') updateIdCard();
+                    else if (tabs[index] === 'passport') updatePassport();
                 });
             });
-            
-            // 查看身份证和护照按钮
-            document.getElementById('view-id-card-btn').addEventListener('click', function() {
+
+            document.getElementById('view-id-card-btn').addEventListener('click', function () {
                 document.getElementById('tab-id-card').click();
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             });
-            
-            document.getElementById('view-passport-btn').addEventListener('click', function() {
+
+            document.getElementById('view-passport-btn').addEventListener('click', function () {
                 document.getElementById('tab-passport').click();
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             });
-            
-            // 更改头像相关
+
+            // 更改头像
             const changeAvatarBtn = document.getElementById('change-avatar-btn');
             const changeAvatarModal = document.getElementById('change-avatar-modal');
             const avatarInput = document.getElementById('avatar-input');
-            const previewAvatarIcon = document.getElementById('preview-avatar-icon');
-            const previewAvatarImg = document.getElementById('preview-avatar-img');
             const avatarForm = document.getElementById('avatar-form');
-            let previewObjectUrl = null;
-            let avatarObjectUrl = null;
 
-            function normalizeAvatarUrl(avatarUrl) {
-                if (!avatarUrl) {
-                    return null;
-                }
-                const match = avatarUrl.match(/uploads\/avatars\/([^/?#]+)/);
-                if (match && match[1]) {
-                    return `avatar-file.php?name=${encodeURIComponent(match[1])}`;
-                }
-                return avatarUrl;
-            }
+            changeAvatarBtn.addEventListener('click', function () {
+                changeAvatarModal.classList.remove('hidden');
+            });
 
-            function updateAvatarViews(avatarURL) {
-                if (avatarObjectUrl) {
-                    URL.revokeObjectURL(avatarObjectUrl);
-                    avatarObjectUrl = null;
+            avatarInput.addEventListener('change', function (e) {
+                if (e.target.files && e.target.files[0]) {
+                    const url = URL.createObjectURL(e.target.files[0]);
+                    document.getElementById('preview-avatar-icon').classList.add('hidden');
+                    document.getElementById('preview-avatar-img').src = url;
+                    document.getElementById('preview-avatar-img').classList.remove('hidden');
                 }
-                let resolvedAvatarUrl = avatarURL;
-                if (avatarURL && avatarURL.startsWith('data:')) {
-                    const parts = avatarURL.split(',');
-                    const header = parts[0] || '';
-                    const base64Data = parts[1] || '';
-                    const mimeMatch = header.match(/data:([^;]+)/);
-                    const mimeType = mimeMatch ? mimeMatch[1] : 'application/octet-stream';
-                    const binary = atob(base64Data);
-                    const bytes = new Uint8Array(binary.length);
-                    for (let i = 0; i < binary.length; i += 1) {
-                        bytes[i] = binary.charCodeAt(i);
+            });
+
+            avatarForm.addEventListener('submit', async function (e) {
+                e.preventDefault();
+                if (avatarInput.files && avatarInput.files[0]) {
+                    try {
+                        const formData = new FormData();
+                        formData.append('avatar', avatarInput.files[0]);
+
+                        // 调用 users/upload-avatar.php (该接口返回 url)
+                        const result = await window.retinbox.upload('users/upload-avatar', formData);
+
+                        if (result.success && result.url) {
+                            const fullUrl = normalizeAvatarUrl(result.url);
+                            updateAvatarViews(fullUrl);
+                            changeAvatarModal.classList.add('hidden');
+                            showSuccessModal('头像更新成功', '您的头像已成功更新。');
+                            // 刷新用户缓存
+                            await getUserProfile();
+                        } else {
+                            alert('上传失败：' + (result.error || '未知错误'));
+                        }
+                    } catch (error) {
+                        alert('上传出错: ' + error.message);
                     }
-                    const blob = new Blob([bytes], { type: mimeType });
-                    avatarObjectUrl = URL.createObjectURL(blob);
-                    resolvedAvatarUrl = avatarObjectUrl;
                 }
-                const userAvatarIcon = document.getElementById('user-avatar-icon');
-                const userAvatarImg = document.getElementById('user-avatar-img');
-                const idAvatarIcon = document.getElementById('id-avatar-icon');
-                const idAvatarImg = document.getElementById('id-avatar-img');
-                const passportAvatarIcon = document.getElementById('passport-avatar-icon');
-                const passportAvatarImg = document.getElementById('passport-avatar-img');
-                const previewAvatarIcon = document.getElementById('preview-avatar-icon');
-                const previewAvatarImg = document.getElementById('preview-avatar-img');
+            });
 
-                if (!avatarURL) {
-                    userAvatarImg.classList.add('hidden');
-                    userAvatarIcon.classList.remove('hidden');
-                    idAvatarImg.classList.add('hidden');
-                    idAvatarIcon.classList.remove('hidden');
-                    passportAvatarImg.classList.add('hidden');
-                    passportAvatarIcon.classList.remove('hidden');
-                    previewAvatarImg.classList.add('hidden');
-                    previewAvatarIcon.classList.remove('hidden');
+            // 个人信息表单提交
+            const profileForm = document.getElementById('profile-form');
+
+            profileForm.addEventListener('submit', async function (e) {
+                e.preventDefault();
+
+                // 获取当前用户ID
+                const userData = await getUserProfile();
+                if (!userData || !userData.id) {
+                    alert('无法获取用户信息，请刷新页面重试');
                     return;
                 }
 
+                const payload = {
+                    id: userData.id, // 添加用户ID
+                    username: document.getElementById('username').value,
+                    gender: document.getElementById('gender').value,
+                    bio: document.getElementById('bio').value,
+                    // 下面这些字段后端目前不支持，但我们先传过去
+                    qq: document.getElementById('qq').value,
+                    race: document.getElementById('race').value,
+                    age: document.getElementById('age').value,
+                    residence: document.getElementById('residence').value
+                };
 
-                // 用户中心主头像
-                userAvatarIcon.classList.add('hidden');
-                userAvatarImg.crossOrigin = 'anonymous';
-                userAvatarImg.src = resolvedAvatarUrl;
-                userAvatarImg.classList.remove('hidden');
-
-                // 身份证头像
-                idAvatarIcon.classList.add('hidden');
-                idAvatarImg.crossOrigin = 'anonymous';
-                idAvatarImg.src = resolvedAvatarUrl;
-                idAvatarImg.classList.remove('hidden');
-
-                // 护照头像
-                passportAvatarIcon.classList.add('hidden');
-                passportAvatarImg.crossOrigin = 'anonymous';
-                passportAvatarImg.src = resolvedAvatarUrl;
-                passportAvatarImg.classList.remove('hidden');
-
-                // 预览头像
-                previewAvatarIcon.classList.add('hidden');
-                previewAvatarImg.src = resolvedAvatarUrl;
-                previewAvatarImg.classList.remove('hidden');
-
-            }
-
-            function getCachedAvatar() {
-                if (cachedUserData && cachedUserData.avatar) {
-                    return normalizeAvatarUrl(cachedUserData.avatar);
-                }
-                const currentUser = JSON.parse(sessionStorage.getItem('currentUser'));
-                return normalizeAvatarUrl(currentUser ? currentUser.avatar : null);
-            }
-            
-            changeAvatarBtn.addEventListener('click', function() {
-                const avatar = getCachedAvatar();
-                updateAvatarViews(avatar || null);
-                changeAvatarModal.classList.remove('hidden');
-            });
-            
-            avatarInput.addEventListener('change', function(e) {
-                if (e.target.files && e.target.files[0]) {
-                    if (previewObjectUrl) {
-                        URL.revokeObjectURL(previewObjectUrl);
-                    }
-                    previewObjectUrl = URL.createObjectURL(e.target.files[0]);
-                    previewAvatarIcon.classList.add('hidden');
-                    previewAvatarImg.src = previewObjectUrl;
-                    previewAvatarImg.classList.remove('hidden');
-                } else {
-                    const avatar = getCachedAvatar();
-                    updateAvatarViews(avatar || null);
-                }
-            });
-            
-            avatarForm.addEventListener('submit', async function(e) {
-                e.preventDefault();
-                
-                if (avatarInput.files && avatarInput.files[0]) {
-                    try {
-                        const user = await getCurrentUser();
-                        
-                        if (user) {
-                            const file = avatarInput.files[0];
-                            const avatarURL = await new Promise((resolve, reject) => {
-                                const reader = new FileReader();
-                                reader.onload = () => resolve(reader.result);
-                                reader.onerror = () => reject(new Error('头像读取失败'));
-                                reader.readAsDataURL(file);
-                            });
-                            updateAvatarViews(avatarURL);
-                            await callCloudFunction('updateUser', { id: user.id, avatar: avatarURL });
-                            cachedUserData = { ...(cachedUserData || {}), id: user.id, avatar: avatarURL };
-                            const currentUser = JSON.parse(sessionStorage.getItem('currentUser'));
-                            if (currentUser) {
-                                currentUser.avatar = avatarURL;
-                                sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
-                            }
-                            avatarInput.value = '';
-                            if (previewObjectUrl) {
-                                URL.revokeObjectURL(previewObjectUrl);
-                                previewObjectUrl = null;
-                            }
-                            changeAvatarModal.classList.add('hidden');
-                            showSuccessModal('头像更新成功', '您的头像已成功更新。');
-                        }
-                    } catch (error) {
-                        console.error('更新头像失败:', error);
-                        alert('更新头像失败: ' + error.message);
-                    }
-                }
-            });
-            
-            // 个人信息表单提交
-            const profileForm = document.getElementById('profile-form');
-            
-            profileForm.addEventListener('submit', async function(e) {
-                e.preventDefault();
-                
-                const username = document.getElementById('username').value;
-                const email = document.getElementById('email').value;
-                const qq = document.getElementById('qq').value;
-                const gender = document.getElementById('gender').value;
-                const race = document.getElementById('race').value;
-                const age = document.getElementById('age').value;
-                const residence = document.getElementById('residence').value;
-                const bio = document.getElementById('bio').value;
-                
                 try {
-                    const user = await getCurrentUser();
-                    
-                    if (user) {
-                        const payload = buildPayload({
-                            username,
-                            email,
-                            qq,
-                            gender,
-                            race,
-                            age,
-                            residence,
-                            bio
-                        });
-                        await callCloudFunction('updateUser', payload);
-                        
-                        cachedUserData = {
-                            ...(cachedUserData || {}),
-                            id: user.id,
-                            username,
-                            email,
-                            qq,
-                            gender,
-                            race,
-                            age,
-                            residence,
-                            bio
-                        };
-                        
-                        const currentUser = JSON.parse(sessionStorage.getItem('currentUser'));
-                        if (currentUser) {
-                            currentUser.username = username;
-                            currentUser.email = email;
-                            sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
-                        }
-                        
-                        document.getElementById('current-username').textContent = username;
-                        
+                    // 调用 users/updateUser.php（使用GET参数）
+                    const params = new URLSearchParams(payload).toString();
+                    const result = await window.retinbox.request(`users/updateUser?${params}`, 'GET');
+
+                    if (result.success) {
+                        document.getElementById('current-username').textContent = payload.username;
+                        showSuccessModal('个人信息更新成功', '您的个人信息已成功更新。');
                         await updateIdCard();
                         await updatePassport();
-                        
-                        showSuccessModal('个人信息更新成功', '您的个人信息已成功更新。');
+                    } else {
+                        alert('更新失败: ' + result.error);
                     }
                 } catch (error) {
-                    console.error('更新个人信息失败:', error);
-                    alert('更新个人信息失败: ' + error.message);
+                    alert('请求失败: ' + error.message);
                 }
             });
-            
+
             // 修改密码表单提交
-            const changePasswordForm = document.getElementById('change-password-form');
-            
-            changePasswordForm.addEventListener('submit', async function(e) {
+            document.getElementById('change-password-form').addEventListener('submit', async function (e) {
                 e.preventDefault();
-                
+
                 const currentPassword = document.getElementById('current-password').value;
                 const newPassword = document.getElementById('new-password').value;
                 const confirmPassword = document.getElementById('confirm-password').value;
-                
-                // 验证新密码和确认密码是否一致
+
                 if (newPassword !== confirmPassword) {
-                    alert('新密码和确认密码不一致');
+                    alert('两次输入的新密码不一致');
                     return;
                 }
-                
+
                 try {
-                    const user = await getCurrentUser();
-                    
-                    if (user) {
-                        // 从云端获取用户数据
-                        const usersResult = await window.retinboxCloudFunctions.getUsers();
-                        const users = usersResult.users || [];
-                        const userIndex = users.findIndex(u => u.id === user.id);
-                        
-                        if (userIndex !== -1) {
-                            // 检查当前密码是否正确
-                            if (users[userIndex].password === currentPassword) {
-                                // 通过云函数更新密码
-                                const updateResult = await window.retinboxCloudFunctions.updateUser({
-                                    id: user.id,
-                                    password: newPassword
-                                });
-                                
-                                if (updateResult.success) {
-                                    // 重置表单
-                                    changePasswordForm.reset();
-                                    
-                                    // 显示成功消息
-                                    showSuccessModal('密码更新成功', '您的密码已成功更新。');
-                                } else {
-                                    throw new Error(updateResult.error || '更新密码失败');
-                                }
-                            } else {
-                                throw { code: 'auth/wrong-password' };
-                            }
-                        } else {
-                            throw new Error('用户不存在');
-                        }
+                    const result = await window.retinbox.request('auth/changePassword', 'POST', {
+                        currentPassword: currentPassword,
+                        newPassword: newPassword
+                    });
+
+                    if (result.success) {
+                        document.getElementById('change-password-form').reset();
+                        showSuccessModal('密码更新成功', '您的密码已成功更新，下次登录请使用新密码。');
                     }
                 } catch (error) {
-                    console.error('更新密码失败:', error);
-                    if (error.code === 'auth/wrong-password') {
-                        alert('当前密码错误');
-                    } else {
-                        alert('更新密码失败: ' + error.message);
-                    }
+                    alert('更新失败: ' + error.message);
                 }
             });
-            
-            // 通知设置表单提交
-            const notificationsForm = document.getElementById('notifications-form');
-            
-            notificationsForm.addEventListener('submit', async function(e) {
+
+            // 通知设置提交
+            document.getElementById('notifications-form').addEventListener('submit', async function (e) {
                 e.preventDefault();
-                
-                const emailNotifications = document.getElementById('email-notifications').checked;
-                const systemNotifications = document.getElementById('system-notifications').checked;
-                const activityNotifications = document.getElementById('activity-notifications').checked;
-                const notificationFrequency = document.getElementById('notification-frequency').value;
-                
+
+                const payload = {
+                    notifications: {
+                        email: document.getElementById('email-notifications').checked,
+                        system: document.getElementById('system-notifications').checked,
+                        activity: document.getElementById('activity-notifications').checked
+                    },
+                    notificationFrequency: document.getElementById('notification-frequency').value
+                };
+
                 try {
-                    const user = await getCurrentUser();
-                    
-                    if (user) {
-                        const payload = buildPayload({
-                            notifications: {
-                                email: emailNotifications,
-                                system: systemNotifications,
-                                activity: activityNotifications
-                            },
-                            notificationFrequency: notificationFrequency
-                        });
-                        await callCloudFunction('updateUserSettings', payload);
-                        
+                    // 调用 settings/updateSettings.php
+                    const result = await window.retinbox.updateUserSettings(payload);
+                    if (result && result.success) {
+                        showSuccessModal('通知设置更新成功', '您的通知设置已成功更新。');
+                    } else {
+                        // 兼容某些不返回 success 字段但实际成功的后端
                         showSuccessModal('通知设置更新成功', '您的通知设置已成功更新。');
                     }
                 } catch (error) {
-                    console.error('更新通知设置失败:', error);
-                    alert('更新通知设置失败: ' + error.message);
+                    alert('设置保存失败: ' + error.message);
                 }
             });
-            
-            // 下载身份证功能
-            document.getElementById('download-id-card-btn').addEventListener('click', function() {
-                const idCardElement = document.getElementById('id-card-front');
 
-                html2canvas(idCardElement, {
-                    scale: 4,
-                    useCORS: true,
-                    backgroundColor: '#f8f5e6', // 确保有底色
-                    logging: true,
-                    onclone: function(clonedDoc) {
-                        const clonedNode = clonedDoc.getElementById('id-card-front');
-                        clonedNode.style.backgroundImage = 'none';
-                        clonedNode.style.boxShadow = 'none';
-                    }
+            // 下载身份证
+            document.getElementById('download-id-card-btn').addEventListener('click', function () {
+                const btn = this;
+                const originalText = btn.innerHTML;
+                const element = document.getElementById('id-card-front');
+
+                // 1. 按钮变 loading 防止重复点击
+                btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> 生成中...';
+                btn.disabled = true;
+
+                // 2. 截图配置
+                html2canvas(element, {
+                    scale: 3,                // 稍微降低清晰度提高成功率
+                    useCORS: true,           // 必须开启，为了下头像
+                    allowTaint: false,       // 禁止污染
+                    backgroundColor: '#f8f5e6',
+                    logging: false
                 }).then(canvas => {
                     try {
-                        // 尝试导出图片
-                        const imgData = canvas.toDataURL('image/png', 1.0);
-
-                        // 创建PDF
+                        // 3. 生成 PDF
+                        const imgData = canvas.toDataURL('image/png', 0.9);
                         const { jsPDF } = window.jspdf;
-                        const pdfWidth = 85.6;
-                        const pdfHeight = 54;
+                        const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: [85.6, 54] });
+                        doc.addImage(imgData, 'PNG', 0, 0, 85.6, 54);
+                        doc.save('my-id-card.pdf');
+                    } catch (e) {
+                        alert('生成失败: ' + e.message);
+                    }
+                }).catch(e => {
+                    // 4. 错误拦截
+                    if (e.message.includes('Tainted')) {
+                        alert('错误：头像跨域失败。请尝试刷新页面再试。');
+                    } else {
+                        alert('下载出错：' + e.message);
+                    }
+                }).finally(() => {
+                    // 5. 恢复按钮
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                });
+            });
+
+            document.getElementById('download-passport-btn').addEventListener('click', function () {
+                if (!window.jspdf) {
+                    alert('错误：jsPDF 库未加载，请检查网络或更换 CDN 源。');
+                    return;
+                }
+
+                const passportElement = document.getElementById('passport-page');
+
+                const btn = this;
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<i class="fa fa-spinner fa-spin mr-2"></i>生成中...';
+                btn.disabled = true;
+
+                html2canvas(passportElement, {
+                    scale: 4,
+                    useCORS: true,
+                    backgroundColor: '#ffffff'
+                }).then(canvas => {
+                    try {
+                        const imgData = canvas.toDataURL('image/png', 1.0);
+                        const { jsPDF } = window.jspdf;
+
+                        // 根据实际截图比例计算 PDF 尺寸
+                        const canvasWidth = canvas.width;
+                        const canvasHeight = canvas.height;
+                        const ratio = canvasWidth / canvasHeight;
+
+                        // 护照标准尺寸基准（保持实际比例）
+                        let pdfWidth, pdfHeight;
+                        if (ratio > 1) {
+                            // 横向护照
+                            pdfWidth = 125;
+                            pdfHeight = pdfWidth / ratio;
+                        } else {
+                            // 纵向护照
+                            pdfHeight = 125;
+                            pdfWidth = pdfHeight * ratio;
+                        }
+
                         const doc = new jsPDF({
-                            orientation: 'landscape',
+                            orientation: ratio > 1 ? 'landscape' : 'portrait',
                             unit: 'mm',
                             format: [pdfWidth, pdfHeight]
                         });
 
-                        const idNumber = document.getElementById('id-number').textContent;
-                        const imgProps = doc.getImageProperties(imgData);
-                        const ratio = Math.min(pdfWidth / imgProps.width, pdfHeight / imgProps.height);
-                        const scaledWidth = imgProps.width * ratio;
-                        const scaledHeight = imgProps.height * ratio;
-                        const x = (pdfWidth - scaledWidth) / 2;
-                        const y = (pdfHeight - scaledHeight) / 2;
+                        doc.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
 
-                        doc.addImage(imgData, 'PNG', x, y, scaledWidth, scaledHeight);
-                        doc.save(`antister-id-card-${idNumber}.pdf`);
-
+                        doc.save('antister-passport.pdf');
                     } catch (err) {
-                        console.error("导出失败:", err);
-                        alert("身份证导出失败，请检查控制台日志。可能仍有跨域图片阻挡。");
+                        console.error('PDF 生成错误:', err);
+                        alert('生成 PDF 文件时出错: ' + err.message);
                     }
+                }).catch(err => {
+                    console.error('截图失败:', err);
+                    if (err.message && err.message.includes('Tainted')) {
+                        alert('错误：图片跨域导致无法生成截图，请确保头像服务器允许 CORS。');
+                    } else {
+                        alert('生成护照截图失败: ' + err.message);
+                    }
+                }).finally(() => {
+                    // 恢复按钮状态
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
                 });
             });
-            
-            // 下载护照功能
-            document.getElementById('download-passport-btn').addEventListener('click', function() {
-                const passportElement = document.getElementById('passport-page');
-                
-                html2canvas(passportElement, {
-                    scale: 4, // 提高分辨率，增强清晰度
-                    useCORS: true,
-                    backgroundColor: '#ffffff',
-                    logging: false,
-                    letterRendering: true
-                }).then(canvas => {
-                    const { jsPDF } = window.jspdf;
-                    const imgData = canvas.toDataURL('image/png', 1.0); // 使用最高质量压缩
-                    
-                    // 创建PDF，尺寸与护照实际尺寸匹配
-                    const pdfWidth = 88; // 标准护照宽度（mm）
-                    const pdfHeight = 125; // 标准护照高度（mm）
-                    const doc = new jsPDF({
-                        orientation: 'portrait',
-                        unit: 'mm',
-                        format: [pdfWidth, pdfHeight]
-                    });
-                    
-                    // 获取护照号用于文件名
-                    const passportNumber = document.getElementById('passport-number').textContent;
-                    
-                    // 计算图片在PDF中的正确尺寸和位置
-                    const imgProps = doc.getImageProperties(imgData);
-                    const imgWidth = imgProps.width;
-                    const imgHeight = imgProps.height;
-                    
-                    // 计算缩放比例，确保图片完全显示在PDF中
-                    const ratio = Math.min(pdfWidth / (imgWidth / 3.779528), pdfHeight / (imgHeight / 3.779528));
-                    const scaledWidth = (imgWidth / 3.779528) * ratio;
-                    const scaledHeight = (imgHeight / 3.779528) * ratio;
-                    
-                    // 计算居中位置
-                    const x = (pdfWidth - scaledWidth) / 2;
-                    const y = (pdfHeight - scaledHeight) / 2;
-                    
-                    // 添加图片到PDF，确保完整显示
-                    doc.addImage(imgData, 'PNG', x, y, scaledWidth, scaledHeight);
-                    
-                    // 保存PDF
-                    doc.save(`antister-passport-${passportNumber.replace(/\-/g, '')}.pdf`);
-                });
-            });
-            
-            // 模态框相关
+
+            // 模态框交互
             const modals = document.querySelectorAll('#change-avatar-modal, #success-modal');
-            const closeModalBtns = document.querySelectorAll('.close-modal');
-            
-            closeModalBtns.forEach(btn => {
-                btn.addEventListener('click', function() {
-                    modals.forEach(modal => {
-                        modal.classList.add('hidden');
-                    });
-                });
+            document.querySelectorAll('.close-modal').forEach(btn => {
+                btn.addEventListener('click', () => modals.forEach(m => m.classList.add('hidden')));
             });
-            
-            // 点击模态框外部关闭
-            modals.forEach(modal => {
-                modal.addEventListener('click', function(e) {
-                    if (e.target === modal) {
-                        modal.classList.add('hidden');
-                    }
-                });
-            });
-            
-            // 初始化页面
+            modals.forEach(m => m.addEventListener('click', e => { if (e.target === m) m.classList.add('hidden'); }));
+
+            // 页面初始化
             function initPage() {
                 loadUserData();
                 updateIdCard();
                 updatePassport();
             }
-            
-            // 检查用户是否已登录
-            async function checkLoginStatus() {
-                try {
-                    const currentUser = await window.checkLoginStatusSafely();
-                    
-                    if (!currentUser) {
-                        window.location.href = 'index.html';
-                    } else {
-                        document.getElementById('welcome-user').classList.remove('hidden');
-                        document.getElementById('current-username').textContent = currentUser.username;
-                        
-                        initPage();
-                    }
-                } catch (error) {
-                    console.error('检查登录状态失败:', error);
-                    window.location.href = 'index.html';
-                }
-            }
-            
-            // 加载用户数据
-            async function loadUserData() {
-                try {
-                    const userData = await getUserProfile();
-                    
-                    if (userData) {
-                        document.getElementById('username').value = userData.username || '';
-                        document.getElementById('email').value = userData.email || '';
-                        document.getElementById('qq').value = userData.qq || '';
-                        document.getElementById('gender').value = userData.gender || '';
-                        document.getElementById('race').value = userData.race || '';
-                        document.getElementById('age').value = userData.age || '';
-                        document.getElementById('residence').value = userData.residence || '';
-                        document.getElementById('bio').value = userData.bio || '';
-                        
-                        try {
-                            const settingsResult = await callCloudFunction('getUserSettings');
-                            const settings = settingsResult ? settingsResult.settings : null;
-                            if (settings) {
-                                const notifications = settings.notifications || {};
-                                document.getElementById('email-notifications').checked = notifications.email !== false;
-                                document.getElementById('system-notifications').checked = notifications.system !== false;
-                                document.getElementById('activity-notifications').checked = notifications.activity || false;
-                                document.getElementById('notification-frequency').value = settings.notificationFrequency || 'immediately';
-                            }
-                        } catch (error) {
-                            console.warn('加载通知设置失败:', error);
-                        }
-                        
-                        if (userData.avatar) {
-                            const normalizedAvatar = normalizeAvatarUrl(userData.avatar);
-                            updateAvatarViews(normalizedAvatar);
-                            if (normalizedAvatar !== userData.avatar) {
-                                cachedUserData = { ...(cachedUserData || userData), avatar: normalizedAvatar };
-                                const currentUser = JSON.parse(sessionStorage.getItem('currentUser'));
-                                if (currentUser) {
-                                    currentUser.avatar = normalizedAvatar;
-                                    sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
-                                }
-                            }
-                        }
-                    }
-                } catch (error) {
-                    console.error('加载用户数据失败:', error);
-                    alert('加载用户数据失败: ' + error.message);
-                }
-            }
-            
-            // 更新身份证信息
+
+            // 身份证生成逻辑
             async function updateIdCard() {
-                try {
-                    const userData = await getUserProfile();
-                    
-                    if (userData) {
-                        document.getElementById('id-name').textContent = userData.username || '未知';
-                        document.getElementById('id-gender').textContent = userData.gender || '未知';
-                        document.getElementById('id-race').textContent = userData.race || '未知';
-                        document.getElementById('id-age').textContent = userData.age || '未知';
-                        document.getElementById('id-residence').textContent = userData.residence || '未知';
-                        
-                        const idNumber = generateIdNumber(userData);
-                        document.getElementById('id-number').textContent = idNumber;
-                    }
-                } catch (error) {
-                    console.error('更新身份证信息失败:', error);
+                const userData = await getUserProfile();
+                if (userData) {
+                    document.getElementById('id-name').textContent = userData.username || '未知';
+                    document.getElementById('id-gender').textContent = userData.gender || '未知';
+                    document.getElementById('id-race').textContent = userData.race || '-';
+                    document.getElementById('id-age').textContent = userData.age || '-';
+                    document.getElementById('id-residence').textContent = userData.residence || '-';
+
+                    const userId = userData.id ? String(userData.id).padStart(4, '0') : '0000';
+                    document.getElementById('id-number').textContent = `ANT-${userId}-0001-XXXX`;
                 }
             }
-            
-            // 更新护照信息
+
+            // 护照生成逻辑
             async function updatePassport() {
-                try {
-                    const userData = await getUserProfile();
-                    
-                    if (userData) {
-                        document.getElementById('passport-full-name').textContent = userData.username || '未知';
-                        document.getElementById('passport-gender').textContent = userData.gender ? userData.gender.charAt(0).toUpperCase() : 'U';
-                        
-                        const dob = userData.createdAt ? new Date(userData.createdAt) : new Date();
-                        document.getElementById('passport-dob').textContent = `${dob.getFullYear()}-${String(dob.getMonth() + 1).padStart(2, '0')}-${String(dob.getDate()).padStart(2, '0')}`;
-                        
-                        const passportNumber = generatePassportNumber(userData);
-                        document.getElementById('passport-number').textContent = passportNumber;
-                        
-                        const expiry = userData.createdAt ? new Date(userData.createdAt) : new Date();
-                        expiry.setFullYear(expiry.getFullYear() + 10);
-                        document.getElementById('passport-expiry').textContent = `${expiry.getFullYear()}-${String(expiry.getMonth() + 1).padStart(2, '0')}-${String(expiry.getDate()).padStart(2, '0')}`;
-                        
-                        const mrz = generateMRZ(userData, passportNumber, dob, expiry);
-                        document.getElementById('passport-mrz').textContent = mrz;
-                    }
-                } catch (error) {
-                    console.error('更新护照信息失败:', error);
+                const userData = await getUserProfile();
+                if (userData) {
+                    document.getElementById('passport-full-name').textContent = userData.username || '未知';
+                    document.getElementById('passport-gender').textContent = userData.gender ? userData.gender.charAt(0).toUpperCase() : 'U';
+                    const dob = userData.createdAt ? new Date(userData.createdAt) : new Date();
+                    document.getElementById('passport-dob').textContent = dob.toISOString().split('T')[0];
+                    document.getElementById('passport-number').textContent = `P-ANT-${userData.id || '0000'}`;
+
+                    // 有效期至10年后
+                    const expiry = new Date();
+                    expiry.setFullYear(expiry.getFullYear() + 10);
+                    document.getElementById('passport-expiry').textContent = expiry.toISOString().split('T')[0];
+
+                    // 机读码逻辑 (简化) - 使用文本内容而不是 HTML
+                    const name = (userData.username || 'UNKNOWN').toUpperCase().replace(/[^A-Z]/g, '');
+                    const mrz = 'P<ANT' + name + '<'.repeat(Math.max(0, 24 - name.length - 5));
+                    document.getElementById('passport-mrz').textContent = mrz;
                 }
             }
-            
-            // 生成身份证号
-            function generateIdNumber(user) {
-                const prefix = 'ANT';
-                const userId = user.id ? user.id.padStart(4, '0').substring(0, 4) : '0000';
-                const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
-                const checksum = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
-                
-                return `${prefix}-${userId}-${random}-${checksum}`;
-            }
-            
-            // 生成护照号
-            function generatePassportNumber(user) {
-                const prefix = 'P-ANT';
-                const userId = user.id ? user.id.padStart(4, '0').substring(0, 4) : '0000';
-                const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
-                
-                return `${prefix}-${userId}-${random}`;
-            }
-            
-            // 生成机读码
-            function generateMRZ(user, passportNumber, dob, expiry) {
-                const surname = user.username ? user.username.charAt(0).toUpperCase() : 'X';
-                const givenName = user.username ? user.username.substring(1).toUpperCase() : 'UNKNOWN';
-                const gender = user.gender ? user.gender.charAt(0).toUpperCase() : 'U';
-                
-                // 格式化日期
-                const dobStr = `${dob.getFullYear().toString().substring(2)}${String(dob.getMonth() + 1).padStart(2, '0')}${String(dob.getDate()).padStart(2, '0')}`;
-                const expiryStr = `${expiry.getFullYear().toString().substring(2)}${String(expiry.getMonth() + 1).padStart(2, '0')}${String(expiry.getDate()).padStart(2, '0')}`;
-                
-                // 构建机读码
-                let mrz = `P<ANTISTER<<<<<<<<<<<<<<<<<<<<<<< ${passportNumber.replace(/-/g, '')}${surname}<<${givenName}<<<<<<<<<<<<<<< ${dobStr}${gender}${expiryStr}ANT${Math.floor(Math.random() * 10000000000000000).toString().padStart(14, '0')}`;
-                
-                // 确保长度为88个字符
-                if (mrz.length > 88) {
-                    mrz = mrz.substring(0, 88);
-                } else if (mrz.length < 88) {
-                    mrz = mrz.padEnd(88, '<');
-                }
-                
-                return mrz;
-            }
-            
-            // 显示成功消息
-            function showSuccessModal(title, message) {
-                document.getElementById('success-title').textContent = title;
-                document.getElementById('success-message').textContent = message;
-                document.getElementById('success-modal').classList.remove('hidden');
-            }
-            
-            // 初始化页面
-            initPage();
+
+            // 启动
+            checkLoginStatus();
         });
     </script>
 </body>
+
 </html>

@@ -1,90 +1,31 @@
 <?php
-// 获取管理员权限云函数
-header('Content-Type: application/json; charset=utf-8');
+require_once '../common.php';
+$db = new Database('retinbox-main');
 
-// 验证Session
-function verifySession($db, $sessionId) {
-    if (!$sessionId) {
-        return null;
+// 需要 permissions 模块权限
+requireModulePermission($db, 'permissions');
+
+$permsRaw = $db->get('sys_admin_permissions');
+$permissions = $permsRaw ? json_decode($permsRaw, true) : [];
+
+// 同时返回用户列表，用于权限管理的用户选择（避免依赖 users 模块权限）
+$usersList = json_decode($db->get('sys_users_list') ?: '[]', true);
+$usersForPermissions = [];
+foreach ($usersList as $uid) {
+    $uRaw = $db->get($uid);
+    if ($uRaw) {
+        $uInfo = json_decode($uRaw, true);
+        $usersForPermissions[] = [
+            'id' => $uid,
+            'username' => $uInfo['username'] ?? '未知',
+            'email' => $uInfo['email'] ?? ''
+        ];
     }
-    
-    $sessionData = $db->get("session_$sessionId");
-    if (!$sessionData) {
-        return null;
-    }
-    
-    try {
-        $session = json_decode($sessionData, true);
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            return null;
-        }
-    } catch (Exception $e) {
-        return null;
-    }
-    
-    if (empty($session['expiresAt']) || empty($session['userId'])) {
-        return null;
-    }
-    
-    $now = new DateTime();
-    try {
-        $expiresAt = new DateTime($session['expiresAt']);
-    } catch (Exception $e) {
-        $db->delete("session_$sessionId");
-        return null;
-    }
-    
-    if ($now > $expiresAt) {
-        $db->delete("session_$sessionId");
-        return null;
-    }
-    
-    return $session;
 }
 
-try {
-    $db = new Database('antister_virtual_country');
-    $method = $_SERVER['REQUEST_METHOD'];
-    
-    if ($method === 'GET') {
-        // 获取Session ID
-        $sessionId = $_COOKIE['sessionId'] ?? null;
-        if (isset($_SERVER['HTTP_X_SESSION_ID'])) {
-            $sessionId = $_SERVER['HTTP_X_SESSION_ID'];
-        }
-        
-        // 验证Session
-        $session = verifySession($db, $sessionId);
-        if (!$session) {
-            http_response_code(401);
-            echo json_encode(['error' => '未登录或登录已过期'], JSON_UNESCAPED_UNICODE);
-            exit;
-        }
-        
-        // 获取管理员权限数据
-        $permissionsData = $db->get('admin_permissions');
-        
-        if ($permissionsData) {
-            $permissions = json_decode($permissionsData, true);
-            if (json_last_error() !== JSON_ERROR_NONE) {
-                http_response_code(500);
-                echo json_encode(['error' => '管理员权限数据格式错误'], JSON_UNESCAPED_UNICODE);
-                exit;
-            }
-            http_response_code(200);
-            echo json_encode(['permissions' => $permissions], JSON_UNESCAPED_UNICODE);
-        } else {
-            // 返回默认管理员权限数组
-            http_response_code(200);
-            echo json_encode(['permissions' => []], JSON_UNESCAPED_UNICODE);
-        }
-        
-    } else {
-        http_response_code(405);
-        echo json_encode(['error' => "Unsupported method ('$method')"], JSON_UNESCAPED_UNICODE);
-    }
-} catch (Exception $e) {
-    error_log('获取管理员权限失败: ' . $e->getMessage());
-    http_response_code(500);
-    echo json_encode(['error' => '获取管理员权限失败，请稍后重试'], JSON_UNESCAPED_UNICODE);
-}
+jsonResponse([
+    'success' => true, 
+    'permissions' => $permissions,
+    'users' => $usersForPermissions // 用于权限管理的用户选择列表
+]);
+?>

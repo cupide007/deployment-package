@@ -1,93 +1,34 @@
 <?php
-// 保存权限模板云函数
-header('Content-Type: application/json; charset=utf-8');
+require_once '../common.php';
+$db = new Database('retinbox-main');
 
-// 验证Session
-function verifySession($db, $sessionId) {
-    if (!$sessionId) {
-        return null;
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+        echo json_encode(['success' => true]);
+        exit;
     }
-    
-    $sessionData = $db->get("session_$sessionId");
-    if (!$sessionData) {
-        return null;
-    }
-    
-    try {
-        $session = json_decode($sessionData, true);
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            return null;
-        }
-    } catch (Exception $e) {
-        return null;
-    }
-    
-    if (empty($session['expiresAt']) || empty($session['userId'])) {
-        return null;
-    }
-    
-    $now = new DateTime();
-    try {
-        $expiresAt = new DateTime($session['expiresAt']);
-    } catch (Exception $e) {
-        $db->delete("session_$sessionId");
-        return null;
-    }
-    
-    if ($now > $expiresAt) {
-        $db->delete("session_$sessionId");
-        return null;
-    }
-    
-    return $session;
+    jsonError('Method Not Allowed', 405);
 }
 
-try {
-    $db = new Database('antister_virtual_country');
-    $method = $_SERVER['REQUEST_METHOD'];
-    
-    if ($method === 'POST') {
-        // 获取Session ID
-        $sessionId = $_COOKIE['sessionId'] ?? null;
-        if (isset($_SERVER['HTTP_X_SESSION_ID'])) {
-            $sessionId = $_SERVER['HTTP_X_SESSION_ID'];
-        }
-        
-        // 验证Session
-        $session = verifySession($db, $sessionId);
-        if (!$session) {
-            http_response_code(401);
-            echo json_encode(['error' => '未登录或登录已过期'], JSON_UNESCAPED_UNICODE);
-            exit;
-        }
-        
-        // 获取请求体中的权限模板数据
-        $rawInput = file_get_contents('php://input');
-        $data = json_decode($rawInput, true);
-        $templates = $data['templates'] ?? null;
-        
-        if (!$templates || !is_array($templates)) {
-            http_response_code(400);
-            echo json_encode(['error' => '权限模板数据格式错误'], JSON_UNESCAPED_UNICODE);
-            exit;
-        }
-        
-        // 保存权限模板数据
-        $db->set('permission_templates', json_encode($templates, JSON_UNESCAPED_UNICODE));
-        
-        // 返回成功响应
-        http_response_code(200);
-        echo json_encode([
-            'message' => '权限模板保存成功',
-            'templates' => $templates
-        ], JSON_UNESCAPED_UNICODE);
-        
-    } else {
-        http_response_code(405);
-        echo json_encode(['error' => "Unsupported method ('$method')"], JSON_UNESCAPED_UNICODE);
-    }
-} catch (Exception $e) {
-    error_log('保存权限模板失败: ' . $e->getMessage());
-    http_response_code(500);
-    echo json_encode(['error' => '保存权限模板失败，请稍后重试'], JSON_UNESCAPED_UNICODE);
+// 需要 permissions 模块权限
+requireModulePermission($db, 'permissions');
+
+$data = [];
+
+$data = getJsonInput();
+
+if (empty($data) && isset($_REQUEST['payload'])) {
+    $data = json_decode($_REQUEST['payload'], true);
 }
+
+$templates = $data['templates'] ?? [];
+
+if (!is_array($templates)) {
+    $templates = [];
+}
+
+$db->set('sys_permission_templates', json_encode($templates));
+
+header('Content-Type: application/json');
+echo json_encode(['success' => true, 'count' => count($templates)]);
+?>

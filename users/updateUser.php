@@ -1,146 +1,88 @@
 <?php
-// 更新用户信息云函数
-header('Content-Type: application/json; charset=utf-8');
+require_once '../common.php';
 
-// 验证Session
-function verifySession($db, $sessionId) {
-    if (!$sessionId) return null;
-    $sessionData = $db->get("session_$sessionId");
-    if (!$sessionData) return null;
+$db = new Database('retinbox-main');
 
-    try {
-        $session = json_decode($sessionData, true);
-        if (json_last_error() !== JSON_ERROR_NONE) return null;
-    } catch (Exception $e) { return null; }
+$sessionId = $_SERVER['HTTP_X_SESSION_ID'] ?? $_COOKIE['sessionId'] ?? '';
+if (!$sessionId) jsonError('未登录', 401);
+$sessionData = $db->get('sess_' . $sessionId);
+if (!$sessionData) jsonError('会话已过期', 401);
 
-    if (empty($session['expiresAt']) || empty($session['userId'])) return null;
+$currentUserId = json_decode($sessionData, true)['userId'];
+$currentUserRaw = $db->get($currentUserId);
+$currentUserData = $currentUserRaw ? json_decode($currentUserRaw, true) : [];
+$isAdmin = ($currentUserData['role'] ?? '') === 'admin';
 
-    $now = new DateTime();
-    try { $expiresAt = new DateTime($session['expiresAt']); } catch (Exception $e) { return null; }
-
-    if ($now > $expiresAt) {
-        $db->delete("session_$sessionId");
-        return null;
+// 支持 GET 参数和 POST JSON
+$data = $_GET;
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $jsonInput = json_decode(file_get_contents('php://input'), true);
+    if ($jsonInput) {
+        $data = array_merge($data, $jsonInput);
     }
-    return $session;
+}
+$targetId = $data['id'] ?? '';
+if (!$targetId) jsonError('缺少用户ID');
+
+// 权限检查：只能修改自己，或管理员可修改任何人
+if ($targetId !== $currentUserId && !$isAdmin) {
+    jsonError('无权修改其他用户信息', 403);
 }
 
-try {
-    $db = new Database('antister_virtual_country');
-    $method = $_SERVER['REQUEST_METHOD'];
+$userRaw = $db->get($targetId);
+if (!$userRaw) jsonError('用户不存在');
 
-    if ($method === 'POST') {
-        // 获取Session ID
-        $sessionId = $_COOKIE['sessionId'] ?? null;
-        if (isset($_SERVER['HTTP_X_SESSION_ID'])) $sessionId = $_SERVER['HTTP_X_SESSION_ID'];
+$user = json_decode($userRaw, true);
 
-        // 验证Session
-        $session = verifySession($db, $sessionId);
-        if (!$session) {
-            http_response_code(401);
-            echo json_encode(['error' => '未登录或登录已过期'], JSON_UNESCAPED_UNICODE);
-            exit;
-        }
+// 处理用户名变更
+if (isset($data['username']) && $data['username'] !== $user['username']) {
+    $newUsername = trim($data['username']);
+    if (empty($newUsername)) jsonError('用户名不能为空');
 
-        // 获取当前操作者（通常是管理员或用户自己）
-        $operatorId = $session['userId'];
-        $operatorDataRaw = $db->get("user_$operatorId");
-        if (!$operatorDataRaw) {
-            http_response_code(401);
-            echo json_encode(['error' => '操作用户不存在'], JSON_UNESCAPED_UNICODE);
-            exit;
-        }
-        $operator = json_decode($operatorDataRaw, true);
-        $isAdmin = isset($operator['role']) && $operator['role'] === 'admin';
-
-        // 获取请求数据
-        $rawInput = file_get_contents('php://input');
-        $trimmedInput = trim($rawInput);
-        $updateData = [];
-
-        if ($trimmedInput !== '') {
-            $decodedInput = json_decode($trimmedInput, true);
-            if (json_last_error() === JSON_ERROR_NONE && $decodedInput !== null) {
-                $updateData = $decodedInput;
-            }
-        }
-        if (empty($updateData)) $updateData = $_POST;
-        if (empty($updateData)) $updateData = $_REQUEST;
-
-        // 确定目标用户ID
-        // 默认为操作者自己
-        $targetUserId = $operatorId;
-
-        // 如果请求中指定了ID，且ID不是操作者自己
-        if (isset($updateData['id']) && (string)$updateData['id'] !== (string)$operatorId) {
-            if ($isAdmin) {
-                // 只有管理员可以更新其他用户
-                $targetUserId = $updateData['id'];
-            } else {
-                http_response_code(403);
-                echo json_encode(['error' => '无权修改其他用户信息'], JSON_UNESCAPED_UNICODE);
-                exit;
-            }
-        }
-
-        // 获取目标用户数据
-        $userData = $db->get("user_$targetUserId");
-        if (!$userData) {
-            http_response_code(404);
-            echo json_encode(['error' => '目标用户不存在'], JSON_UNESCAPED_UNICODE);
-            exit;
-        }
-
-        $user = json_decode($userData, true);
-
-        // 定义允许更新的字段
-        // 基础字段所有人都可改
-        $allowedFields = ['username', 'email', 'qq', 'gender', 'race', 'age', 'residence', 'bio', 'avatar'];
-
-        // 管理员可以额外修改 role 字段
-        if ($isAdmin) {
-            $allowedFields[] = 'role';
-        }
-
-        $filteredUpdateData = [];
-
-        foreach ($allowedFields as $field) {
-            if (array_key_exists($field, $updateData)) {
-                $filteredUpdateData[$field] = $updateData[$field];
-            }
-        }
-
-        if (empty($filteredUpdateData)) {
-            http_response_code(400);
-            echo json_encode(['error' => '请提供要更新的数据'], JSON_UNESCAPED_UNICODE);
-            exit;
-        }
-
-        // 更新用户数据
-        $updatedUser = array_merge($user, $filteredUpdateData);
-        $db->set("user_$targetUserId", json_encode($updatedUser, JSON_UNESCAPED_UNICODE));
-
-        // 返回更新后的用户信息
-        http_response_code(200);
-        echo json_encode([
-            'message' => '用户信息更新成功',
-            'user' => [
-                'id' => $updatedUser['id'],
-                'username' => $updatedUser['username'],
-                'email' => $updatedUser['email'] ?? null,
-                'role' => $updatedUser['role'] ?? 'user',
-                'createdAt' => $updatedUser['createdAt'] ?? null,
-                'lastLogin' => $updatedUser['lastLogin'] ?? null
-            ]
-        ], JSON_UNESCAPED_UNICODE);
-
-    } else {
-        http_response_code(405);
-        echo json_encode(['error' => "Unsupported method ('$method')"], JSON_UNESCAPED_UNICODE);
+    $existingUserId = $db->get("idx_username_" . md5($newUsername));
+    if ($existingUserId && $existingUserId !== $targetId) {
+        jsonError('用户名已存在');
     }
-} catch (Exception $e) {
-    error_log('更新用户信息失败: ' . $e->getMessage());
-    http_response_code(500);
-    echo json_encode(['error' => '更新用户信息失败，请稍后重试'], JSON_UNESCAPED_UNICODE);
+
+    $db->delete("idx_username_" . md5($user['username']));
+    $user['username'] = $newUsername;
+    $db->set("idx_username_" . md5($newUsername), $targetId);
 }
+
+// 处理邮箱变更
+if (isset($data['email']) && trim($data['email']) !== ($user['email'] ?? '')) {
+    $newEmail = trim($data['email']);
+    if (!empty($newEmail)) {
+        $existingUserId = $db->get("idx_email_" . md5($newEmail));
+        if ($existingUserId && $existingUserId !== $targetId) {
+            jsonError('邮箱已被使用');
+        }
+        // 删除旧邮箱索引
+        if (!empty($user['email'])) {
+            $db->delete("idx_email_" . md5($user['email']));
+        }
+        // 创建新邮箱索引
+        $db->set("idx_email_" . md5($newEmail), $targetId);
+    }
+    $user['email'] = $newEmail;
+}
+
+// 普通字段更新
+$fields = ['bio', 'gender', 'qq', 'race', 'age', 'residence'];
+foreach ($fields as $field) {
+    if (isset($data[$field])) {
+        $user[$field] = trim($data[$field]);
+    }
+}
+
+// role 只有管理员可以修改
+if (isset($data['role']) && $isAdmin) {
+    $user['role'] = trim($data['role']);
+}
+
+$db->set($targetId, json_encode($user));
+
+unset($user['salt']);
+unset($user['hash']);
+jsonResponse(['success' => true, 'message' => '更新成功', 'user' => $user]);
 ?>

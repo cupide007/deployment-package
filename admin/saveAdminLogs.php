@@ -1,93 +1,35 @@
 <?php
-// 保存管理员日志云函数
-header('Content-Type: application/json; charset=utf-8');
+require_once '../common.php';
+$db = new Database('retinbox-main');
 
-// 验证Session
-function verifySession($db, $sessionId) {
-    if (!$sessionId) {
-        return null;
-    }
-    
-    $sessionData = $db->get("session_$sessionId");
-    if (!$sessionData) {
-        return null;
-    }
-    
-    try {
-        $session = json_decode($sessionData, true);
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            return null;
-        }
-    } catch (Exception $e) {
-        return null;
-    }
-    
-    if (empty($session['expiresAt']) || empty($session['userId'])) {
-        return null;
-    }
-    
-    $now = new DateTime();
-    try {
-        $expiresAt = new DateTime($session['expiresAt']);
-    } catch (Exception $e) {
-        $db->delete("session_$sessionId");
-        return null;
-    }
-    
-    if ($now > $expiresAt) {
-        $db->delete("session_$sessionId");
-        return null;
-    }
-    
-    return $session;
+// 需要 permissions 模块权限
+requireModulePermission($db, 'permissions');
+
+$data = getJsonInput();
+
+if (isset($data['log'])) {
+    $data = $data['log'];
 }
 
-try {
-    $db = new Database('antister_virtual_country');
-    $method = $_SERVER['REQUEST_METHOD'];
-    
-    if ($method === 'POST') {
-        // 获取Session ID
-        $sessionId = $_COOKIE['sessionId'] ?? null;
-        if (isset($_SERVER['HTTP_X_SESSION_ID'])) {
-            $sessionId = $_SERVER['HTTP_X_SESSION_ID'];
-        }
-        
-        // 验证Session
-        $session = verifySession($db, $sessionId);
-        if (!$session) {
-            http_response_code(401);
-            echo json_encode(['error' => '未登录或登录已过期'], JSON_UNESCAPED_UNICODE);
-            exit;
-        }
-        
-        // 获取请求体中的管理员日志数据
-        $rawInput = file_get_contents('php://input');
-        $data = json_decode($rawInput, true);
-        $logs = $data['logs'] ?? null;
-        
-        if (!$logs || !is_array($logs)) {
-            http_response_code(400);
-            echo json_encode(['error' => '管理员日志数据格式错误'], JSON_UNESCAPED_UNICODE);
-            exit;
-        }
-        
-        // 保存管理员日志数据
-        $db->set('admin_logs', json_encode($logs, JSON_UNESCAPED_UNICODE));
-        
-        // 返回成功响应
-        http_response_code(200);
-        echo json_encode([
-            'message' => '管理员日志保存成功',
-            'logs' => $logs
-        ], JSON_UNESCAPED_UNICODE);
-        
-    } else {
-        http_response_code(405);
-        echo json_encode(['error' => "Unsupported method ('$method')"], JSON_UNESCAPED_UNICODE);
-    }
-} catch (Exception $e) {
-    error_log('保存管理员日志失败: ' . $e->getMessage());
-    http_response_code(500);
-    echo json_encode(['error' => '保存管理员日志失败，请稍后重试'], JSON_UNESCAPED_UNICODE);
+if (!$data || !is_array($data)) {
+    echo json_encode(['success' => false, 'error' => 'No data']);
+    exit;
 }
+
+$logs = $db->get('sys_admin_logs');
+$logsList = $logs ? json_decode($logs, true) : [];
+
+if (!isset($data['id'])) $data['id'] = 'log_' . uniqid();
+if (!isset($data['timestamp'])) $data['timestamp'] = date('Y-m-d H:i:s');
+
+array_unshift($logsList, $data);
+
+if (count($logsList) > 500) {
+    $logsList = array_slice($logsList, 0, 500);
+}
+
+$db->set('sys_admin_logs', json_encode($logsList));
+
+header('Content-Type: application/json');
+echo json_encode(['success' => true]);
+?>
