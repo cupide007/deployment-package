@@ -11,9 +11,32 @@ if (empty($data)) {
 $username = trim($data['username'] ?? '');
 $email = trim($data['email'] ?? '');
 $password = $data['password'] ?? '';
+$inviteCode = strtoupper(trim($data['inviteCode'] ?? ''));
 
 if (!$username || !$email || !$password) {
     jsonError('请填写完整信息（用户名、邮箱、密码）');
+}
+
+if (!$inviteCode) {
+    jsonError('请填写邀请码');
+}
+
+// 验证邀请码
+$inviteRaw = $db->get('invite_' . $inviteCode);
+if (!$inviteRaw) {
+    jsonError('邀请码无效');
+}
+
+$invite = json_decode($inviteRaw, true);
+
+// 检查是否过期
+if (strtotime($invite['expiresAt']) < time()) {
+    jsonError('邀请码已过期');
+}
+
+// 检查使用次数
+if ($invite['currentUses'] >= $invite['maxUses']) {
+    jsonError('邀请码已被使用完');
 }
 
 if ($db->get("idx_email_" . md5($email))) {
@@ -57,6 +80,15 @@ try {
     $db->set('sys_users_list', json_encode($usersList));
 
     $db->set("bank_account_" . $userId, json_encode(['balance' => 0, 'cards' => []]));
+
+    // 更新邀请码使用记录
+    $invite['currentUses']++;
+    $invite['usedBy'][] = [
+        'userId' => $userId,
+        'username' => $username,
+        'usedAt' => date('Y-m-d H:i:s')
+    ];
+    $db->set('invite_' . $inviteCode, json_encode($invite));
 
     unset($newUser['salt']);
     unset($newUser['hash']);

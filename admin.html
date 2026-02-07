@@ -161,6 +161,14 @@
                             <span>权限管理</span>
                         </button>
                     </li>
+                    <li>
+                        <button
+                            class="admin-nav-btn w-full flex items-center space-x-3 p-3 rounded-md hover:bg-gray-700 transition-colors duration-200"
+                            data-target="invites">
+                            <i class="fa fa-ticket fa-fw text-xl"></i>
+                            <span>邀请码管理</span>
+                        </button>
+                    </li>
                 </ul>
             </nav>
         </aside>
@@ -857,6 +865,81 @@
                     </div>
                 </div>
             </section>
+
+            <!-- 邀请码管理 -->
+            <section id="invites" class="admin-section hidden animate-fade-in">
+                <div class="mb-8 flex justify-between items-center">
+                    <div>
+                        <h2 class="text-3xl font-bold text-primary mb-2">邀请码管理</h2>
+                        <p class="text-gray-600">管理注册邀请码，控制新用户注册</p>
+                    </div>
+                    <button id="generate-invite-btn"
+                        class="bg-primary text-light px-6 py-3 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium flex items-center space-x-2">
+                        <i class="fa fa-plus"></i>
+                        <span>生成邀请码</span>
+                    </button>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+                    <h3 class="text-xl font-bold text-primary mb-4">生成新邀请码</h3>
+                    <form id="generate-invite-form" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label for="invite-max-uses" class="block text-gray-700 mb-2">使用次数限制</label>
+                            <input type="number" id="invite-max-uses" value="1" min="1" max="100"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+                        </div>
+                        <div>
+                            <label for="invite-expires" class="block text-gray-700 mb-2">有效期(天)</label>
+                            <input type="number" id="invite-expires" value="7" min="1" max="365"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+                        </div>
+                        <div class="flex items-end">
+                            <button type="submit"
+                                class="w-full bg-accent text-light py-2 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium">
+                                <i class="fa fa-ticket"></i> 生成
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                    <div class="p-4 bg-gray-50 border-b flex justify-between items-center">
+                        <h3 class="text-lg font-bold text-primary">邀请码列表</h3>
+                        <button id="refresh-invites-btn" class="text-accent hover:text-primary transition-colors">
+                            <i class="fa fa-refresh"></i> 刷新
+                        </button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead>
+                                <tr>
+                                    <th
+                                        class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        邀请码</th>
+                                    <th
+                                        class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        状态</th>
+                                    <th
+                                        class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        使用情况</th>
+                                    <th
+                                        class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        创建者</th>
+                                    <th
+                                        class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        过期时间</th>
+                                    <th
+                                        class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="invites-table-body" class="bg-white divide-y divide-gray-200">
+                                <!-- 邀请码数据将通过JavaScript动态填充 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
         </main>
     </div>
 
@@ -1153,6 +1236,10 @@
                                 <input type="checkbox" id="module-permissions" name="modules" value="permissions"
                                     class="mr-2">
                                 <label for="module-permissions">权限管理</label>
+                            </div>
+                            <div class="flex items-center">
+                                <input type="checkbox" id="module-invites" name="modules" value="invites" class="mr-2">
+                                <label for="module-invites">邀请码管理</label>
                             </div>
                         </div>
                     </div>
@@ -2879,6 +2966,126 @@
                 })
             });
         }
+
+        // ============ 邀请码管理 ============
+        let globalInvitesCache = [];
+
+        async function loadInvites() {
+            try {
+                const res = await apiFetch('admin/getInvites.php');
+                if (res.success) {
+                    globalInvitesCache = res.invites || [];
+                    renderInvites();
+                }
+            } catch (e) {
+                console.error('加载邀请码失败:', e);
+            }
+        }
+
+        function renderInvites() {
+            const tbody = document.getElementById('invites-table-body');
+            if (!tbody) return;
+
+            if (globalInvitesCache.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-8 text-center text-gray-500">暂无邀请码</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = globalInvitesCache.map(invite => {
+                const statusClass = {
+                    'active': 'bg-green-100 text-green-800',
+                    'used': 'bg-gray-100 text-gray-800',
+                    'expired': 'bg-red-100 text-red-800'
+                }[invite.status] || 'bg-gray-100 text-gray-800';
+
+                const statusText = {
+                    'active': '可用',
+                    'used': '已用完',
+                    'expired': '已过期'
+                }[invite.status] || '未知';
+
+                return `
+                <tr>
+                    <td class="px-6 py-4">
+                        <code class="bg-gray-100 px-2 py-1 rounded font-mono text-lg font-bold text-primary">${invite.code}</code>
+                        <button onclick="copyInviteCode('${invite.code}')" class="ml-2 text-accent hover:text-primary" title="复制">
+                            <i class="fa fa-copy"></i>
+                        </button>
+                    </td>
+                    <td class="px-6 py-4">
+                        <span class="px-2 py-1 text-xs font-semibold rounded-full ${statusClass}">${statusText}</span>
+                    </td>
+                    <td class="px-6 py-4">${invite.currentUses}/${invite.maxUses}</td>
+                    <td class="px-6 py-4">${invite.createdByName || '未知'}</td>
+                    <td class="px-6 py-4 text-sm text-gray-500">${invite.expiresAt}</td>
+                    <td class="px-6 py-4">
+                        <button onclick="deleteInvite('${invite.code}')" class="text-red-500 hover:text-red-700">
+                            <i class="fa fa-trash"></i> 删除
+                        </button>
+                    </td>
+                </tr>
+                `;
+            }).join('');
+        }
+
+        function copyInviteCode(code) {
+            navigator.clipboard.writeText(code).then(() => {
+                alert('邀请码已复制: ' + code);
+            }).catch(err => {
+                prompt('请手动复制邀请码:', code);
+            });
+        }
+
+        async function generateInvite(maxUses, expiresIn) {
+            try {
+                const res = await apiFetch(`admin/generateInvite.php?maxUses=${maxUses}&expiresIn=${expiresIn}`);
+                if (res.success) {
+                    alert('邀请码生成成功: ' + res.invite.code);
+                    await loadInvites();
+                    await logAction('生成邀请码', `邀请码: ${res.invite.code}, 可使用${maxUses}次, 有效期${expiresIn}天`);
+                } else {
+                    alert('生成失败: ' + res.error);
+                }
+            } catch (e) {
+                alert('生成邀请码失败: ' + e.message);
+            }
+        }
+
+        async function deleteInvite(code) {
+            if (!confirm('确定要删除邀请码 ' + code + ' 吗？')) return;
+            try {
+                const res = await apiFetch(`admin/deleteInvite.php?code=${code}`);
+                if (res.success) {
+                    alert('邀请码已删除');
+                    await loadInvites();
+                    await logAction('删除邀请码', `邀请码: ${code}`);
+                } else {
+                    alert('删除失败: ' + res.error);
+                }
+            } catch (e) {
+                alert('删除邀请码失败: ' + e.message);
+            }
+        }
+
+        // 邀请码管理事件绑定
+        document.getElementById('generate-invite-form')?.addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const maxUses = document.getElementById('invite-max-uses').value || 1;
+            const expiresIn = document.getElementById('invite-expires').value || 7;
+            await generateInvite(maxUses, expiresIn);
+        });
+
+        document.getElementById('refresh-invites-btn')?.addEventListener('click', loadInvites);
+
+        // 在 section 切换时加载邀请码
+        const originalNavBtnHandler = document.querySelectorAll('.admin-nav-btn');
+        originalNavBtnHandler.forEach(btn => {
+            btn.addEventListener('click', function () {
+                if (this.dataset.target === 'invites') {
+                    loadInvites();
+                }
+            });
+        });
 
     </script>
 </body>

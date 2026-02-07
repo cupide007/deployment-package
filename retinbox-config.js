@@ -68,8 +68,8 @@ class RetinboxAPI {
     }
   }
 
-  async register(email, password, username) {
-    return this.request('auth/register', 'POST', { email, password, username });
+  async register(email, password, username, inviteCode = '') {
+    return this.request('auth/register', 'POST', { email, password, username, inviteCode });
   }
   async login(email, password) {
     const res = await this.request('auth/login', 'POST', { email, password });
@@ -118,5 +118,5 @@ window.userDataManager = window.retinbox;
       sessionStorage.removeItem('currentUser');
       window.retinbox._notifyListeners(null);
     }
-  } catch (e) {}
+  } catch (e) { }
 })();
