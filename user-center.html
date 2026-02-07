@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data: blob: 'unsafe-inline' 'unsafe-eval'; img-src 'self' https: data: blob:; media-src 'self' https: data: blob:; script-src 'self' https: 'unsafe-inline' 'unsafe-eval'; style-src 'self' https: 'unsafe-inline'; font-src 'self' https: data:;">
+    <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self' https: data: blob: 'unsafe-inline' 'unsafe-eval'; img-src 'self' https: data: blob:; media-src 'self' https: data: blob:; script-src 'self' https: 'unsafe-inline' 'unsafe-eval'; style-src 'self' https: 'unsafe-inline'; font-src 'self' https: data:;">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
     <script src="retinbox-config.js"></script>
@@ -51,7 +53,7 @@
             }
         }
     </script>
-    <script src="https://cdn.bootcdn.net/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="html2canvas.min.js"></script>
     <script src="https://cdn.bootcdn.net/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style type="text/tailwindcss">
         @layer utilities {
@@ -65,1005 +67,1105 @@
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;800&display=swap" rel="stylesheet">
 </head>
-<body class="bg-gray-100 font-sans">
-<nav id="main-nav" class="bg-primary text-light shadow-lg fixed w-full z-50 transition-all duration-300">
-    <div class="container mx-auto px-4 py-3 flex justify-between items-center">
-        <div class="flex items-center space-x-2">
-            <img src="flag.png" crossorigin="anonymous" alt="安提斯特国旗" class="h-10 w-10 rounded-full">
-            <span class="text-xl font-bold">安提斯特虚拟国</span>
-        </div>
-        <div class="hidden md:flex space-x-6">
-            <a href="index.html" class="hover:text-secondary transition-colors duration-200">首页</a>
-            <a href="bank.html" class="hover:text-secondary transition-colors duration-200">国家银行</a>
-            <a href="library.html" class="hover:text-secondary transition-colors duration-200">国家图书馆</a>
-            <a href="user-center.html" class="text-secondary font-medium">用户中心</a>
-        </div>
-        <div class="flex items-center space-x-4">
-            <span id="welcome-user" class="hidden">欢迎，<span id="current-username"></span></span>
-            <button id="logout-btn" class="bg-gray-700 text-light px-4 py-2 rounded-md hover:bg-gray-600 transition-all duration-200 font-medium">
-                出国
-            </button>
-            <button id="mobile-menu-btn" class="md:hidden text-2xl">
-                <i class="fa fa-bars"></i>
-            </button>
-        </div>
-    </div>
-    <div id="mobile-menu" class="hidden md:hidden bg-primary border-t border-gray-700 animate-slide-down">
-        <div class="container mx-auto px-4 py-2 flex flex-col space-y-3">
-            <a href="index.html" class="py-2 hover:text-secondary transition-colors duration-200">首页</a>
-            <a href="bank.html" class="py-2 hover:text-secondary transition-colors duration-200">国家银行</a>
-            <a href="library.html" class="py-2 hover:text-secondary transition-colors duration-200">国家图书馆</a>
-            <a href="user-center.html" class="py-2 text-secondary font-medium">用户中心</a>
-        </div>
-    </div>
-</nav>
 
-<main class="pt-16">
-    <section class="bg-gradient-primary py-16 relative overflow-hidden">
-        <div class="absolute inset-0 opacity-10">
-            <div class="absolute top-10 left-10 w-40 h-40 rounded-full bg-secondary"></div>
-            <div class="absolute bottom-10 right-10 w-60 h-60 rounded-full bg-accent"></div>
+<body class="bg-gray-100 font-sans">
+    <nav id="main-nav" class="bg-primary text-light shadow-lg fixed w-full z-50 transition-all duration-300">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <img src="flag.png" crossorigin="anonymous" alt="安提斯特国旗" class="h-10 w-10 rounded-full">
+                <span class="text-xl font-bold">安提斯特虚拟国</span>
+            </div>
+            <div class="hidden md:flex space-x-6">
+                <a href="index.html" class="hover:text-secondary transition-colors duration-200">首页</a>
+                <a href="bank.html" class="hover:text-secondary transition-colors duration-200">国家银行</a>
+                <a href="library.html" class="hover:text-secondary transition-colors duration-200">国家图书馆</a>
+                <a href="user-center.html" class="text-secondary font-medium">用户中心</a>
+            </div>
+            <div class="flex items-center space-x-4">
+                <span id="welcome-user" class="hidden">欢迎，<span id="current-username"></span></span>
+                <button id="logout-btn"
+                    class="bg-gray-700 text-light px-4 py-2 rounded-md hover:bg-gray-600 transition-all duration-200 font-medium">
+                    出国
+                </button>
+                <button id="mobile-menu-btn" class="md:hidden text-2xl">
+                    <i class="fa fa-bars"></i>
+                </button>
+            </div>
         </div>
-        <div class="container mx-auto px-4 relative z-10">
-            <div class="flex flex-col md:flex-row items-center justify-between">
-                <div class="md:w-1/2 text-light mb-10 md:mb-0 animate-slide-up">
-                    <h1 class="text-4xl md:text-5xl font-bold mb-4 text-shadow">
-                        用户中心
-                    </h1>
-                    <p class="text-xl mb-6 max-w-lg">
-                        管理您的个人信息，查看您的虚拟身份凭证。
-                    </p>
-                    <div class="flex flex-wrap gap-4">
-                        <button id="view-id-card-btn" class="bg-secondary text-primary px-6 py-3 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium text-lg">
-                            查看身份证
-                        </button>
-                        <button id="view-passport-btn" class="bg-transparent border-2 border-light text-light px-6 py-3 rounded-md hover:bg-light hover:text-primary transition-all duration-200 font-medium text-lg">
-                            查看护照
-                        </button>
-                    </div>
-                </div>
-                <div class="md:w-1/2 flex justify-center animate-float">
-                    <div class="relative">
-                        <div class="w-48 h-48 md:w-64 md:h-64 rounded-full bg-white p-2 shadow-2xl">
-                            <div class="w-full h-full rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
-                                <i class="fa fa-user-circle text-9xl text-gray-400" id="user-avatar-icon"></i>
-                                <img id="user-avatar-img" crossorigin="anonymous" class="w-full h-full object-cover hidden" alt="用户头像">                            </div>
+        <div id="mobile-menu" class="hidden md:hidden bg-primary border-t border-gray-700 animate-slide-down">
+            <div class="container mx-auto px-4 py-2 flex flex-col space-y-3">
+                <a href="index.html" class="py-2 hover:text-secondary transition-colors duration-200">首页</a>
+                <a href="bank.html" class="py-2 hover:text-secondary transition-colors duration-200">国家银行</a>
+                <a href="library.html" class="py-2 hover:text-secondary transition-colors duration-200">国家图书馆</a>
+                <a href="user-center.html" class="py-2 text-secondary font-medium">用户中心</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="pt-16">
+        <section class="bg-gradient-primary py-16 relative overflow-hidden">
+            <div class="absolute inset-0 opacity-10">
+                <div class="absolute top-10 left-10 w-40 h-40 rounded-full bg-secondary"></div>
+                <div class="absolute bottom-10 right-10 w-60 h-60 rounded-full bg-accent"></div>
+            </div>
+            <div class="container mx-auto px-4 relative z-10">
+                <div class="flex flex-col md:flex-row items-center justify-between">
+                    <div class="md:w-1/2 text-light mb-10 md:mb-0 animate-slide-up">
+                        <h1 class="text-4xl md:text-5xl font-bold mb-4 text-shadow">
+                            用户中心
+                        </h1>
+                        <p class="text-xl mb-6 max-w-lg">
+                            管理您的个人信息，查看您的虚拟身份凭证。
+                        </p>
+                        <div class="flex flex-wrap gap-4">
+                            <button id="view-id-card-btn"
+                                class="bg-secondary text-primary px-6 py-3 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium text-lg">
+                                查看身份证
+                            </button>
+                            <button id="view-passport-btn"
+                                class="bg-transparent border-2 border-light text-light px-6 py-3 rounded-md hover:bg-light hover:text-primary transition-all duration-200 font-medium text-lg">
+                                查看护照
+                            </button>
                         </div>
-                        <div class="absolute -bottom-4 -right-4 bg-secondary text-primary rounded-full w-16 h-16 flex items-center justify-center shadow-lg cursor-pointer hover:bg-opacity-90 transition-all duration-200" id="change-avatar-btn">
-                            <i class="fa fa-camera text-2xl"></i>
+                    </div>
+                    <div class="md:w-1/2 flex justify-center animate-float">
+                        <div class="relative">
+                            <div class="w-48 h-48 md:w-64 md:h-64 rounded-full bg-white p-2 shadow-2xl">
+                                <div
+                                    class="w-full h-full rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
+                                    <i class="fa fa-user-circle text-9xl text-gray-400" id="user-avatar-icon"></i>
+                                    <img id="user-avatar-img" crossorigin="anonymous"
+                                        class="w-full h-full object-cover hidden" alt="用户头像">
+                                </div>
+                            </div>
+                            <div class="absolute -bottom-4 -right-4 bg-secondary text-primary rounded-full w-16 h-16 flex items-center justify-center shadow-lg cursor-pointer hover:bg-opacity-90 transition-all duration-200"
+                                id="change-avatar-btn">
+                                <i class="fa fa-camera text-2xl"></i>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <section class="py-12 bg-white">
-        <div class="container mx-auto px-4">
-            <div class="flex flex-col md:flex-row gap-8">
-                <div class="md:w-1/4">
-                    <div class="bg-gray-100 rounded-lg shadow-md p-4 sticky top-20">
-                        <h3 class="text-xl font-bold text-primary mb-6 border-b border-gray-300 pb-2">账户管理</h3>
-                        <ul class="space-y-2">
-                            <li>
-                                <button id="tab-profile" class="w-full text-left px-4 py-3 rounded-md bg-primary text-light font-medium hover:bg-opacity-90 transition-colors duration-200 flex items-center">
-                                    <i class="fa fa-user mr-3"></i>
-                                    个人信息
-                                </button>
-                            </li>
-                            <li>
-                                <button id="tab-security" class="w-full text-left px-4 py-3 rounded-md hover:bg-gray-200 transition-colors duration-200 flex items-center">
-                                    <i class="fa fa-lock mr-3"></i>
-                                    账户安全
-                                </button>
-                            </li>
-                            <li>
-                                <button id="tab-id-card" class="w-full text-left px-4 py-3 rounded-md hover:bg-gray-200 transition-colors duration-200 flex items-center">
-                                    <i class="fa fa-id-card mr-3"></i>
-                                    身份证
-                                </button>
-                            </li>
-                            <li>
-                                <button id="tab-passport" class="w-full text-left px-4 py-3 rounded-md hover:bg-gray-200 transition-colors duration-200 flex items-center">
-                                    <i class="fa fa-book mr-3"></i>
-                                    护照
-                                </button>
-                            </li>
-                            <li>
-                                <button id="tab-notifications" class="w-full text-left px-4 py-3 rounded-md hover:bg-gray-200 transition-colors duration-200 flex items-center">
-                                    <i class="fa fa-bell mr-3"></i>
-                                    通知设置
-                                </button>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div class="md:w-3/4">
-                    <div id="panel-profile" class="animate-fade-in">
-                        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
-                            <h2 class="text-2xl font-bold text-primary mb-6">个人信息</h2>
-
-                            <form id="profile-form" class="space-y-6">
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div>
-                                        <label for="username" class="block text-gray-700 mb-2">用户名</label>
-                                        <input type="text" id="username" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required>
-                                    </div>
-                                    <div>
-                                        <label for="email" class="block text-gray-700 mb-2">邮箱</label>
-                                        <input type="email" id="email" class="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-100 cursor-not-allowed" readonly title="邮箱暂不可修改">
-                                    </div>
-                                </div>
-
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div>
-                                        <label for="qq" class="block text-gray-700 mb-2">QQ号码</label>
-                                        <input type="text" id="qq" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
-                                    </div>
-                                    <div>
-                                        <label for="gender" class="block text-gray-700 mb-2">性别</label>
-                                        <select id="gender" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required>
-                                            <option value="">请选择</option>
-                                            <option value="男">男</option>
-                                            <option value="女">女</option>
-                                            <option value="其他">其他</option>
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div>
-                                        <label for="race" class="block text-gray-700 mb-2">种族</label>
-                                        <select id="race" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
-                                            <option value="">请选择</option>
-                                            <option value="人类">人类</option>
-                                            <option value="精灵">精灵</option>
-                                            <option value="矮人">矮人</option>
-                                            <option value="兽人">兽人</option>
-                                            <option value="龙族">龙族</option>
-                                            <option value="其他">其他</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label for="age" class="block text-gray-700 mb-2">年龄</label>
-                                        <input type="number" id="age" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" min="1" max="150">
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label for="residence" class="block text-gray-700 mb-2">居住地</label>
-                                    <input type="text" id="residence" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" placeholder="例如：首都安提斯特城">
-                                </div>
-
-                                <div>
-                                    <label for="bio" class="block text-gray-700 mb-2">个人简介</label>
-                                    <textarea id="bio" rows="4" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" placeholder="介绍一下自己吧..."></textarea>
-                                </div>
-
-                                <div class="flex justify-end">
-                                    <button type="submit" class="bg-primary text-white px-6 py-3 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium">
-                                        保存更改
+        <section class="py-12 bg-white">
+            <div class="container mx-auto px-4">
+                <div class="flex flex-col md:flex-row gap-8">
+                    <div class="md:w-1/4">
+                        <div class="bg-gray-100 rounded-lg shadow-md p-4 sticky top-20">
+                            <h3 class="text-xl font-bold text-primary mb-6 border-b border-gray-300 pb-2">账户管理</h3>
+                            <ul class="space-y-2">
+                                <li>
+                                    <button id="tab-profile"
+                                        class="w-full text-left px-4 py-3 rounded-md bg-primary text-light font-medium hover:bg-opacity-90 transition-colors duration-200 flex items-center">
+                                        <i class="fa fa-user mr-3"></i>
+                                        个人信息
                                     </button>
-                                </div>
-                            </form>
+                                </li>
+                                <li>
+                                    <button id="tab-security"
+                                        class="w-full text-left px-4 py-3 rounded-md hover:bg-gray-200 transition-colors duration-200 flex items-center">
+                                        <i class="fa fa-lock mr-3"></i>
+                                        账户安全
+                                    </button>
+                                </li>
+                                <li>
+                                    <button id="tab-id-card"
+                                        class="w-full text-left px-4 py-3 rounded-md hover:bg-gray-200 transition-colors duration-200 flex items-center">
+                                        <i class="fa fa-id-card mr-3"></i>
+                                        身份证
+                                    </button>
+                                </li>
+                                <li>
+                                    <button id="tab-passport"
+                                        class="w-full text-left px-4 py-3 rounded-md hover:bg-gray-200 transition-colors duration-200 flex items-center">
+                                        <i class="fa fa-book mr-3"></i>
+                                        护照
+                                    </button>
+                                </li>
+                                <li>
+                                    <button id="tab-notifications"
+                                        class="w-full text-left px-4 py-3 rounded-md hover:bg-gray-200 transition-colors duration-200 flex items-center">
+                                        <i class="fa fa-bell mr-3"></i>
+                                        通知设置
+                                    </button>
+                                </li>
+                            </ul>
                         </div>
                     </div>
 
-                    <div id="panel-security" class="hidden animate-fade-in">
-                        <div class="bg-white rounded-lg shadow-md p-6">
-                            <h2 class="text-2xl font-bold text-primary mb-6">账户安全</h2>
+                    <div class="md:w-3/4">
+                        <div id="panel-profile" class="animate-fade-in">
+                            <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+                                <h2 class="text-2xl font-bold text-primary mb-6">个人信息</h2>
 
-                            <div class="space-y-8">
-                                <div class="border-b border-gray-200 pb-8">
-                                    <h3 class="text-xl font-medium text-gray-800 mb-4">修改密码</h3>
-                                    <form id="change-password-form" class="space-y-4">
+                                <form id="profile-form" class="space-y-6">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div>
-                                            <label for="current-password" class="block text-gray-700 mb-2">当前密码</label>
-                                            <input type="password" id="current-password" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required>
-                                        </div>
-                                        <div>
-                                            <label for="new-password" class="block text-gray-700 mb-2">新密码</label>
-                                            <input type="password" id="new-password" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required>
+                                            <label for="username" class="block text-gray-700 mb-2">用户名</label>
+                                            <input type="text" id="username"
+                                                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                                                required>
                                         </div>
                                         <div>
-                                            <label for="confirm-password" class="block text-gray-700 mb-2">确认新密码</label>
-                                            <input type="password" id="confirm-password" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required>
-                                        </div>
-                                        <div class="flex justify-end">
-                                            <button type="submit" class="bg-gray-400 text-white px-6 py-2 rounded-md hover:bg-gray-500 transition-all duration-200 font-medium">
-                                                更新密码
-                                            </button>
-                                        </div>
-                                    </form>
-                                </div>
-
-                                <div>
-                                    <h3 class="text-xl font-medium text-gray-800 mb-4">最近登录设备</h3>
-                                    <div class="space-y-4">
-                                        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                                            <div class="flex items-center">
-                                                <div class="bg-primary bg-opacity-10 rounded-full p-3 mr-4">
-                                                    <i class="fa fa-desktop text-primary text-xl"></i>
-                                                </div>
-                                                <div>
-                                                    <p class="font-medium text-gray-800">当前设备</p>
-                                                    <p class="text-sm text-gray-500">刚刚登录</p>
-                                                </div>
-                                            </div>
+                                            <label for="email" class="block text-gray-700 mb-2">邮箱</label>
+                                            <input type="email" id="email"
+                                                class="w-full px-4 py-2 border border-gray-300 rounded-md bg-gray-100 cursor-not-allowed"
+                                                readonly title="邮箱暂不可修改">
                                         </div>
                                     </div>
-                                </div>
+
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div>
+                                            <label for="qq" class="block text-gray-700 mb-2">QQ号码</label>
+                                            <input type="text" id="qq"
+                                                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+                                        </div>
+                                        <div>
+                                            <label for="gender" class="block text-gray-700 mb-2">性别</label>
+                                            <select id="gender"
+                                                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                                                required>
+                                                <option value="">请选择</option>
+                                                <option value="男">男</option>
+                                                <option value="女">女</option>
+                                                <option value="其他">其他</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div>
+                                            <label for="race" class="block text-gray-700 mb-2">种族</label>
+                                            <select id="race"
+                                                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+                                                <option value="">请选择</option>
+                                                <option value="人类">人类</option>
+                                                <option value="精灵">精灵</option>
+                                                <option value="矮人">矮人</option>
+                                                <option value="兽人">兽人</option>
+                                                <option value="龙族">龙族</option>
+                                                <option value="其他">其他</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label for="age" class="block text-gray-700 mb-2">年龄</label>
+                                            <input type="number" id="age"
+                                                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                                                min="1" max="150">
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label for="residence" class="block text-gray-700 mb-2">居住地</label>
+                                        <input type="text" id="residence"
+                                            class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                                            placeholder="例如：首都安提斯特城">
+                                    </div>
+
+                                    <div>
+                                        <label for="bio" class="block text-gray-700 mb-2">个人简介</label>
+                                        <textarea id="bio" rows="4"
+                                            class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                                            placeholder="介绍一下自己吧..."></textarea>
+                                    </div>
+
+                                    <div class="flex justify-end">
+                                        <button type="submit"
+                                            class="bg-primary text-white px-6 py-3 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium">
+                                            保存更改
+                                        </button>
+                                    </div>
+                                </form>
                             </div>
                         </div>
-                    </div>
 
-                    <div id="panel-id-card" class="hidden animate-fade-in">
-                        <div class="bg-white rounded-lg shadow-md p-6">
-                            <h2 class="text-2xl font-bold text-primary mb-6">安提斯特身份证</h2>
+                        <div id="panel-security" class="hidden animate-fade-in">
+                            <div class="bg-white rounded-lg shadow-md p-6">
+                                <h2 class="text-2xl font-bold text-primary mb-6">账户安全</h2>
 
-                            <div class="flex flex-col items-center mb-8">
-                                <div class="relative w-96 h-60 bg-white rounded-lg id-card-shadow gold-border overflow-hidden animate-float">
-                                    <div id="id-card-front" class="absolute inset-0 paper-texture p-4 flex flex-col">
-                                        <div class="flex justify-between items-start mb-4">
+                                <div class="space-y-8">
+                                    <div class="border-b border-gray-200 pb-8">
+                                        <h3 class="text-xl font-medium text-gray-800 mb-4">修改密码</h3>
+                                        <form id="change-password-form" class="space-y-4">
                                             <div>
-                                                <h3 class="text-2xl font-bold text-primary font-medieval">安提斯特虚拟国</h3>
-                                                <p class="text-lg text-gray-800">身份证</p>
+                                                <label for="current-password"
+                                                    class="block text-gray-700 mb-2">当前密码</label>
+                                                <input type="password" id="current-password"
+                                                    class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                                                    required>
                                             </div>
-                                            <img src="flag.png" crossorigin="anonymous" alt="安提斯特国旗" class="h-12 w-12 rounded">
-                                        </div>
-
-                                        <div class="flex flex-1">
-                                            <div class="w-24 h-32 bg-gray-200 rounded border border-gray-300 overflow-hidden mr-4 flex-shrink-0">
-                                                <i class="fa fa-user text-4xl text-gray-400 flex items-center justify-center h-full" id="id-avatar-icon"></i>
-                                                <img id="id-avatar-img" crossorigin="anonymous" class="w-full h-full object-cover hidden" alt="用户头像">
+                                            <div>
+                                                <label for="new-password" class="block text-gray-700 mb-2">新密码</label>
+                                                <input type="password" id="new-password"
+                                                    class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                                                    required>
                                             </div>
+                                            <div>
+                                                <label for="confirm-password"
+                                                    class="block text-gray-700 mb-2">确认新密码</label>
+                                                <input type="password" id="confirm-password"
+                                                    class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                                                    required>
+                                            </div>
+                                            <div class="flex justify-end">
+                                                <button type="submit"
+                                                    class="bg-gray-400 text-white px-6 py-2 rounded-md hover:bg-gray-500 transition-all duration-200 font-medium">
+                                                    更新密码
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
 
-                                            <div class="flex-1">
-                                                <div class="grid grid-cols-2 gap-y-2 text-sm">
-                                                    <div class="text-gray-600">姓名：</div>
-                                                    <div class="font-medium text-gray-900" id="id-name">用户名</div>
-
-                                                    <div class="text-gray-600">性别：</div>
-                                                    <div class="font-medium text-gray-900" id="id-gender">-</div>
-
-                                                    <div class="text-gray-600">种族：</div>
-                                                    <div class="font-medium text-gray-900" id="id-race">-</div>
-
-                                                    <div class="text-gray-600">年龄：</div>
-                                                    <div class="font-medium text-gray-900" id="id-age">-</div>
-
-                                                    <div class="text-gray-600">国籍：</div>
-                                                    <div class="font-medium text-gray-900">安提斯特</div>
-
-                                                    <div class="text-gray-600">居住地：</div>
-                                                    <div class="font-medium text-gray-900" id="id-residence">-</div>
+                                    <div>
+                                        <h3 class="text-xl font-medium text-gray-800 mb-4">最近登录设备</h3>
+                                        <div class="space-y-4">
+                                            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                                                <div class="flex items-center">
+                                                    <div class="bg-primary bg-opacity-10 rounded-full p-3 mr-4">
+                                                        <i class="fa fa-desktop text-primary text-xl"></i>
+                                                    </div>
+                                                    <div>
+                                                        <p class="font-medium text-gray-800">当前设备</p>
+                                                        <p class="text-sm text-gray-500">刚刚登录</p>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
-
-                                        <div class="mt-4 pt-2 border-t border-gray-300">
-                                            <div class="text-xs text-gray-600 mb-1">身份证号</div>
-                                            <div class="font-mono text-sm font-medium text-gray-900" id="id-number">ANT-XXXX-XXXX-XXXX</div>
-                                        </div>
                                     </div>
-                                </div>
-
-                                <div class="mt-6 text-center">
-                                    <p class="text-gray-600 mb-4">这是您在安提斯特虚拟国的官方身份证明，请妥善保管。</p>
-                                    <button id="download-id-card-btn" class="bg-primary text-white px-6 py-3 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium flex items-center mx-auto">
-                                        <i class="fa fa-download mr-2"></i>
-                                        下载身份证
-                                    </button>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div id="panel-passport" class="hidden animate-fade-in">
-                        <div class="bg-white rounded-lg shadow-md p-6">
-                            <h2 class="text-2xl font-bold text-primary mb-6">安提斯特护照</h2>
+                        <div id="panel-id-card" class="hidden animate-fade-in">
+                            <div class="bg-white rounded-lg shadow-md p-6">
+                                <h2 class="text-2xl font-bold text-primary mb-6">安提斯特身份证</h2>
 
-                            <div class="flex flex-col items-center mb-8">
-                                <div class="relative w-96 h-64 passport-shadow animate-float">
-                                    <div id="passport-page" class="absolute inset-0 bg-white rounded-lg overflow-hidden border-2 border-gray-300">
-                                        <div class="bg-primary text-white p-3 flex justify-between items-center">
-                                            <h3 class="text-xl font-bold font-medieval">PASSPORT</h3>
-                                            <img src="flag.png" crossorigin="anonymous" alt="安提斯特国旗" class="h-8 w-8 rounded">
-                                        </div>
-
-                                        <div class="p-4">
+                                <div class="flex flex-col items-center mb-8">
+                                    <div
+                                        class="relative w-96 h-60 bg-white rounded-lg id-card-shadow gold-border overflow-hidden animate-float">
+                                        <div id="id-card-front"
+                                            class="absolute inset-0 paper-texture p-4 flex flex-col">
                                             <div class="flex justify-between items-start mb-4">
                                                 <div>
-                                                    <p class="text-sm text-gray-600">国家</p>
-                                                    <p class="font-bold text-lg text-gray-900">ANTISTER</p>
+                                                    <h3 class="text-2xl font-bold text-primary font-medieval">安提斯特虚拟国
+                                                    </h3>
+                                                    <p class="text-lg text-gray-800">身份证</p>
                                                 </div>
-                                                <div class="text-right">
-                                                    <p class="text-sm text-gray-600">类型</p>
-                                                    <p class="font-bold text-lg text-gray-900">P</p>
-                                                </div>
+                                                <img src="flag.png" crossorigin="anonymous" alt="安提斯特国旗"
+                                                    class="h-12 w-12 rounded">
                                             </div>
 
-                                            <div class="flex mb-6">
-                                                <div class="w-28 h-36 bg-gray-200 rounded border border-gray-300 overflow-hidden mr-6 flex-shrink-0">
-                                                    <i class="fa fa-user text-5xl text-gray-400 flex items-center justify-center h-full" id="passport-avatar-icon"></i>
-                                                    <img id="passport-avatar-img" crossorigin="anonymous" class="w-full h-full object-cover hidden" alt="用户头像">
+                                            <div class="flex flex-1">
+                                                <div
+                                                    class="w-24 h-32 bg-gray-200 rounded border border-gray-300 overflow-hidden mr-4 flex-shrink-0">
+                                                    <i class="fa fa-user text-4xl text-gray-400 flex items-center justify-center h-full"
+                                                        id="id-avatar-icon"></i>
+                                                    <img id="id-avatar-img" crossorigin="anonymous"
+                                                        class="w-full h-full object-cover hidden" alt="用户头像">
                                                 </div>
 
                                                 <div class="flex-1">
-                                                    <div class="space-y-2 text-sm">
-                                                        <div class="grid grid-cols-2 gap-x-4">
-                                                            <div class="text-gray-600">姓名</div>
-                                                            <div class="font-medium text-gray-900" id="passport-full-name">-</div>
-                                                        </div>
-                                                        <div class="grid grid-cols-2 gap-x-4">
-                                                            <div class="text-gray-600">国籍</div>
-                                                            <div class="font-medium text-gray-900">ANTISTER</div>
-                                                        </div>
-                                                        <div class="grid grid-cols-2 gap-x-4">
-                                                            <div class="text-gray-600">出生日期</div>
-                                                            <div class="font-medium text-gray-900" id="passport-dob">-</div>
-                                                        </div>
-                                                        <div class="grid grid-cols-2 gap-x-4">
-                                                            <div class="text-gray-600">性别</div>
-                                                            <div class="font-medium text-gray-900" id="passport-gender">-</div>
-                                                        </div>
+                                                    <div class="grid grid-cols-2 gap-y-2 text-sm">
+                                                        <div class="text-gray-600">姓名：</div>
+                                                        <div class="font-medium text-gray-900" id="id-name">用户名</div>
+
+                                                        <div class="text-gray-600">性别：</div>
+                                                        <div class="font-medium text-gray-900" id="id-gender">-</div>
+
+                                                        <div class="text-gray-600">种族：</div>
+                                                        <div class="font-medium text-gray-900" id="id-race">-</div>
+
+                                                        <div class="text-gray-600">年龄：</div>
+                                                        <div class="font-medium text-gray-900" id="id-age">-</div>
+
+                                                        <div class="text-gray-600">国籍：</div>
+                                                        <div class="font-medium text-gray-900">安提斯特</div>
+
+                                                        <div class="text-gray-600">居住地：</div>
+                                                        <div class="font-medium text-gray-900" id="id-residence">-</div>
                                                     </div>
                                                 </div>
                                             </div>
 
-                                            <div class="grid grid-cols-2 gap-4 mb-4">
-                                                <div>
-                                                    <p class="text-xs text-gray-600 mb-1">护照号</p>
-                                                    <p class="font-mono font-medium text-gray-900" id="passport-number">P-ANT-XXXX-XXXX</p>
-                                                </div>
-                                                <div>
-                                                    <p class="text-xs text-gray-600 mb-1">有效期至</p>
-                                                    <p class="font-medium text-gray-900" id="passport-expiry">-</p>
-                                                </div>
-                                            </div>
-
-                                            <div class="bg-gray-100 p-2 rounded">
-                                                <p class="font-mono text-xs text-gray-800 break-all" id="passport-mrz">P<ANTISTER<<<<<<<<<<<<<<<<<<<<<<< XXXX123456ANT<<<<<<<<<<<<<<< 250120261234567890123456789012345678</p>
+                                            <div class="mt-4 pt-2 border-t border-gray-300">
+                                                <div class="text-xs text-gray-600 mb-1">身份证号</div>
+                                                <div class="font-mono text-sm font-medium text-gray-900" id="id-number">
+                                                    ANT-XXXX-XXXX-XXXX</div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
 
-                                <div class="mt-6 text-center">
-                                    <p class="text-gray-600 mb-4">这是您在安提斯特虚拟国的官方护照，可用于虚拟世界的国际旅行。</p>
-                                    <button id="download-passport-btn" class="bg-primary text-white px-6 py-3 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium flex items-center mx-auto">
-                                        <i class="fa fa-download mr-2"></i>
-                                        下载护照
-                                    </button>
+                                    <div class="mt-6 text-center">
+                                        <p class="text-gray-600 mb-4">这是您在安提斯特虚拟国的官方身份证明，请妥善保管。</p>
+                                        <button id="download-id-card-btn"
+                                            class="bg-primary text-white px-6 py-3 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium flex items-center mx-auto">
+                                            <i class="fa fa-download mr-2"></i>
+                                            下载身份证
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div id="panel-notifications" class="hidden animate-fade-in">
-                        <div class="bg-white rounded-lg shadow-md p-6">
-                            <h2 class="text-2xl font-bold text-primary mb-6">通知设置</h2>
+                        <div id="panel-passport" class="hidden animate-fade-in">
+                            <div class="bg-white rounded-lg shadow-md p-6">
+                                <h2 class="text-2xl font-bold text-primary mb-6">安提斯特护照</h2>
 
-                            <form id="notifications-form" class="space-y-6">
-                                <div class="p-4 bg-gray-50 rounded-lg">
-                                    <h3 class="text-lg font-medium text-gray-800 mb-4">通知偏好</h3>
-                                    <div class="space-y-4">
-                                        <div class="flex items-center justify-between">
-                                            <div>
-                                                <p class="font-medium text-gray-800">电子邮件通知</p>
-                                                <p class="text-sm text-gray-600">接收重要的账户和安全通知</p>
+                                <div class="flex flex-col items-center mb-8">
+                                    <div class="relative w-96 h-64 passport-shadow animate-float">
+                                        <div id="passport-page"
+                                            class="absolute inset-0 bg-white rounded-lg overflow-hidden border-2 border-gray-300">
+                                            <div class="bg-primary text-white p-3 flex justify-between items-center">
+                                                <h3 class="text-xl font-bold font-medieval">PASSPORT</h3>
+                                                <img src="flag.png" crossorigin="anonymous" alt="安提斯特国旗"
+                                                    class="h-8 w-8 rounded">
                                             </div>
-                                            <label class="relative inline-flex items-center cursor-pointer">
-                                                <input type="checkbox" id="email-notifications" class="sr-only peer" checked>
-                                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary peer-focus:ring-opacity-50 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
-                                            </label>
-                                        </div>
-                                        <div class="flex items-center justify-between">
-                                            <div>
-                                                <p class="font-medium text-gray-800">系统通知</p>
-                                                <p class="text-sm text-gray-600">在网站上接收系统通知</p>
+
+                                            <div class="p-4">
+                                                <div class="flex justify-between items-start mb-4">
+                                                    <div>
+                                                        <p class="text-sm text-gray-600">国家</p>
+                                                        <p class="font-bold text-lg text-gray-900">ANTISTER</p>
+                                                    </div>
+                                                    <div class="text-right">
+                                                        <p class="text-sm text-gray-600">类型</p>
+                                                        <p class="font-bold text-lg text-gray-900">P</p>
+                                                    </div>
+                                                </div>
+
+                                                <div class="flex mb-6">
+                                                    <div
+                                                        class="w-28 h-36 bg-gray-200 rounded border border-gray-300 overflow-hidden mr-6 flex-shrink-0">
+                                                        <i class="fa fa-user text-5xl text-gray-400 flex items-center justify-center h-full"
+                                                            id="passport-avatar-icon"></i>
+                                                        <img id="passport-avatar-img" crossorigin="anonymous"
+                                                            class="w-full h-full object-cover hidden" alt="用户头像">
+                                                    </div>
+
+                                                    <div class="flex-1">
+                                                        <div class="space-y-2 text-sm">
+                                                            <div class="grid grid-cols-2 gap-x-4">
+                                                                <div class="text-gray-600">姓名</div>
+                                                                <div class="font-medium text-gray-900"
+                                                                    id="passport-full-name">-</div>
+                                                            </div>
+                                                            <div class="grid grid-cols-2 gap-x-4">
+                                                                <div class="text-gray-600">国籍</div>
+                                                                <div class="font-medium text-gray-900">ANTISTER</div>
+                                                            </div>
+                                                            <div class="grid grid-cols-2 gap-x-4">
+                                                                <div class="text-gray-600">出生日期</div>
+                                                                <div class="font-medium text-gray-900"
+                                                                    id="passport-dob">-</div>
+                                                            </div>
+                                                            <div class="grid grid-cols-2 gap-x-4">
+                                                                <div class="text-gray-600">性别</div>
+                                                                <div class="font-medium text-gray-900"
+                                                                    id="passport-gender">-</div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="grid grid-cols-2 gap-4 mb-4">
+                                                    <div>
+                                                        <p class="text-xs text-gray-600 mb-1">护照号</p>
+                                                        <p class="font-mono font-medium text-gray-900"
+                                                            id="passport-number">P-ANT-XXXX-XXXX</p>
+                                                    </div>
+                                                    <div>
+                                                        <p class="text-xs text-gray-600 mb-1">有效期至</p>
+                                                        <p class="font-medium text-gray-900" id="passport-expiry">-</p>
+                                                    </div>
+                                                </div>
+
+                                                <div class="bg-gray-100 p-2 rounded">
+                                                    <p class="font-mono text-xs text-gray-800 break-all"
+                                                        id="passport-mrz">P<ANTISTER<<<<<<<<<<<<<<<<<<<<<<<
+                                                            XXXX123456ANT<<<<<<<<<<<<<<<
+                                                            250120261234567890123456789012345678</p>
+                                                </div>
                                             </div>
-                                            <label class="relative inline-flex items-center cursor-pointer">
-                                                <input type="checkbox" id="system-notifications" class="sr-only peer" checked>
-                                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary peer-focus:ring-opacity-50 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
-                                            </label>
-                                        </div>
-                                        <div class="flex items-center justify-between">
-                                            <div>
-                                                <p class="font-medium text-gray-800">活动提醒</p>
-                                                <p class="text-sm text-gray-600">接收关于国家活动和事件的提醒</p>
-                                            </div>
-                                            <label class="relative inline-flex items-center cursor-pointer">
-                                                <input type="checkbox" id="activity-notifications" class="sr-only peer">
-                                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary peer-focus:ring-opacity-50 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
-                                            </label>
                                         </div>
                                     </div>
-                                </div>
 
-                                <div>
-                                    <h3 class="text-lg font-medium text-gray-800 mb-4">通知频率</h3>
-                                    <div class="space-y-4">
-                                        <div>
-                                            <label for="notification-frequency" class="block text-gray-700 mb-2">电子邮件通知频率</label>
-                                            <select id="notification-frequency" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
-                                                <option value="immediately">立即</option>
-                                                <option value="daily">每日摘要</option>
-                                                <option value="weekly">每周摘要</option>
-                                            </select>
-                                        </div>
+                                    <div class="mt-6 text-center">
+                                        <p class="text-gray-600 mb-4">这是您在安提斯特虚拟国的官方护照，可用于虚拟世界的国际旅行。</p>
+                                        <button id="download-passport-btn"
+                                            class="bg-primary text-white px-6 py-3 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium flex items-center mx-auto">
+                                            <i class="fa fa-download mr-2"></i>
+                                            下载护照
+                                        </button>
                                     </div>
                                 </div>
+                            </div>
+                        </div>
 
-                                <div class="flex justify-end">
-                                    <button type="submit" class="bg-primary text-white px-6 py-3 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium">
-                                        保存设置
-                                    </button>
-                                </div>
-                            </form>
+                        <div id="panel-notifications" class="hidden animate-fade-in">
+                            <div class="bg-white rounded-lg shadow-md p-6">
+                                <h2 class="text-2xl font-bold text-primary mb-6">通知设置</h2>
+
+                                <form id="notifications-form" class="space-y-6">
+                                    <div class="p-4 bg-gray-50 rounded-lg">
+                                        <h3 class="text-lg font-medium text-gray-800 mb-4">通知偏好</h3>
+                                        <div class="space-y-4">
+                                            <div class="flex items-center justify-between">
+                                                <div>
+                                                    <p class="font-medium text-gray-800">电子邮件通知</p>
+                                                    <p class="text-sm text-gray-600">接收重要的账户和安全通知</p>
+                                                </div>
+                                                <label class="relative inline-flex items-center cursor-pointer">
+                                                    <input type="checkbox" id="email-notifications" class="sr-only peer"
+                                                        checked>
+                                                    <div
+                                                        class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary peer-focus:ring-opacity-50 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary">
+                                                    </div>
+                                                </label>
+                                            </div>
+                                            <div class="flex items-center justify-between">
+                                                <div>
+                                                    <p class="font-medium text-gray-800">系统通知</p>
+                                                    <p class="text-sm text-gray-600">在网站上接收系统通知</p>
+                                                </div>
+                                                <label class="relative inline-flex items-center cursor-pointer">
+                                                    <input type="checkbox" id="system-notifications"
+                                                        class="sr-only peer" checked>
+                                                    <div
+                                                        class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary peer-focus:ring-opacity-50 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary">
+                                                    </div>
+                                                </label>
+                                            </div>
+                                            <div class="flex items-center justify-between">
+                                                <div>
+                                                    <p class="font-medium text-gray-800">活动提醒</p>
+                                                    <p class="text-sm text-gray-600">接收关于国家活动和事件的提醒</p>
+                                                </div>
+                                                <label class="relative inline-flex items-center cursor-pointer">
+                                                    <input type="checkbox" id="activity-notifications"
+                                                        class="sr-only peer">
+                                                    <div
+                                                        class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary peer-focus:ring-opacity-50 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary">
+                                                    </div>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <h3 class="text-lg font-medium text-gray-800 mb-4">通知频率</h3>
+                                        <div class="space-y-4">
+                                            <div>
+                                                <label for="notification-frequency"
+                                                    class="block text-gray-700 mb-2">电子邮件通知频率</label>
+                                                <select id="notification-frequency"
+                                                    class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+                                                    <option value="immediately">立即</option>
+                                                    <option value="daily">每日摘要</option>
+                                                    <option value="weekly">每周摘要</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="flex justify-end">
+                                        <button type="submit"
+                                            class="bg-primary text-white px-6 py-3 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium">
+                                            保存设置
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </section>
-</main>
+        </section>
+    </main>
 
-<footer class="bg-primary text-light py-8">
-    <div class="container mx-auto px-4">
-        <div class="flex flex-col md:flex-row justify-between items-center">
-            <div class="mb-4 md:mb-0">
-                <div class="flex items-center space-x-2">
-                    <img src="flag.png" crossorigin="anonymous" alt="安提斯特国旗" class="h-8 w-8 rounded-full">
-                    <span class="text-lg font-bold">安提斯特虚拟国</span>
+    <footer class="bg-primary text-light py-8">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <div class="flex items-center space-x-2">
+                        <img src="flag.png" crossorigin="anonymous" alt="安提斯特国旗" class="h-8 w-8 rounded-full">
+                        <span class="text-lg font-bold">安提斯特虚拟国</span>
+                    </div>
+                    <p class="text-sm text-gray-300 mt-2">
+                        © 2025 安提斯特虚拟国. 保留所有权利.
+                    </p>
                 </div>
-                <p class="text-sm text-gray-300 mt-2">
-                    © 2025 安提斯特虚拟国. 保留所有权利.
-                </p>
+                <div class="flex space-x-6">
+                    <a href="#" class="hover:text-secondary transition-colors duration-200">
+                        <i class="fa fa-qq text-2xl"></i>
+                    </a>
+                    <a href="#" class="hover:text-secondary transition-colors duration-200">
+                        <i class="fa fa-weixin text-2xl"></i>
+                    </a>
+                    <a href="#" class="hover:text-secondary transition-colors duration-200">
+                        <i class="fa fa-weibo text-2xl"></i>
+                    </a>
+                </div>
             </div>
-            <div class="flex space-x-6">
-                <a href="#" class="hover:text-secondary transition-colors duration-200">
-                    <i class="fa fa-qq text-2xl"></i>
-                </a>
-                <a href="#" class="hover:text-secondary transition-colors duration-200">
-                    <i class="fa fa-weixin text-2xl"></i>
-                </a>
-                <a href="#" class="hover:text-secondary transition-colors duration-200">
-                    <i class="fa fa-weibo text-2xl"></i>
-                </a>
+            <div class="mt-6 pt-6 border-t border-gray-700 text-center text-sm text-gray-400">
+                <p>安提斯特虚拟国是一个合法合规的成人过家家游戏平台，所有内容仅供娱乐。</p>
             </div>
         </div>
-        <div class="mt-6 pt-6 border-t border-gray-700 text-center text-sm text-gray-400">
-            <p>安提斯特虚拟国是一个合法合规的成人过家家游戏平台，所有内容仅供娱乐。</p>
+    </footer>
+
+    <div id="change-avatar-modal"
+        class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 overflow-hidden animate-fade-in">
+            <div class="bg-primary text-white p-4 flex justify-between items-center">
+                <h2 class="text-xl font-bold">更改头像</h2>
+                <button class="close-modal text-2xl hover:text-secondary transition-colors duration-200">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="p-6">
+                <div class="flex flex-col items-center mb-6">
+                    <div
+                        class="w-32 h-32 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden mb-4">
+                        <i class="fa fa-user-circle text-5xl text-gray-400" id="preview-avatar-icon"></i>
+                        <img id="preview-avatar-img" class="w-full h-full object-cover hidden" alt="预览头像">
+                    </div>
+                    <p class="text-gray-600 text-center">选择一张图片作为您的头像</p>
+                </div>
+                <form id="avatar-form" class="space-y-4">
+                    <div>
+                        <input type="file" id="avatar-input"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                            accept=".jpg,.jpeg,.png" required>
+                    </div>
+                    <div class="flex justify-center space-x-4">
+                        <button type="button"
+                            class="close-modal px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-all duration-200 font-medium">
+                            取消
+                        </button>
+                        <button type="submit"
+                            class="bg-primary text-white px-6 py-2 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium">
+                            确认更改
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
-</footer>
 
-<div id="change-avatar-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
-    <div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 overflow-hidden animate-fade-in">
-        <div class="bg-primary text-white p-4 flex justify-between items-center">
-            <h2 class="text-xl font-bold">更改头像</h2>
-            <button class="close-modal text-2xl hover:text-secondary transition-colors duration-200">
-                <i class="fa fa-times"></i>
-            </button>
-        </div>
-        <div class="p-6">
-            <div class="flex flex-col items-center mb-6">
-                <div class="w-32 h-32 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden mb-4">
-                    <i class="fa fa-user-circle text-5xl text-gray-400" id="preview-avatar-icon"></i>
-                    <img id="preview-avatar-img" class="w-full h-full object-cover hidden" alt="预览头像">
-                </div>
-                <p class="text-gray-600 text-center">选择一张图片作为您的头像</p>
+    <div id="success-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 overflow-hidden animate-fade-in">
+            <div class="bg-green-500 text-white p-4 flex justify-between items-center">
+                <h2 class="text-xl font-bold">操作成功</h2>
+                <button class="close-modal text-2xl hover:text-gray-200 transition-colors duration-200">
+                    <i class="fa fa-times"></i>
+                </button>
             </div>
-            <form id="avatar-form" class="space-y-4">
-                <div>
-                    <input type="file" id="avatar-input" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" accept=".jpg,.jpeg,.png" required>
+            <div class="p-6 text-center">
+                <div class="text-6xl text-green-500 mb-4">
+                    <i class="fa fa-check-circle"></i>
                 </div>
-                <div class="flex justify-center space-x-4">
-                    <button type="button" class="close-modal px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-all duration-200 font-medium">
-                        取消
-                    </button>
-                    <button type="submit" class="bg-primary text-white px-6 py-2 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium">
-                        确认更改
-                    </button>
-                </div>
-            </form>
+                <h3 class="text-2xl font-bold text-gray-800 mb-2" id="success-title">操作成功</h3>
+                <p class="text-gray-600 mb-6" id="success-message">您的操作已成功完成。</p>
+                <button
+                    class="close-modal bg-primary text-white px-6 py-3 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium">
+                    确定
+                </button>
+            </div>
         </div>
     </div>
-</div>
 
-<div id="success-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
-    <div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 overflow-hidden animate-fade-in">
-        <div class="bg-green-500 text-white p-4 flex justify-between items-center">
-            <h2 class="text-xl font-bold">操作成功</h2>
-            <button class="close-modal text-2xl hover:text-gray-200 transition-colors duration-200">
-                <i class="fa fa-times"></i>
-            </button>
-        </div>
-        <div class="p-6 text-center">
-            <div class="text-6xl text-green-500 mb-4">
-                <i class="fa fa-check-circle"></i>
-            </div>
-            <h3 class="text-2xl font-bold text-gray-800 mb-2" id="success-title">操作成功</h3>
-            <p class="text-gray-600 mb-6" id="success-message">您的操作已成功完成。</p>
-            <button class="close-modal bg-primary text-white px-6 py-3 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium">
-                确定
-            </button>
-        </div>
-    </div>
-</div>
-
-<script>
-    function showSuccessModal(title, msg) {
-        const modal = document.getElementById('success-modal');
-        if (modal) {
-            document.getElementById('success-title').textContent = title || '操作成功';
-            document.getElementById('success-message').textContent = msg || '您的操作已成功完成。';
-            modal.classList.remove('hidden');
-        } else {
-            alert((title || '操作成功') + ": " + (msg || ''));
-        }
-    }
-
-    document.querySelectorAll('.close-modal').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.getElementById('change-avatar-modal').classList.add('hidden');
-            document.getElementById('success-modal').classList.add('hidden');
-        });
-    });
-
-    document.addEventListener('DOMContentLoaded', function() {
-        let cachedUserData = null;
-
-        // 获取当前用户信息 (从 SessionStorage 或 API)
-        async function getUserProfile() {
-            try {
-                // 调用 auth/getCurrentUser.php
-                const response = await window.retinbox.request('auth/getCurrentUser');
-                if (response.success && response.user) {
-                    cachedUserData = response.user;
-                    return cachedUserData;
-                }
-            } catch (error) {
-                console.warn('获取用户资料失败:', error);
-            }
-
-            // 降级：从 SessionStorage 读取
-            const localUser = sessionStorage.getItem('currentUser');
-            if (localUser) {
-                cachedUserData = JSON.parse(localUser);
-                return cachedUserData;
-            }
-
-            return null;
-        }
-
-        // 处理头像 URL
-        function normalizeAvatarUrl(avatarUrl) {
-            if (!avatarUrl) return null;
-            if (!avatarUrl.startsWith('data:') && !avatarUrl.startsWith('http')) {
-                return `users/avatar-file.php?name=${encodeURIComponent(avatarUrl)}`;
-            }
-            return avatarUrl;
-        }
-
-        function updateAvatarViews(avatarURL) {
-            const els = ['user-avatar', 'id-avatar', 'passport-avatar', 'preview-avatar'];
-            els.forEach(prefix => {
-                const icon = document.getElementById(prefix + '-icon');
-                const img = document.getElementById(prefix + '-img');
-
-                if (avatarURL) {
-                    icon.classList.add('hidden');
-                    // 关键点1：先设置跨域许可
-                    img.setAttribute('crossorigin', 'anonymous');
-                    // 关键点2：加时间戳，强制刷新图片缓存
-                    const cleanURL = avatarURL.includes('?')
-                        ? `${avatarURL}&t=${new Date().getTime()}`
-                        : `${avatarURL}?t=${new Date().getTime()}`;
-                    img.src = cleanURL;
-                    img.classList.remove('hidden');
-                } else {
-                    img.classList.add('hidden');
-                    icon.classList.remove('hidden');
-                }
-            });
-        }
-
-        // 加载用户数据并填充表单
-        async function loadUserData() {
-            const userData = await getUserProfile();
-
-            if (userData) {
-                // 填充基本信息
-                document.getElementById('username').value = userData.username || '';
-                document.getElementById('email').value = userData.email || ''; // 注意：后端 getCurrentUser.php 可能会 unset email
-                document.getElementById('bio').value = userData.bio || '';
-                document.getElementById('gender').value = userData.gender || '';
-
-                // 填充扩展信息 (目前后端不支持，填充空或尝试读取)
-                document.getElementById('qq').value = userData.qq || '';
-                document.getElementById('race').value = userData.race || '';
-                document.getElementById('age').value = userData.age || '';
-                document.getElementById('residence').value = userData.residence || '';
-
-                // 头像
-                if (userData.avatar) {
-                    updateAvatarViews(normalizeAvatarUrl(userData.avatar));
-                }
-
-                // 填充通知设置 (如果后端提供了设置接口)
-                try {
-                    const settings = await window.retinbox.getUserSettings();
-                    if (settings) {
-                        if (settings.notifications) {
-                            document.getElementById('email-notifications').checked = settings.notifications.email !== false;
-                            document.getElementById('system-notifications').checked = settings.notifications.system !== false;
-                            document.getElementById('activity-notifications').checked = settings.notifications.activity || false;
-                        }
-                        if (settings.notificationFrequency) {
-                            document.getElementById('notification-frequency').value = settings.notificationFrequency;
-                        }
-                    }
-                } catch (e) {
-                    console.log("无法加载用户设置或后端未实现该接口");
-                }
-            }
-        }
-
-        // 检查登录状态
-        async function checkLoginStatus() {
-            // 等待 API 初始化
-            let attempts = 0;
-            while (!window.retinbox && attempts < 10) {
-                await new Promise(r => setTimeout(r, 100));
-                attempts++;
-            }
-
-            if (!window.retinbox) {
-                console.error("Retinbox API 初始化失败");
-                return;
-            }
-
-            const user = await getUserProfile();
-            if (!user) {
-                window.location.href = 'index.html';
+    <script>
+        function showSuccessModal(title, msg) {
+            const modal = document.getElementById('success-modal');
+            if (modal) {
+                document.getElementById('success-title').textContent = title || '操作成功';
+                document.getElementById('success-message').textContent = msg || '您的操作已成功完成。';
+                modal.classList.remove('hidden');
             } else {
-                document.getElementById('welcome-user').classList.remove('hidden');
-                document.getElementById('current-username').textContent = user.username;
-                initPage();
+                alert((title || '操作成功') + ": " + (msg || ''));
             }
         }
 
-        // 移动端菜单切换
-        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-        const mobileMenu = document.getElementById('mobile-menu');
-
-        mobileMenuBtn.addEventListener('click', function() {
-            mobileMenu.classList.toggle('hidden');
-        });
-
-        // 退出登录
-        const logoutBtn = document.getElementById('logout-btn');
-
-        logoutBtn.addEventListener('click', async function() {
-            try {
-                await window.retinbox.logout();
-            } catch(e) { console.error(e); }
-            window.location.href = 'index.html';
-        });
-
-        // 选项卡切换逻辑 (保持不变)
-        const tabs = ['profile', 'security', 'id-card', 'passport', 'notifications'];
-        const tabButtons = tabs.map(tab => document.getElementById(`tab-${tab}`));
-        const panels = tabs.map(tab => document.getElementById(`panel-${tab}`));
-
-        const validPanels = panels.filter(p => p !== null);
-        const validTabButtons = tabButtons.filter(b => b !== null);
-
-        validPanels.forEach((panel, index) => {
-            if (index > 0) panel.classList.add('hidden');
-            else panel.classList.remove('hidden');
-        });
-
-        validTabButtons.forEach((button, index) => {
-            if (!button) return;
-            button.addEventListener('click', function() {
-                validPanels.forEach(panel => panel && panel.classList.add('hidden'));
-                validTabButtons.forEach(btn => {
-                    if (btn) {
-                        btn.classList.remove('bg-primary', 'text-light');
-                        btn.classList.add('hover:bg-gray-200');
-                    }
-                });
-                if (validPanels[index]) validPanels[index].classList.remove('hidden');
-                button.classList.add('bg-primary', 'text-light');
-                button.classList.remove('hover:bg-gray-200');
-
-                if (tabs[index] === 'id-card') updateIdCard();
-                else if (tabs[index] === 'passport') updatePassport();
+        document.querySelectorAll('.close-modal').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.getElementById('change-avatar-modal').classList.add('hidden');
+                document.getElementById('success-modal').classList.add('hidden');
             });
         });
 
-        document.getElementById('view-id-card-btn').addEventListener('click', function() {
-            document.getElementById('tab-id-card').click();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        });
+        document.addEventListener('DOMContentLoaded', function () {
+            let cachedUserData = null;
 
-        document.getElementById('view-passport-btn').addEventListener('click', function() {
-            document.getElementById('tab-passport').click();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        });
-
-        // 更改头像
-        const changeAvatarBtn = document.getElementById('change-avatar-btn');
-        const changeAvatarModal = document.getElementById('change-avatar-modal');
-        const avatarInput = document.getElementById('avatar-input');
-        const avatarForm = document.getElementById('avatar-form');
-
-        changeAvatarBtn.addEventListener('click', function() {
-            changeAvatarModal.classList.remove('hidden');
-        });
-
-        avatarInput.addEventListener('change', function(e) {
-            if (e.target.files && e.target.files[0]) {
-                const url = URL.createObjectURL(e.target.files[0]);
-                document.getElementById('preview-avatar-icon').classList.add('hidden');
-                document.getElementById('preview-avatar-img').src = url;
-                document.getElementById('preview-avatar-img').classList.remove('hidden');
-            }
-        });
-
-        avatarForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            if (avatarInput.files && avatarInput.files[0]) {
+            // 获取当前用户信息 (从 SessionStorage 或 API)
+            async function getUserProfile() {
                 try {
-                    const formData = new FormData();
-                    formData.append('avatar', avatarInput.files[0]);
-
-                    // 调用 users/upload-avatar.php (该接口返回 url)
-                    const result = await window.retinbox.upload('users/upload-avatar', formData);
-
-                    if (result.success && result.url) {
-                        const fullUrl = normalizeAvatarUrl(result.url);
-                        updateAvatarViews(fullUrl);
-                        changeAvatarModal.classList.add('hidden');
-                        showSuccessModal('头像更新成功', '您的头像已成功更新。');
-                        // 刷新用户缓存
-                        await getUserProfile();
-                    } else {
-                        alert('上传失败：' + (result.error || '未知错误'));
+                    // 调用 auth/getCurrentUser.php
+                    const response = await window.retinbox.request('auth/getCurrentUser');
+                    if (response.success && response.user) {
+                        cachedUserData = response.user;
+                        return cachedUserData;
                     }
                 } catch (error) {
-                    alert('上传出错: ' + error.message);
+                    console.warn('获取用户资料失败:', error);
                 }
-            }
-        });
 
-        // 个人信息表单提交
-        const profileForm = document.getElementById('profile-form');
-
-        profileForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-
-            const payload = {
-                username: document.getElementById('username').value,
-                gender: document.getElementById('gender').value,
-                bio: document.getElementById('bio').value,
-                // 下面这些字段后端目前不支持，但我们先传过去
-                qq: document.getElementById('qq').value,
-                race: document.getElementById('race').value,
-                age: document.getElementById('age').value,
-                residence: document.getElementById('residence').value
-            };
-
-            try {
-                // 调用 users/updateUser.php
-                const result = await window.retinbox.request('users/updateUser', 'POST', payload);
-
-                if (result.success) {
-                    document.getElementById('current-username').textContent = payload.username;
-                    showSuccessModal('个人信息更新成功', '您的个人信息已成功更新。');
-                    await updateIdCard();
-                    await updatePassport();
-                } else {
-                    alert('更新失败: ' + result.error);
+                // 降级：从 SessionStorage 读取
+                const localUser = sessionStorage.getItem('currentUser');
+                if (localUser) {
+                    cachedUserData = JSON.parse(localUser);
+                    return cachedUserData;
                 }
-            } catch (error) {
-                alert('请求失败: ' + error.message);
-            }
-        });
 
-        // 修改密码表单提交
-        document.getElementById('change-password-form').addEventListener('submit', async function(e) {
-            e.preventDefault();
-
-            const currentPassword = document.getElementById('current-password').value;
-            const newPassword = document.getElementById('new-password').value;
-            const confirmPassword = document.getElementById('confirm-password').value;
-
-            if (newPassword !== confirmPassword) {
-                alert('两次输入的新密码不一致');
-                return;
+                return null;
             }
 
-            try {
-                const result = await window.retinbox.request('auth/changePassword', 'POST', {
-                    currentPassword: currentPassword,
-                    newPassword: newPassword
+            // 处理头像 URL
+            function normalizeAvatarUrl(avatarUrl) {
+                if (!avatarUrl) return null;
+                if (!avatarUrl.startsWith('data:') && !avatarUrl.startsWith('http')) {
+                    return `users/avatar-file.php?name=${encodeURIComponent(avatarUrl)}`;
+                }
+                return avatarUrl;
+            }
+
+            function updateAvatarViews(avatarURL) {
+                const els = ['user-avatar', 'id-avatar', 'passport-avatar', 'preview-avatar'];
+                els.forEach(prefix => {
+                    const icon = document.getElementById(prefix + '-icon');
+                    const img = document.getElementById(prefix + '-img');
+
+                    if (avatarURL) {
+                        icon.classList.add('hidden');
+                        // 关键点1：先设置跨域许可
+                        img.setAttribute('crossorigin', 'anonymous');
+                        // 关键点2：加时间戳，强制刷新图片缓存
+                        const cleanURL = avatarURL.includes('?')
+                            ? `${avatarURL}&t=${new Date().getTime()}`
+                            : `${avatarURL}?t=${new Date().getTime()}`;
+                        img.src = cleanURL;
+                        img.classList.remove('hidden');
+                    } else {
+                        img.classList.add('hidden');
+                        icon.classList.remove('hidden');
+                    }
                 });
-
-                if (result.success) {
-                    document.getElementById('change-password-form').reset();
-                    showSuccessModal('密码更新成功', '您的密码已成功更新，下次登录请使用新密码。');
-                }
-            } catch (error) {
-                alert('更新失败: ' + error.message);
             }
-        });
 
-        // 通知设置提交
-        document.getElementById('notifications-form').addEventListener('submit', async function(e) {
-            e.preventDefault();
+            // 加载用户数据并填充表单
+            async function loadUserData() {
+                const userData = await getUserProfile();
 
-            const payload = {
-                notifications: {
-                    email: document.getElementById('email-notifications').checked,
-                    system: document.getElementById('system-notifications').checked,
-                    activity: document.getElementById('activity-notifications').checked
-                },
-                notificationFrequency: document.getElementById('notification-frequency').value
-            };
+                if (userData) {
+                    // 填充基本信息
+                    document.getElementById('username').value = userData.username || '';
+                    document.getElementById('email').value = userData.email || ''; // 注意：后端 getCurrentUser.php 可能会 unset email
+                    document.getElementById('bio').value = userData.bio || '';
+                    document.getElementById('gender').value = userData.gender || '';
 
-            try {
-                // 调用 settings/updateSettings.php
-                const result = await window.retinbox.updateUserSettings(payload);
-                if (result && result.success) {
-                    showSuccessModal('通知设置更新成功', '您的通知设置已成功更新。');
-                } else {
-                    // 兼容某些不返回 success 字段但实际成功的后端
-                    showSuccessModal('通知设置更新成功', '您的通知设置已成功更新。');
+                    // 填充扩展信息 (目前后端不支持，填充空或尝试读取)
+                    document.getElementById('qq').value = userData.qq || '';
+                    document.getElementById('race').value = userData.race || '';
+                    document.getElementById('age').value = userData.age || '';
+                    document.getElementById('residence').value = userData.residence || '';
+
+                    // 头像
+                    if (userData.avatar) {
+                        updateAvatarViews(normalizeAvatarUrl(userData.avatar));
+                    }
+
+                    // 填充通知设置 (如果后端提供了设置接口)
+                    try {
+                        const settings = await window.retinbox.getUserSettings();
+                        if (settings) {
+                            if (settings.notifications) {
+                                document.getElementById('email-notifications').checked = settings.notifications.email !== false;
+                                document.getElementById('system-notifications').checked = settings.notifications.system !== false;
+                                document.getElementById('activity-notifications').checked = settings.notifications.activity || false;
+                            }
+                            if (settings.notificationFrequency) {
+                                document.getElementById('notification-frequency').value = settings.notificationFrequency;
+                            }
+                        }
+                    } catch (e) {
+                        console.log("无法加载用户设置或后端未实现该接口");
+                    }
                 }
-            } catch (error) {
-                alert('设置保存失败: ' + error.message);
             }
-        });
 
-        // 下载身份证
-        document.getElementById('download-id-card-btn').addEventListener('click', function() {
-            const btn = this;
-            const originalText = btn.innerHTML;
-            const element = document.getElementById('id-card-front');
-
-            // 1. 按钮变 loading 防止重复点击
-            btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> 生成中...';
-            btn.disabled = true;
-
-            // 2. 截图配置
-            html2canvas(element, {
-                scale: 3,                // 稍微降低清晰度提高成功率
-                useCORS: true,           // 必须开启，为了下头像
-                allowTaint: false,       // 禁止污染
-                backgroundColor: '#f8f5e6',
-                logging: false
-            }).then(canvas => {
-                try {
-                    // 3. 生成 PDF
-                    const imgData = canvas.toDataURL('image/png', 0.9);
-                    const { jsPDF } = window.jspdf;
-                    const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: [85.6, 54] });
-                    doc.addImage(imgData, 'PNG', 0, 0, 85.6, 54);
-                    doc.save('my-id-card.pdf');
-                } catch (e) {
-                    alert('生成失败: ' + e.message);
+            // 检查登录状态
+            async function checkLoginStatus() {
+                // 等待 API 初始化
+                let attempts = 0;
+                while (!window.retinbox && attempts < 10) {
+                    await new Promise(r => setTimeout(r, 100));
+                    attempts++;
                 }
-            }).catch(e => {
-                // 4. 错误拦截
-                if(e.message.includes('Tainted')) {
-                    alert('错误：头像跨域失败。请尝试刷新页面再试。');
+
+                if (!window.retinbox) {
+                    console.error("Retinbox API 初始化失败");
+                    return;
+                }
+
+                const user = await getUserProfile();
+                if (!user) {
+                    window.location.href = 'index.html';
                 } else {
-                    alert('下载出错：' + e.message);
+                    document.getElementById('welcome-user').classList.remove('hidden');
+                    document.getElementById('current-username').textContent = user.username;
+                    initPage();
                 }
-            }).finally(() => {
-                // 5. 恢复按钮
-                btn.innerHTML = originalText;
-                btn.disabled = false;
+            }
+
+            // 移动端菜单切换
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            const mobileMenu = document.getElementById('mobile-menu');
+
+            mobileMenuBtn.addEventListener('click', function () {
+                mobileMenu.classList.toggle('hidden');
             });
-        });
 
-        document.getElementById('download-passport-btn').addEventListener('click', function() {
-            if (!window.jspdf) {
-                alert('错误：jsPDF 库未加载，请检查网络或更换 CDN 源。');
-                return;
-            }
+            // 退出登录
+            const logoutBtn = document.getElementById('logout-btn');
 
-            const passportElement = document.getElementById('passport-page');
-
-            const btn = this;
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<i class="fa fa-spinner fa-spin mr-2"></i>生成中...';
-            btn.disabled = true;
-
-            html2canvas(passportElement, {
-                scale: 4,
-                useCORS: true,
-                backgroundColor: '#ffffff'
-            }).then(canvas => {
+            logoutBtn.addEventListener('click', async function () {
                 try {
-                    const imgData = canvas.toDataURL('image/png', 1.0);
-                    const { jsPDF } = window.jspdf;
-
-                    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: [88, 125] });
-
-                    doc.addImage(imgData, 'PNG', 0, 0, 88, 125);
-
-                    doc.save('antister-passport.pdf');
-                } catch (err) {
-                    console.error('PDF 生成错误:', err);
-                    alert('生成 PDF 文件时出错: ' + err.message);
-                }
-            }).catch(err => {
-                console.error('截图失败:', err);
-                if (err.message && err.message.includes('Tainted')) {
-                    alert('错误：图片跨域导致无法生成截图，请确保头像服务器允许 CORS。');
-                } else {
-                    alert('生成护照截图失败: ' + err.message);
-                }
-            }).finally(() => {
-                // 恢复按钮状态
-                btn.innerHTML = originalText;
-                btn.disabled = false;
+                    await window.retinbox.logout();
+                } catch (e) { console.error(e); }
+                window.location.href = 'index.html';
             });
-        });
 
-        // 模态框交互
-        const modals = document.querySelectorAll('#change-avatar-modal, #success-modal');
-        document.querySelectorAll('.close-modal').forEach(btn => {
-            btn.addEventListener('click', () => modals.forEach(m => m.classList.add('hidden')));
-        });
-        modals.forEach(m => m.addEventListener('click', e => { if(e.target === m) m.classList.add('hidden'); }));
+            // 选项卡切换逻辑 (保持不变)
+            const tabs = ['profile', 'security', 'id-card', 'passport', 'notifications'];
+            const tabButtons = tabs.map(tab => document.getElementById(`tab-${tab}`));
+            const panels = tabs.map(tab => document.getElementById(`panel-${tab}`));
 
-        // 页面初始化
-        function initPage() {
-            loadUserData();
-            updateIdCard();
-            updatePassport();
-        }
+            const validPanels = panels.filter(p => p !== null);
+            const validTabButtons = tabButtons.filter(b => b !== null);
 
-        // 身份证生成逻辑
-        async function updateIdCard() {
-            const userData = await getUserProfile();
-            if (userData) {
-                document.getElementById('id-name').textContent = userData.username || '未知';
-                document.getElementById('id-gender').textContent = userData.gender || '未知';
-                document.getElementById('id-race').textContent = userData.race || '-';
-                document.getElementById('id-age').textContent = userData.age || '-';
-                document.getElementById('id-residence').textContent = userData.residence || '-';
+            validPanels.forEach((panel, index) => {
+                if (index > 0) panel.classList.add('hidden');
+                else panel.classList.remove('hidden');
+            });
 
-                const userId = userData.id ? String(userData.id).padStart(4, '0') : '0000';
-                document.getElementById('id-number').textContent = `ANT-${userId}-0001-XXXX`;
+            validTabButtons.forEach((button, index) => {
+                if (!button) return;
+                button.addEventListener('click', function () {
+                    validPanels.forEach(panel => panel && panel.classList.add('hidden'));
+                    validTabButtons.forEach(btn => {
+                        if (btn) {
+                            btn.classList.remove('bg-primary', 'text-light');
+                            btn.classList.add('hover:bg-gray-200');
+                        }
+                    });
+                    if (validPanels[index]) validPanels[index].classList.remove('hidden');
+                    button.classList.add('bg-primary', 'text-light');
+                    button.classList.remove('hover:bg-gray-200');
+
+                    if (tabs[index] === 'id-card') updateIdCard();
+                    else if (tabs[index] === 'passport') updatePassport();
+                });
+            });
+
+            document.getElementById('view-id-card-btn').addEventListener('click', function () {
+                document.getElementById('tab-id-card').click();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+
+            document.getElementById('view-passport-btn').addEventListener('click', function () {
+                document.getElementById('tab-passport').click();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+
+            // 更改头像
+            const changeAvatarBtn = document.getElementById('change-avatar-btn');
+            const changeAvatarModal = document.getElementById('change-avatar-modal');
+            const avatarInput = document.getElementById('avatar-input');
+            const avatarForm = document.getElementById('avatar-form');
+
+            changeAvatarBtn.addEventListener('click', function () {
+                changeAvatarModal.classList.remove('hidden');
+            });
+
+            avatarInput.addEventListener('change', function (e) {
+                if (e.target.files && e.target.files[0]) {
+                    const url = URL.createObjectURL(e.target.files[0]);
+                    document.getElementById('preview-avatar-icon').classList.add('hidden');
+                    document.getElementById('preview-avatar-img').src = url;
+                    document.getElementById('preview-avatar-img').classList.remove('hidden');
+                }
+            });
+
+            avatarForm.addEventListener('submit', async function (e) {
+                e.preventDefault();
+                if (avatarInput.files && avatarInput.files[0]) {
+                    try {
+                        const formData = new FormData();
+                        formData.append('avatar', avatarInput.files[0]);
+
+                        // 调用 users/upload-avatar.php (该接口返回 url)
+                        const result = await window.retinbox.upload('users/upload-avatar', formData);
+
+                        if (result.success && result.url) {
+                            const fullUrl = normalizeAvatarUrl(result.url);
+                            updateAvatarViews(fullUrl);
+                            changeAvatarModal.classList.add('hidden');
+                            showSuccessModal('头像更新成功', '您的头像已成功更新。');
+                            // 刷新用户缓存
+                            await getUserProfile();
+                        } else {
+                            alert('上传失败：' + (result.error || '未知错误'));
+                        }
+                    } catch (error) {
+                        alert('上传出错: ' + error.message);
+                    }
+                }
+            });
+
+            // 个人信息表单提交
+            const profileForm = document.getElementById('profile-form');
+
+            profileForm.addEventListener('submit', async function (e) {
+                e.preventDefault();
+
+                const payload = {
+                    username: document.getElementById('username').value,
+                    gender: document.getElementById('gender').value,
+                    bio: document.getElementById('bio').value,
+                    // 下面这些字段后端目前不支持，但我们先传过去
+                    qq: document.getElementById('qq').value,
+                    race: document.getElementById('race').value,
+                    age: document.getElementById('age').value,
+                    residence: document.getElementById('residence').value
+                };
+
+                try {
+                    // 调用 users/updateUser.php
+                    const result = await window.retinbox.request('users/updateUser', 'POST', payload);
+
+                    if (result.success) {
+                        document.getElementById('current-username').textContent = payload.username;
+                        showSuccessModal('个人信息更新成功', '您的个人信息已成功更新。');
+                        await updateIdCard();
+                        await updatePassport();
+                    } else {
+                        alert('更新失败: ' + result.error);
+                    }
+                } catch (error) {
+                    alert('请求失败: ' + error.message);
+                }
+            });
+
+            // 修改密码表单提交
+            document.getElementById('change-password-form').addEventListener('submit', async function (e) {
+                e.preventDefault();
+
+                const currentPassword = document.getElementById('current-password').value;
+                const newPassword = document.getElementById('new-password').value;
+                const confirmPassword = document.getElementById('confirm-password').value;
+
+                if (newPassword !== confirmPassword) {
+                    alert('两次输入的新密码不一致');
+                    return;
+                }
+
+                try {
+                    const result = await window.retinbox.request('auth/changePassword', 'POST', {
+                        currentPassword: currentPassword,
+                        newPassword: newPassword
+                    });
+
+                    if (result.success) {
+                        document.getElementById('change-password-form').reset();
+                        showSuccessModal('密码更新成功', '您的密码已成功更新，下次登录请使用新密码。');
+                    }
+                } catch (error) {
+                    alert('更新失败: ' + error.message);
+                }
+            });
+
+            // 通知设置提交
+            document.getElementById('notifications-form').addEventListener('submit', async function (e) {
+                e.preventDefault();
+
+                const payload = {
+                    notifications: {
+                        email: document.getElementById('email-notifications').checked,
+                        system: document.getElementById('system-notifications').checked,
+                        activity: document.getElementById('activity-notifications').checked
+                    },
+                    notificationFrequency: document.getElementById('notification-frequency').value
+                };
+
+                try {
+                    // 调用 settings/updateSettings.php
+                    const result = await window.retinbox.updateUserSettings(payload);
+                    if (result && result.success) {
+                        showSuccessModal('通知设置更新成功', '您的通知设置已成功更新。');
+                    } else {
+                        // 兼容某些不返回 success 字段但实际成功的后端
+                        showSuccessModal('通知设置更新成功', '您的通知设置已成功更新。');
+                    }
+                } catch (error) {
+                    alert('设置保存失败: ' + error.message);
+                }
+            });
+
+            // 下载身份证
+            document.getElementById('download-id-card-btn').addEventListener('click', function () {
+                const btn = this;
+                const originalText = btn.innerHTML;
+                const element = document.getElementById('id-card-front');
+
+                // 1. 按钮变 loading 防止重复点击
+                btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> 生成中...';
+                btn.disabled = true;
+
+                // 2. 截图配置
+                html2canvas(element, {
+                    scale: 3,                // 稍微降低清晰度提高成功率
+                    useCORS: true,           // 必须开启，为了下头像
+                    allowTaint: false,       // 禁止污染
+                    backgroundColor: '#f8f5e6',
+                    logging: false
+                }).then(canvas => {
+                    try {
+                        // 3. 生成 PDF
+                        const imgData = canvas.toDataURL('image/png', 0.9);
+                        const { jsPDF } = window.jspdf;
+                        const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: [85.6, 54] });
+                        doc.addImage(imgData, 'PNG', 0, 0, 85.6, 54);
+                        doc.save('my-id-card.pdf');
+                    } catch (e) {
+                        alert('生成失败: ' + e.message);
+                    }
+                }).catch(e => {
+                    // 4. 错误拦截
+                    if (e.message.includes('Tainted')) {
+                        alert('错误：头像跨域失败。请尝试刷新页面再试。');
+                    } else {
+                        alert('下载出错：' + e.message);
+                    }
+                }).finally(() => {
+                    // 5. 恢复按钮
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                });
+            });
+
+            document.getElementById('download-passport-btn').addEventListener('click', function () {
+                if (!window.jspdf) {
+                    alert('错误：jsPDF 库未加载，请检查网络或更换 CDN 源。');
+                    return;
+                }
+
+                const passportElement = document.getElementById('passport-page');
+
+                const btn = this;
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<i class="fa fa-spinner fa-spin mr-2"></i>生成中...';
+                btn.disabled = true;
+
+                html2canvas(passportElement, {
+                    scale: 4,
+                    useCORS: true,
+                    backgroundColor: '#ffffff'
+                }).then(canvas => {
+                    try {
+                        const imgData = canvas.toDataURL('image/png', 1.0);
+                        const { jsPDF } = window.jspdf;
+
+                        // 根据实际截图比例计算 PDF 尺寸
+                        const canvasWidth = canvas.width;
+                        const canvasHeight = canvas.height;
+                        const ratio = canvasWidth / canvasHeight;
+
+                        // 护照标准尺寸基准（保持实际比例）
+                        let pdfWidth, pdfHeight;
+                        if (ratio > 1) {
+                            // 横向护照
+                            pdfWidth = 125;
+                            pdfHeight = pdfWidth / ratio;
+                        } else {
+                            // 纵向护照
+                            pdfHeight = 125;
+                            pdfWidth = pdfHeight * ratio;
+                        }
+
+                        const doc = new jsPDF({
+                            orientation: ratio > 1 ? 'landscape' : 'portrait',
+                            unit: 'mm',
+                            format: [pdfWidth, pdfHeight]
+                        });
+
+                        doc.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+
+                        doc.save('antister-passport.pdf');
+                    } catch (err) {
+                        console.error('PDF 生成错误:', err);
+                        alert('生成 PDF 文件时出错: ' + err.message);
+                    }
+                }).catch(err => {
+                    console.error('截图失败:', err);
+                    if (err.message && err.message.includes('Tainted')) {
+                        alert('错误：图片跨域导致无法生成截图，请确保头像服务器允许 CORS。');
+                    } else {
+                        alert('生成护照截图失败: ' + err.message);
+                    }
+                }).finally(() => {
+                    // 恢复按钮状态
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                });
+            });
+
+            // 模态框交互
+            const modals = document.querySelectorAll('#change-avatar-modal, #success-modal');
+            document.querySelectorAll('.close-modal').forEach(btn => {
+                btn.addEventListener('click', () => modals.forEach(m => m.classList.add('hidden')));
+            });
+            modals.forEach(m => m.addEventListener('click', e => { if (e.target === m) m.classList.add('hidden'); }));
+
+            // 页面初始化
+            function initPage() {
+                loadUserData();
+                updateIdCard();
+                updatePassport();
             }
-        }
 
-        // 护照生成逻辑
-        async function updatePassport() {
-            const userData = await getUserProfile();
-            if (userData) {
-                document.getElementById('passport-full-name').textContent = userData.username || '未知';
-                document.getElementById('passport-gender').textContent = userData.gender ? userData.gender.charAt(0).toUpperCase() : 'U';
-                const dob = userData.createdAt ? new Date(userData.createdAt) : new Date();
-                document.getElementById('passport-dob').textContent = dob.toISOString().split('T')[0];
-                document.getElementById('passport-number').textContent = `P-ANT-${userData.id || '0000'}`;
+            // 身份证生成逻辑
+            async function updateIdCard() {
+                const userData = await getUserProfile();
+                if (userData) {
+                    document.getElementById('id-name').textContent = userData.username || '未知';
+                    document.getElementById('id-gender').textContent = userData.gender || '未知';
+                    document.getElementById('id-race').textContent = userData.race || '-';
+                    document.getElementById('id-age').textContent = userData.age || '-';
+                    document.getElementById('id-residence').textContent = userData.residence || '-';
 
-                // 机读码逻辑 (简化)
-                document.getElementById('passport-mrz').textContent = `P<ANT${(userData.username || 'UNKNOWN').toUpperCase()}<<<<<<<<<<<<<<<<<<`;
+                    const userId = userData.id ? String(userData.id).padStart(4, '0') : '0000';
+                    document.getElementById('id-number').textContent = `ANT-${userId}-0001-XXXX`;
+                }
             }
-        }
 
-        // 启动
-        checkLoginStatus();
-    });
-</script>
+            // 护照生成逻辑
+            async function updatePassport() {
+                const userData = await getUserProfile();
+                if (userData) {
+                    document.getElementById('passport-full-name').textContent = userData.username || '未知';
+                    document.getElementById('passport-gender').textContent = userData.gender ? userData.gender.charAt(0).toUpperCase() : 'U';
+                    const dob = userData.createdAt ? new Date(userData.createdAt) : new Date();
+                    document.getElementById('passport-dob').textContent = dob.toISOString().split('T')[0];
+                    document.getElementById('passport-number').textContent = `P-ANT-${userData.id || '0000'}`;
+
+                    // 机读码逻辑 (简化)
+                    document.getElementById('passport-mrz').textContent = `P<ANT${(userData.username || 'UNKNOWN').toUpperCase()}<<<<<<<<<<<<<<<<<<`;
+                }
+            }
+
+            // 启动
+            checkLoginStatus();
+        });
+    </script>
 </body>
+
 </html>

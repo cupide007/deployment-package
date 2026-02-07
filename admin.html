@@ -1475,6 +1475,7 @@
         let globalUsersCache = [];
         let globalDocumentsCache = [];
         let globalCardsCache = [];
+        let globalBankUsersCache = []; // 银行模块专用的用户列表
         let globalPermissionTemplates = [];
         let globalAdminPermissions = [];
         let globalAdminLogs = [];
@@ -1571,6 +1572,7 @@
             const res = await apiFetch(`bank/getAllCards.php?page=${page}&pageSize=${bankPageSize}`, { method: 'GET' });
             if (res.success) {
                 globalCardsCache = res.cards;
+                globalBankUsersCache = res.users || []; // 存储银行返回的用户列表
                 renderBankTable(res.cards);
                 renderBankPagination(res.total);
 
@@ -2089,7 +2091,9 @@
             document.getElementById('open-card-btn').addEventListener('click', () => {
                 document.getElementById('open-card-modal').classList.remove('hidden');
                 const userSelect = document.getElementById('open-card-user');
-                userSelect.innerHTML = globalUsersCache.map(u => `<option value="${u.id}">${u.username}</option>`).join('');
+                // 使用银行模块返回的用户列表，避免依赖用户管理权限
+                const usersToUse = globalBankUsersCache.length > 0 ? globalBankUsersCache : globalUsersCache;
+                userSelect.innerHTML = usersToUse.map(u => `<option value="${u.id}">${u.username}</option>`).join('');
 
                 const typeSelect = document.getElementById('open-card-type');
                 const limitInput = document.getElementById('open-card-credit-limit');
@@ -2725,21 +2729,19 @@
         }
 
         async function loadAdminPermissions() {
-            const [permRes, userRes] = await Promise.all([
-                apiFetch('admin/getAdminPermissions.php'),
-                apiFetch('users/getUsers.php')
-            ]);
+            // 权限接口已返回用户列表，无需单独调用 users/getUsers.php
+            const permRes = await apiFetch('admin/getAdminPermissions.php');
 
             if (permRes.success) {
                 globalAdminPermissions = permRes.permissions || [];
                 renderAdminPermissions();
-            }
 
-            if (userRes.success) {
+                // 使用权限接口返回的用户列表
+                const users = permRes.users || [];
                 const select = document.getElementById('admin-permission-user');
                 if (select) {
-                    select.innerHTML = userRes.users.map(u =>
-                        `<option value="${u.id}">${u.username} (${u.email})</option>`
+                    select.innerHTML = users.map(u =>
+                        `<option value="${u.id}">${u.username} (${u.email || '无邮箱'})</option>`
                     ).join('');
                 }
             }

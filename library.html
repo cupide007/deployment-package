@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data: blob:; img-src 'self' data: blob: https:; script-src 'self' https: 'unsafe-inline' 'unsafe-eval'; style-src 'self' https: 'unsafe-inline'; font-src 'self' https: data:;">
+    <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self' https: data: blob:; img-src 'self' data: blob: https:; script-src 'self' https: 'unsafe-inline' 'unsafe-eval'; style-src 'self' https: 'unsafe-inline'; font-src 'self' https: data:;">
     <title>安提斯特国家图书馆 - 安提斯特虚拟国</title>
     <link rel="icon" href="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f4bb.png">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -61,7 +63,7 @@
             }
         }
     </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style type="text/tailwindcss">
         @layer utilities {
@@ -86,254 +88,102 @@
         }
     </style>
 </head>
+
 <body class="bg-gray-100 font-sans">
-<nav id="main-nav" class="bg-primary text-light shadow-lg fixed w-full z-50 transition-all duration-300">
-    <div class="container mx-auto px-4 py-3 flex justify-between items-center">
-        <div class="flex items-center space-x-2">
-            <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/d8ddf5e8d8c84316a653dcb93cf61629~tplv-a9rns2rl98-image.image?lk3s=8e244e95&rcl=202601202312037748F98E243C1F231D4E&rrcfp=f06b921b&x-expires=1771513966&x-signature=gxZfK%2BBdsU1IDbMR4LFDmEH2PhA%3D" alt="安提斯特国旗" class="h-10 w-10 rounded-full">
-            <span class="text-xl font-bold">安提斯特虚拟国</span>
-        </div>
-        <div class="hidden md:flex space-x-6">
-            <a href="index.html" class="hover:text-secondary transition-colors duration-200">首页</a>
-            <a href="index.html#about" class="hover:text-secondary transition-colors duration-200">国家介绍</a>
-            <a href="bank.html" class="hover:text-secondary transition-colors duration-200">国家银行</a>
-            <a href="#" class="text-secondary font-medium">国家图书馆</a>
-            <a href="user-center.html" class="nav-user-center hidden hover:text-secondary transition-colors duration-200">用户中心</a>
-        </div>
-        <div class="flex items-center space-x-4">
-            <span id="welcome-user" class="hidden">欢迎，<span id="current-username"></span></span>
-            <button id="logout-btn" class="bg-gray-700 text-light px-4 py-2 rounded-md hover:bg-gray-600 transition-all duration-200 font-medium">
-                出国
-            </button>
-            <button id="mobile-menu-btn" class="md:hidden text-2xl">
-                <i class="fa fa-bars"></i>
-            </button>
-        </div>
-    </div>
-    <div id="mobile-menu" class="hidden md:hidden bg-primary border-t border-gray-700 animate-slide-down">
-        <div class="container mx-auto px-4 py-2 flex flex-col space-y-3">
-            <a href="index.html" class="py-2 hover:text-secondary transition-colors duration-200">首页</a>
-            <a href="index.html#about" class="py-2 hover:text-secondary transition-colors duration-200">国家介绍</a>
-            <a href="bank.html" class="py-2 hover:text-secondary transition-colors duration-200">国家银行</a>
-            <a href="#" class="py-2 text-secondary font-medium">国家图书馆</a>
-            <a href="user-center.html" class="nav-user-center hidden py-2 hover:text-secondary transition-colors duration-200">用户中心</a>
-        </div>
-    </div>
-</nav>
-
-<main class="pt-16">
-    <section class="bg-gradient-primary py-16 relative overflow-hidden">
-        <div class="absolute inset-0 opacity-10">
-            <div class="absolute top-10 left-10 w-40 h-40 rounded-full bg-secondary"></div>
-            <div class="absolute bottom-10 right-10 w-60 h-60 rounded-full bg-accent"></div>
-        </div>
-        <div class="container mx-auto px-4 relative z-10">
-            <div class="flex flex-col md:flex-row items-center justify-between">
-                <div class="md:w-1/2 text-light mb-10 md:mb-0 animate-slide-up">
-                    <h1 class="text-4xl md:text-5xl font-bold mb-4 text-shadow">
-                        安提斯特国家图书馆
-                    </h1>
-                    <p class="text-xl mb-6 max-w-lg">
-                        收藏安提斯特虚拟国的珍贵史料文献，为公民提供知识获取和文化交流的平台。
-                    </p>
-                    <div class="flex flex-wrap gap-4">
-                        <button id="search-docs-btn" class="bg-secondary text-primary px-6 py-3 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium text-lg">
-                            搜索文献
-                        </button>
-                        <button id="upload-docs-btn" class=" bg-transparent border-2 border-light text-light px-6 py-3 rounded-md hover:bg-light hover:text-primary transition-all duration-200 font-medium text-lg">
-                            上传文献
-                        </button>
-                    </div>
-                </div>
-                <div class="md:w-1/2 flex justify-center animate-float">
-                    <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/50bc333bc9814412b8ccde647d09da6b~tplv-a9rns2rl98-image.image?lk3s=8e244e95&rcl=202601202312037748F98E243C1F231D4E&rrcfp=f06b921b&x-expires=1771513966&x-signature=ao62S%2BcQ5dWBFcCT7JNEC9htN3A%3D" alt="安提斯特国家图书馆" class="w-64 h-64 md:w-80 md:h-80 object-cover rounded-lg shadow-2xl">
-                </div>
+    <nav id="main-nav" class="bg-primary text-light shadow-lg fixed w-full z-50 transition-all duration-300">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/d8ddf5e8d8c84316a653dcb93cf61629~tplv-a9rns2rl98-image.image?lk3s=8e244e95&rcl=202601202312037748F98E243C1F231D4E&rrcfp=f06b921b&x-expires=1771513966&x-signature=gxZfK%2BBdsU1IDbMR4LFDmEH2PhA%3D"
+                    alt="安提斯特国旗" class="h-10 w-10 rounded-full">
+                <span class="text-xl font-bold">安提斯特虚拟国</span>
+            </div>
+            <div class="hidden md:flex space-x-6">
+                <a href="index.html" class="hover:text-secondary transition-colors duration-200">首页</a>
+                <a href="index.html#about" class="hover:text-secondary transition-colors duration-200">国家介绍</a>
+                <a href="bank.html" class="hover:text-secondary transition-colors duration-200">国家银行</a>
+                <a href="#" class="text-secondary font-medium">国家图书馆</a>
+                <a href="user-center.html"
+                    class="nav-user-center hidden hover:text-secondary transition-colors duration-200">用户中心</a>
+            </div>
+            <div class="flex items-center space-x-4">
+                <span id="welcome-user" class="hidden">欢迎，<span id="current-username"></span></span>
+                <button id="logout-btn"
+                    class="bg-gray-700 text-light px-4 py-2 rounded-md hover:bg-gray-600 transition-all duration-200 font-medium">
+                    出国
+                </button>
+                <button id="mobile-menu-btn" class="md:hidden text-2xl">
+                    <i class="fa fa-bars"></i>
+                </button>
             </div>
         </div>
-    </section>
+        <div id="mobile-menu" class="hidden md:hidden bg-primary border-t border-gray-700 animate-slide-down">
+            <div class="container mx-auto px-4 py-2 flex flex-col space-y-3">
+                <a href="index.html" class="py-2 hover:text-secondary transition-colors duration-200">首页</a>
+                <a href="index.html#about" class="py-2 hover:text-secondary transition-colors duration-200">国家介绍</a>
+                <a href="bank.html" class="py-2 hover:text-secondary transition-colors duration-200">国家银行</a>
+                <a href="#" class="py-2 text-secondary font-medium">国家图书馆</a>
+                <a href="user-center.html"
+                    class="nav-user-center hidden py-2 hover:text-secondary transition-colors duration-200">用户中心</a>
+            </div>
+        </div>
+    </nav>
 
-    <section class="py-8 bg-white shadow-md">
-        <div class="container mx-auto px-4">
-            <div class="flex flex-col md:flex-row gap-4">
-                <div class="flex-grow">
-                    <div class="relative">
-                        <input type="text" id="search-input" class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" placeholder="搜索文献标题、作者或关键词...">
-                        <div class="absolute left-4 top-3 text-gray-400">
-                            <i class="fa fa-search text-lg"></i>
-                        </div>
-                        <div id="suggestions-container" class="absolute left-0 right-0 mt-1 bg-white rounded-md shadow-lg z-10 hidden">
-                            <ul id="suggestions-list" class="py-1 max-h-60 overflow-y-auto">
-                            </ul>
+    <main class="pt-16">
+        <section class="bg-gradient-primary py-16 relative overflow-hidden">
+            <div class="absolute inset-0 opacity-10">
+                <div class="absolute top-10 left-10 w-40 h-40 rounded-full bg-secondary"></div>
+                <div class="absolute bottom-10 right-10 w-60 h-60 rounded-full bg-accent"></div>
+            </div>
+            <div class="container mx-auto px-4 relative z-10">
+                <div class="flex flex-col md:flex-row items-center justify-between">
+                    <div class="md:w-1/2 text-light mb-10 md:mb-0 animate-slide-up">
+                        <h1 class="text-4xl md:text-5xl font-bold mb-4 text-shadow">
+                            安提斯特国家图书馆
+                        </h1>
+                        <p class="text-xl mb-6 max-w-lg">
+                            收藏安提斯特虚拟国的珍贵史料文献，为公民提供知识获取和文化交流的平台。
+                        </p>
+                        <div class="flex flex-wrap gap-4">
+                            <button id="search-docs-btn"
+                                class="bg-secondary text-primary px-6 py-3 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium text-lg">
+                                搜索文献
+                            </button>
+                            <button id="upload-docs-btn"
+                                class=" bg-transparent border-2 border-light text-light px-6 py-3 rounded-md hover:bg-light hover:text-primary transition-all duration-200 font-medium text-lg">
+                                上传文献
+                            </button>
                         </div>
                     </div>
-                </div>
-                <div class="flex gap-4">
-                    <select id="category-filter" class="px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
-                        <option value="all">全部分类</option>
-                        <option value="法律">法律</option>
-                        <option value="历史">历史</option>
-                        <option value="经济">经济</option>
-                        <option value="文化">文化</option>
-                        <option value="政治">政治</option>
-                        <option value="科技">科技</option>
-                        <option value="教育">教育</option>
-                        <option value="其他">其他</option>
-                    </select>
-                    <button id="search-btn" class="bg-primary text-white px-6 py-3 rounded-md hover:bg-opacity-90 transition-all duration-200">
-                        搜索
-                    </button>
+                    <div class="md:w-1/2 flex justify-center animate-float">
+                        <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/50bc333bc9814412b8ccde647d09da6b~tplv-a9rns2rl98-image.image?lk3s=8e244e95&rcl=202601202312037748F98E243C1F231D4E&rrcfp=f06b921b&x-expires=1771513966&x-signature=ao62S%2BcQ5dWBFcCT7JNEC9htN3A%3D"
+                            alt="安提斯特国家图书馆" class="w-64 h-64 md:w-80 md:h-80 object-cover rounded-lg shadow-2xl">
+                    </div>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <section class="py-12 bg-gray-50">
-        <div class="container mx-auto px-4">
-            <div class="flex justify-between items-center mb-8">
-                <h2 class="text-2xl font-bold text-primary">文献列表</h2>
-                <div class="flex items-center gap-4">
-                    <span class="text-gray-600">排序方式：</span>
-                    <select id="sort-option" class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
-                        <option value="date-desc">最新上传</option>
-                        <option value="date-asc">最早上传</option>
-                        <option value="title-asc">标题 A-Z</option>
-                        <option value="title-desc">标题 Z-A</option>
-                        <option value="author-asc">作者 A-Z</option>
-                        <option value="author-desc">作者 Z-A</option>
-                    </select>
-                </div>
-            </div>
-
-            <div id="documents-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div class="col-span-full text-center py-12">
-                    <div class="text-6xl text-gray-300 mb-4">
-                        <i class="fa fa-book"></i>
+        <section class="py-8 bg-white shadow-md">
+            <div class="container mx-auto px-4">
+                <div class="flex flex-col md:flex-row gap-4">
+                    <div class="flex-grow">
+                        <div class="relative">
+                            <input type="text" id="search-input"
+                                class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                                placeholder="搜索文献标题、作者或关键词...">
+                            <div class="absolute left-4 top-3 text-gray-400">
+                                <i class="fa fa-search text-lg"></i>
+                            </div>
+                            <div id="suggestions-container"
+                                class="absolute left-0 right-0 mt-1 bg-white rounded-md shadow-lg z-10 hidden">
+                                <ul id="suggestions-list" class="py-1 max-h-60 overflow-y-auto">
+                                </ul>
+                            </div>
+                        </div>
                     </div>
-                    <h3 class="text-xl font-medium text-gray-500 mb-2">正在加载文献...</h3>
-                    <p class="text-gray-400">请稍候，或尝试调整搜索条件</p>
-                </div>
-            </div>
-
-            <div class="flex justify-between items-center mt-12">
-                <div class="text-sm text-gray-600">
-                    显示 <span id="showing-records">0</span> 条记录，共 <span id="total-records">0</span> 条
-                </div>
-                <div class="flex space-x-2">
-                    <button id="prev-page" class="px-4 py-2 border border-gray-300 rounded-md bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
-                        上一页
-                    </button>
-                    <div id="page-numbers" class="flex space-x-1">
-                    </div>
-                    <button id="next-page" class="px-4 py-2 border border-gray-300 rounded-md bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
-                        下一页
-                    </button>
-                </div>
-            </div>
-        </div>
-    </section>
-</main>
-
-<footer class="bg-primary text-light py-8">
-    <div class="container mx-auto px-4">
-        <div class="flex flex-col md:flex-row justify-between items-center">
-            <div class="mb-4 md:mb-0">
-                <div class="flex items-center space-x-2">
-                    <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/d8ddf5e8d8c84316a653dcb93cf61629~tplv-a9rns2rl98-image.image?lk3s=8e244e95&rcl=202601202312037748F98E243C1F231D4E&rrcfp=f06b921b&x-expires=1771513966&x-signature=gxZfK%2BBdsU1IDbMR4LFDmEH2PhA%3D" alt="安提斯特国旗" class="h-8 w-8 rounded-full">
-                    <span class="text-lg font-bold">安提斯特虚拟国</span>
-                </div>
-                <p class="text-sm text-gray-300 mt-2">
-                    © 2025 安提斯特国家图书馆. 保留所有权利.
-                </p>
-            </div>
-            <div class="flex space-x-6">
-                <a href="#" class="hover:text-secondary transition-colors duration-200">
-                    <i class="fa fa-qq text-2xl"></i>
-                </a>
-                <a href="#" class="hover:text-secondary transition-colors duration-200">
-                    <i class="fa fa-weixin text-2xl"></i>
-                </a>
-                <a href="#" class="hover:text-secondary transition-colors duration-200">
-                    <i class="fa fa-weibo text-2xl"></i>
-                </a>
-            </div>
-        </div>
-        <div class="mt-6 pt-6 border-t border-gray-700 text-center text-sm text-gray-400">
-            <p>安提斯特国家图书馆是安提斯特虚拟国的官方文化机构，致力于保存和传播国家的知识和文化。</p>
-        </div>
-    </div>
-</footer>
-
-<div id="document-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
-    <div class="bg-white rounded-lg shadow-xl w-full max-w-4xl mx-4 max-h-[90vh] overflow-y-auto animate-fade-in">
-        <div class="bg-primary text-light p-4 flex justify-between items-center sticky top-0 z-10">
-            <h2 id="document-modal-title" class="text-xl font-bold">文献详情</h2>
-            <button id="close-document-modal" class="text-2xl hover:text-secondary transition-colors duration-200">
-                <i class="fa fa-times"></i>
-            </button>
-        </div>
-        <div class="p-6">
-            <div class="mb-6">
-                <h3 id="document-detail-title" class="text-2xl font-bold text-primary mb-2"></h3>
-                <div class="flex flex-wrap gap-4 text-sm text-gray-600 mb-4">
-                    <div>
-                        <span class="font-medium">作者：</span>
-                        <span id="document-detail-author"></span>
-                    </div>
-                    <div>
-                        <span class="font-medium">分类：</span>
-                        <span id="document-detail-category"></span>
-                    </div>
-                    <div>
-                        <span class="font-medium">上传日期：</span>
-                        <span id="document-detail-date"></span>
-                    </div>
-                    <div>
-                        <span class="font-medium">上传者：</span>
-                        <span id="document-detail-uploader"></span>
-                    </div>
-                </div>
-                <div class="bg-gray-50 p-4 rounded-lg mb-6">
-                    <h4 class="font-medium text-gray-800 mb-2">摘要</h4>
-                    <p id="document-detail-description" class="text-gray-700"></p>
-                </div>
-                <div class="flex flex-wrap gap-4">
-                    <button id="download-document-btn" class="bg-primary text-white px-6 py-2 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium flex items-center">
-                        <i class="fa fa-download mr-2"></i>
-                        下载文献
-                    </button>
-                    <button id="view-document-btn" class="bg-secondary text-primary px-6 py-2 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium flex items-center">
-                        <i class="fa fa-eye mr-2"></i>
-                        在线阅读
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div id="upload-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
-    <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl mx-4 animate-fade-in">
-        <div class="bg-primary text-light p-4 flex justify-between items-center">
-            <h2 class="text-xl font-bold">上传文献</h2>
-            <button id="close-upload-modal" class="text-2xl hover:text-secondary transition-colors duration-200">
-                <i class="fa fa-times"></i>
-            </button>
-        </div>
-        <div class="p-6">
-            <form id="upload-form" class="space-y-6">
-                <div>
-                    <label for="document-title" class="block text-gray-700 mb-2">文献标题 <span class="text-red-500">*</span></label>
-                    <input type="text" id="document-title" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label for="document-author" class="block text-gray-700 mb-2">作者 <span class="text-red-500">*</span></label>
-                        <input type="text" id="document-author" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required>
-                    </div>
-                    <div>
-                        <label for="document-category" class="block text-gray-700 mb-2">分类 <span class="text-red-500">*</span></label>
-                        <select id="document-category" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required>
-                            <option value="">请选择分类</option>
+                    <div class="flex gap-4">
+                        <select id="category-filter"
+                            class="px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+                            <option value="all">全部分类</option>
                             <option value="法律">法律</option>
                             <option value="历史">历史</option>
                             <option value="经济">经济</option>
@@ -343,372 +193,566 @@
                             <option value="教育">教育</option>
                             <option value="其他">其他</option>
                         </select>
+                        <button id="search-btn"
+                            class="bg-primary text-white px-6 py-3 rounded-md hover:bg-opacity-90 transition-all duration-200">
+                            搜索
+                        </button>
                     </div>
                 </div>
-                <div>
-                    <label for="document-description" class="block text-gray-700 mb-2">摘要描述 <span class="text-red-500">*</span></label>
-                    <textarea id="document-description" rows="4" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required></textarea>
-                </div>
-                <div>
-                    <label for="document-file" class="block text-gray-700 mb-2">上传文件 <span class="text-red-500">*</span></label>
-                    <div class="border-2 border-dashed border-gray-300 rounded-md p-6 text-center hover:border-primary transition-colors duration-200">
-                        <input type="file" id="document-file" class="hidden" accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.md,.ppt,.pptx,.jpg,.jpeg,.png,.gif">
-                        <label for="document-file" class="cursor-pointer">
-                            <div class="text-4xl text-gray-400 mb-2">
-                                <i class="fa fa-cloud-upload"></i>
-                            </div>
-                            <p class="text-gray-600 mb-1">点击或拖拽文件到此处上传</p>
-                            <p class="text-gray-500 text-sm">支持 PDF, Office, TXT, MD, 图片格式</p>
-                        </label>
+            </div>
+        </section>
+
+        <section class="py-12 bg-gray-50">
+            <div class="container mx-auto px-4">
+                <div class="flex justify-between items-center mb-8">
+                    <h2 class="text-2xl font-bold text-primary">文献列表</h2>
+                    <div class="flex items-center gap-4">
+                        <span class="text-gray-600">排序方式：</span>
+                        <select id="sort-option"
+                            class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+                            <option value="date-desc">最新上传</option>
+                            <option value="date-asc">最早上传</option>
+                            <option value="title-asc">标题 A-Z</option>
+                            <option value="title-desc">标题 Z-A</option>
+                            <option value="author-asc">作者 A-Z</option>
+                            <option value="author-desc">作者 Z-A</option>
+                        </select>
                     </div>
                 </div>
-                <div class="flex items-center">
-                    <input type="checkbox" id="agree-terms" class="mr-2" required>
-                    <label for="agree-terms" class="text-gray-700">我已阅读并同意<a href="#" class="text-primary hover:underline">《安提斯特国家图书馆文献上传条款》</a></label>
+
+                <div id="documents-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="col-span-full text-center py-12">
+                        <div class="text-6xl text-gray-300 mb-4">
+                            <i class="fa fa-book"></i>
+                        </div>
+                        <h3 class="text-xl font-medium text-gray-500 mb-2">正在加载文献...</h3>
+                        <p class="text-gray-400">请稍候，或尝试调整搜索条件</p>
+                    </div>
                 </div>
-                <div class="text-center">
-                    <button type="submit" class="bg-primary text-white px-8 py-3 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium">
-                        提交上传
+
+                <div class="flex justify-between items-center mt-12">
+                    <div class="text-sm text-gray-600">
+                        显示 <span id="showing-records">0</span> 条记录，共 <span id="total-records">0</span> 条
+                    </div>
+                    <div class="flex space-x-2">
+                        <button id="prev-page"
+                            class="px-4 py-2 border border-gray-300 rounded-md bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                            上一页
+                        </button>
+                        <div id="page-numbers" class="flex space-x-1">
+                        </div>
+                        <button id="next-page"
+                            class="px-4 py-2 border border-gray-300 rounded-md bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                            下一页
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-primary text-light py-8">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <div class="flex items-center space-x-2">
+                        <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/d8ddf5e8d8c84316a653dcb93cf61629~tplv-a9rns2rl98-image.image?lk3s=8e244e95&rcl=202601202312037748F98E243C1F231D4E&rrcfp=f06b921b&x-expires=1771513966&x-signature=gxZfK%2BBdsU1IDbMR4LFDmEH2PhA%3D"
+                            alt="安提斯特国旗" class="h-8 w-8 rounded-full">
+                        <span class="text-lg font-bold">安提斯特虚拟国</span>
+                    </div>
+                    <p class="text-sm text-gray-300 mt-2">
+                        © 2025 安提斯特国家图书馆. 保留所有权利.
+                    </p>
+                </div>
+                <div class="flex space-x-6">
+                    <a href="#" class="hover:text-secondary transition-colors duration-200">
+                        <i class="fa fa-qq text-2xl"></i>
+                    </a>
+                    <a href="#" class="hover:text-secondary transition-colors duration-200">
+                        <i class="fa fa-weixin text-2xl"></i>
+                    </a>
+                    <a href="#" class="hover:text-secondary transition-colors duration-200">
+                        <i class="fa fa-weibo text-2xl"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="mt-6 pt-6 border-t border-gray-700 text-center text-sm text-gray-400">
+                <p>安提斯特国家图书馆是安提斯特虚拟国的官方文化机构，致力于保存和传播国家的知识和文化。</p>
+            </div>
+        </div>
+    </footer>
+
+    <div id="document-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-4xl mx-4 max-h-[90vh] overflow-y-auto animate-fade-in">
+            <div class="bg-primary text-light p-4 flex justify-between items-center sticky top-0 z-10">
+                <h2 id="document-modal-title" class="text-xl font-bold">文献详情</h2>
+                <button id="close-document-modal" class="text-2xl hover:text-secondary transition-colors duration-200">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="p-6">
+                <div class="mb-6">
+                    <h3 id="document-detail-title" class="text-2xl font-bold text-primary mb-2"></h3>
+                    <div class="flex flex-wrap gap-4 text-sm text-gray-600 mb-4">
+                        <div>
+                            <span class="font-medium">作者：</span>
+                            <span id="document-detail-author"></span>
+                        </div>
+                        <div>
+                            <span class="font-medium">分类：</span>
+                            <span id="document-detail-category"></span>
+                        </div>
+                        <div>
+                            <span class="font-medium">上传日期：</span>
+                            <span id="document-detail-date"></span>
+                        </div>
+                        <div>
+                            <span class="font-medium">上传者：</span>
+                            <span id="document-detail-uploader"></span>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-lg mb-6">
+                        <h4 class="font-medium text-gray-800 mb-2">摘要</h4>
+                        <p id="document-detail-description" class="text-gray-700"></p>
+                    </div>
+                    <div class="flex flex-wrap gap-4">
+                        <button id="download-document-btn"
+                            class="bg-primary text-white px-6 py-2 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium flex items-center">
+                            <i class="fa fa-download mr-2"></i>
+                            下载文献
+                        </button>
+                        <button id="view-document-btn"
+                            class="bg-secondary text-primary px-6 py-2 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium flex items-center">
+                            <i class="fa fa-eye mr-2"></i>
+                            在线阅读
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="upload-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl mx-4 animate-fade-in">
+            <div class="bg-primary text-light p-4 flex justify-between items-center">
+                <h2 class="text-xl font-bold">上传文献</h2>
+                <button id="close-upload-modal" class="text-2xl hover:text-secondary transition-colors duration-200">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="p-6">
+                <form id="upload-form" class="space-y-6">
+                    <div>
+                        <label for="document-title" class="block text-gray-700 mb-2">文献标题 <span
+                                class="text-red-500">*</span></label>
+                        <input type="text" id="document-title"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                            required>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="document-author" class="block text-gray-700 mb-2">作者 <span
+                                    class="text-red-500">*</span></label>
+                            <input type="text" id="document-author"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                                required>
+                        </div>
+                        <div>
+                            <label for="document-category" class="block text-gray-700 mb-2">分类 <span
+                                    class="text-red-500">*</span></label>
+                            <select id="document-category"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                                required>
+                                <option value="">请选择分类</option>
+                                <option value="法律">法律</option>
+                                <option value="历史">历史</option>
+                                <option value="经济">经济</option>
+                                <option value="文化">文化</option>
+                                <option value="政治">政治</option>
+                                <option value="科技">科技</option>
+                                <option value="教育">教育</option>
+                                <option value="其他">其他</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label for="document-description" class="block text-gray-700 mb-2">摘要描述 <span
+                                class="text-red-500">*</span></label>
+                        <textarea id="document-description" rows="4"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                            required></textarea>
+                    </div>
+                    <div>
+                        <label for="document-file" class="block text-gray-700 mb-2">上传文件 <span
+                                class="text-red-500">*</span></label>
+                        <div
+                            class="border-2 border-dashed border-gray-300 rounded-md p-6 text-center hover:border-primary transition-colors duration-200">
+                            <input type="file" id="document-file" class="hidden"
+                                accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.md,.ppt,.pptx,.jpg,.jpeg,.png,.gif">
+                            <label for="document-file" class="cursor-pointer">
+                                <div class="text-4xl text-gray-400 mb-2">
+                                    <i class="fa fa-cloud-upload"></i>
+                                </div>
+                                <p class="text-gray-600 mb-1">点击或拖拽文件到此处上传</p>
+                                <p class="text-gray-500 text-sm">支持 PDF, Office, TXT, MD, 图片格式</p>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="flex items-center">
+                        <input type="checkbox" id="agree-terms" class="mr-2" required>
+                        <label for="agree-terms" class="text-gray-700">我已阅读并同意<a href="#"
+                                class="text-primary hover:underline">《安提斯特国家图书馆文献上传条款》</a></label>
+                    </div>
+                    <div class="text-center">
+                        <button type="submit"
+                            class="bg-primary text-white px-8 py-3 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium">
+                            提交上传
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="upload-success-modal"
+        class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 overflow-hidden animate-fade-in">
+            <div class="bg-green-500 text-white p-4 flex justify-between items-center">
+                <h2 class="text-xl font-bold">上传成功</h2>
+                <button id="close-success-modal" class="text-2xl hover:text-gray-200 transition-colors duration-200">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="p-6 text-center">
+                <div class="text-6xl text-green-500 mb-4">
+                    <i class="fa fa-check-circle"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-800 mb-2">您的文献已成功上传！</h3>
+                <p class="text-gray-600 mb-6">文献将在审核通过后显示在文献列表中。</p>
+                <div class="bg-gray-100 p-4 rounded-lg mb-6 text-left">
+                    <p class="font-medium text-gray-800 mb-2">上传信息</p>
+                    <p class="text-gray-600 mb-1"><span class="font-medium">标题：</span><span
+                            id="success-title">文献标题</span></p>
+                    <p class="text-gray-600 mb-1"><span class="font-medium">作者：</span><span
+                            id="success-author">作者</span></p>
+                    <p class="text-gray-600"><span class="font-medium">分类：</span><span id="success-category">分类</span>
+                    </p>
+                </div>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <button id="view-document-success-btn"
+                        class="bg-primary text-white px-6 py-3 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium">
+                        查看文献
+                    </button>
+                    <button id="upload-more-btn"
+                        class="bg-white border border-primary text-primary px-6 py-3 rounded-md hover:bg-gray-50 transition-all duration-200 font-medium">
+                        继续上传
                     </button>
                 </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-<div id="upload-success-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
-    <div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 overflow-hidden animate-fade-in">
-        <div class="bg-green-500 text-white p-4 flex justify-between items-center">
-            <h2 class="text-xl font-bold">上传成功</h2>
-            <button id="close-success-modal" class="text-2xl hover:text-gray-200 transition-colors duration-200">
-                <i class="fa fa-times"></i>
-            </button>
-        </div>
-        <div class="p-6 text-center">
-            <div class="text-6xl text-green-500 mb-4">
-                <i class="fa fa-check-circle"></i>
-            </div>
-            <h3 class="text-2xl font-bold text-gray-800 mb-2">您的文献已成功上传！</h3>
-            <p class="text-gray-600 mb-6">文献将在审核通过后显示在文献列表中。</p>
-            <div class="bg-gray-100 p-4 rounded-lg mb-6 text-left">
-                <p class="font-medium text-gray-800 mb-2">上传信息</p>
-                <p class="text-gray-600 mb-1"><span class="font-medium">标题：</span><span id="success-title">文献标题</span></p>
-                <p class="text-gray-600 mb-1"><span class="font-medium">作者：</span><span id="success-author">作者</span></p>
-                <p class="text-gray-600"><span class="font-medium">分类：</span><span id="success-category">分类</span></p>
-            </div>
-            <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                <button id="view-document-success-btn" class="bg-primary text-white px-6 py-3 rounded-md hover:bg-opacity-90 transition-all duration-200 font-medium">
-                    查看文献
-                </button>
-                <button id="upload-more-btn" class="bg-white border border-primary text-primary px-6 py-3 rounded-md hover:bg-gray-50 transition-all duration-200 font-medium">
-                    继续上传
-                </button>
             </div>
         </div>
     </div>
-</div>
 
-<script>
-    document.addEventListener('DOMContentLoaded', async function() {
-        let documentsData = [];
+    <script>
+        document.addEventListener('DOMContentLoaded', async function () {
+            let documentsData = [];
 
-        await checkLoginStatus();
-        await loadDocuments();
+            await checkLoginStatus();
+            await loadDocuments();
 
-        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-        const mobileMenu = document.getElementById('mobile-menu');
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            const mobileMenu = document.getElementById('mobile-menu');
 
-        mobileMenuBtn.addEventListener('click', function() {
-            mobileMenu.classList.toggle('hidden');
-        });
+            mobileMenuBtn.addEventListener('click', function () {
+                mobileMenu.classList.toggle('hidden');
+            });
 
-        const logoutBtn = document.getElementById('logout-btn');
+            const logoutBtn = document.getElementById('logout-btn');
 
-        logoutBtn.addEventListener('click', async function() {
-            await fetch('auth/logout.php');
-            sessionStorage.removeItem('currentUser');
-            window.location.href = 'index.html';
-        });
+            logoutBtn.addEventListener('click', async function () {
+                await fetch('auth/logout.php');
+                sessionStorage.removeItem('currentUser');
+                window.location.href = 'index.html';
+            });
 
-        const documentModal = document.getElementById('document-modal');
-        const closeDocumentModal = document.getElementById('close-document-modal');
-        const downloadDocumentBtn = document.getElementById('download-document-btn');
-        const viewDocumentBtn = document.getElementById('view-document-btn');
+            const documentModal = document.getElementById('document-modal');
+            const closeDocumentModal = document.getElementById('close-document-modal');
+            const downloadDocumentBtn = document.getElementById('download-document-btn');
+            const viewDocumentBtn = document.getElementById('view-document-btn');
 
-        closeDocumentModal.addEventListener('click', function() {
-            documentModal.classList.add('hidden');
-        });
-
-        documentModal.addEventListener('click', function(e) {
-            if (e.target === documentModal) {
+            closeDocumentModal.addEventListener('click', function () {
                 documentModal.classList.add('hidden');
-            }
-        });
+            });
 
-        const uploadModal = document.getElementById('upload-modal');
-        const closeUploadModal = document.getElementById('close-upload-modal');
-        const uploadDocsBtn = document.getElementById('upload-docs-btn');
-        const uploadForm = document.getElementById('upload-form');
+            documentModal.addEventListener('click', function (e) {
+                if (e.target === documentModal) {
+                    documentModal.classList.add('hidden');
+                }
+            });
 
-        uploadDocsBtn.addEventListener('click', function() {
-            uploadModal.classList.remove('hidden');
-        });
+            const uploadModal = document.getElementById('upload-modal');
+            const closeUploadModal = document.getElementById('close-upload-modal');
+            const uploadDocsBtn = document.getElementById('upload-docs-btn');
+            const uploadForm = document.getElementById('upload-form');
 
-        closeUploadModal.addEventListener('click', function() {
-            uploadModal.classList.add('hidden');
-        });
+            uploadDocsBtn.addEventListener('click', function () {
+                uploadModal.classList.remove('hidden');
+            });
 
-        uploadModal.addEventListener('click', function(e) {
-            if (e.target === uploadModal) {
+            closeUploadModal.addEventListener('click', function () {
                 uploadModal.classList.add('hidden');
-            }
-        });
+            });
 
-        const uploadSuccessModal = document.getElementById('upload-success-modal');
-        const closeSuccessModal = document.getElementById('close-success-modal');
-        const viewDocumentSuccessBtn = document.getElementById('view-document-success-btn');
-        const uploadMoreBtn = document.getElementById('upload-more-btn');
+            uploadModal.addEventListener('click', function (e) {
+                if (e.target === uploadModal) {
+                    uploadModal.classList.add('hidden');
+                }
+            });
 
-        closeSuccessModal.addEventListener('click', function() {
-            uploadSuccessModal.classList.add('hidden');
-        });
+            const uploadSuccessModal = document.getElementById('upload-success-modal');
+            const closeSuccessModal = document.getElementById('close-success-modal');
+            const viewDocumentSuccessBtn = document.getElementById('view-document-success-btn');
+            const uploadMoreBtn = document.getElementById('upload-more-btn');
 
-        viewDocumentSuccessBtn.addEventListener('click', function() {
-            uploadSuccessModal.classList.add('hidden');
-        });
-
-        uploadMoreBtn.addEventListener('click', function() {
-            uploadSuccessModal.classList.add('hidden');
-            uploadForm.reset();
-            uploadModal.classList.remove('hidden');
-        });
-
-        uploadSuccessModal.addEventListener('click', function(e) {
-            if (e.target === uploadSuccessModal) {
+            closeSuccessModal.addEventListener('click', function () {
                 uploadSuccessModal.classList.add('hidden');
-            }
-        });
-
-        uploadForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-
-            const title = document.getElementById('document-title').value;
-            const author = document.getElementById('document-author').value;
-            const category = document.getElementById('document-category').value;
-            const description = document.getElementById('document-description').value;
-            const fileInput = document.getElementById('document-file');
-
-            if (!title || !author || !category || !description || !fileInput.files[0]) {
-                alert('请填写完整的上传信息并选择文件');
-                return;
-            }
-
-            const file = fileInput.files[0];
-            handleDocumentUpload(file, {
-                title,
-                author,
-                category,
-                description
             });
-        });
 
-        async function handleDocumentUpload(file, meta) {
-            const formData = new FormData();
-            formData.append('document', file);
-            formData.append('title', meta.title);
-            formData.append('author', meta.author);
-            formData.append('category', meta.category);
-            formData.append('description', meta.description);
+            viewDocumentSuccessBtn.addEventListener('click', function () {
+                uploadSuccessModal.classList.add('hidden');
+            });
 
-            try {
-                const response = await fetch('library/upload-document.php', {
-                    method: 'POST',
-                    body: formData
-                });
-
-                const result = await response.json();
-
-                if (!result.success) {
-                    throw new Error(result.error || '上传失败');
-                }
-
-                documentsData.unshift(result.document);
-                updateDocumentsDisplay();
-
-                document.getElementById('success-title').textContent = meta.title;
-                document.getElementById('success-author').textContent = meta.author;
-                document.getElementById('success-category').textContent = meta.category;
-                uploadSuccessModal.classList.remove('hidden');
-
-                uploadModal.classList.add('hidden');
+            uploadMoreBtn.addEventListener('click', function () {
+                uploadSuccessModal.classList.add('hidden');
                 uploadForm.reset();
-            } catch (error) {
-                alert('文件上传失败: ' + error.message);
-            }
-        }
+                uploadModal.classList.remove('hidden');
+            });
 
-        const searchInput = document.getElementById('search-input');
-        const categoryFilter = document.getElementById('category-filter');
-        const sortOption = document.getElementById('sort-option');
-        const searchBtn = document.getElementById('search-btn');
-        const searchDocsBtn = document.getElementById('search-docs-btn');
-
-        searchBtn.addEventListener('click', function() {
-            currentPage = 1;
-            updateDocumentsDisplay();
-        });
-
-        searchDocsBtn.addEventListener('click', function() {
-            searchInput.focus();
-        });
-
-        searchInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                currentPage = 1;
-                updateDocumentsDisplay();
-                document.getElementById('suggestions-container').classList.add('hidden');
-            }
-        });
-
-        searchInput.addEventListener('input', function() {
-            const searchTerm = this.value.toLowerCase().trim();
-            const suggestionsContainer = document.getElementById('suggestions-container');
-            const suggestionsList = document.getElementById('suggestions-list');
-
-            if (searchTerm.length < 2) {
-                suggestionsContainer.classList.add('hidden');
-                return;
-            }
-
-            const keywords = new Set();
-
-            documentsData.forEach(doc => {
-                const titleWords = doc.title.split(/\s+/);
-                titleWords.forEach(word => {
-                    if (word.toLowerCase().includes(searchTerm)) {
-                        keywords.add(word);
-                    }
-                });
-
-                const authorWords = doc.author.split(/\s+/);
-                authorWords.forEach(word => {
-                    if (word.toLowerCase().includes(searchTerm)) {
-                        keywords.add(word);
-                    }
-                });
-
-                const descriptionWords = doc.description.split(/\s+/);
-                descriptionWords.forEach(word => {
-                    if (word.length > 2 && word.toLowerCase().includes(searchTerm)) {
-                        keywords.add(word);
-                    }
-                });
-
-                if (doc.title.toLowerCase().includes(searchTerm)) {
-                    keywords.add(doc.title);
-                }
-                if (doc.author.toLowerCase().includes(searchTerm)) {
-                    keywords.add(doc.author);
+            uploadSuccessModal.addEventListener('click', function (e) {
+                if (e.target === uploadSuccessModal) {
+                    uploadSuccessModal.classList.add('hidden');
                 }
             });
 
-            suggestionsList.innerHTML = '';
+            uploadForm.addEventListener('submit', function (e) {
+                e.preventDefault();
 
-            const suggestions = Array.from(keywords).slice(0, 10);
+                const title = document.getElementById('document-title').value;
+                const author = document.getElementById('document-author').value;
+                const category = document.getElementById('document-category').value;
+                const description = document.getElementById('document-description').value;
+                const fileInput = document.getElementById('document-file');
 
-            if (suggestions.length > 0) {
-                suggestions.forEach(keyword => {
-                    const li = document.createElement('li');
-                    li.className = 'px-4 py-2 hover:bg-gray-100 cursor-pointer';
+                if (!title || !author || !category || !description || !fileInput.files[0]) {
+                    alert('请填写完整的上传信息并选择文件');
+                    return;
+                }
 
-                    const highlightedKeyword = keyword.replace(
-                        new RegExp(`(${searchTerm})`, 'gi'),
-                        '<span class="bg-yellow-200">$1</span>'
-                    );
+                const file = fileInput.files[0];
+                handleDocumentUpload(file, {
+                    title,
+                    author,
+                    category,
+                    description
+                });
+            });
 
-                    li.innerHTML = highlightedKeyword;
+            async function handleDocumentUpload(file, meta) {
+                const formData = new FormData();
+                formData.append('document', file);
+                formData.append('title', meta.title);
+                formData.append('author', meta.author);
+                formData.append('category', meta.category);
+                formData.append('description', meta.description);
 
-                    li.addEventListener('click', function() {
-                        searchInput.value = keyword;
-                        suggestionsContainer.classList.add('hidden');
-                        currentPage = 1;
-                        updateDocumentsDisplay();
+                try {
+                    const response = await fetch('library/upload-document.php', {
+                        method: 'POST',
+                        body: formData
                     });
 
-                    suggestionsList.appendChild(li);
+                    const result = await response.json();
+
+                    if (!result.success) {
+                        throw new Error(result.error || '上传失败');
+                    }
+
+                    documentsData.unshift(result.document);
+                    updateDocumentsDisplay();
+
+                    document.getElementById('success-title').textContent = meta.title;
+                    document.getElementById('success-author').textContent = meta.author;
+                    document.getElementById('success-category').textContent = meta.category;
+                    uploadSuccessModal.classList.remove('hidden');
+
+                    uploadModal.classList.add('hidden');
+                    uploadForm.reset();
+                } catch (error) {
+                    alert('文件上传失败: ' + error.message);
+                }
+            }
+
+            const searchInput = document.getElementById('search-input');
+            const categoryFilter = document.getElementById('category-filter');
+            const sortOption = document.getElementById('sort-option');
+            const searchBtn = document.getElementById('search-btn');
+            const searchDocsBtn = document.getElementById('search-docs-btn');
+
+            searchBtn.addEventListener('click', function () {
+                currentPage = 1;
+                updateDocumentsDisplay();
+            });
+
+            searchDocsBtn.addEventListener('click', function () {
+                searchInput.focus();
+            });
+
+            searchInput.addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') {
+                    currentPage = 1;
+                    updateDocumentsDisplay();
+                    document.getElementById('suggestions-container').classList.add('hidden');
+                }
+            });
+
+            searchInput.addEventListener('input', function () {
+                const searchTerm = this.value.toLowerCase().trim();
+                const suggestionsContainer = document.getElementById('suggestions-container');
+                const suggestionsList = document.getElementById('suggestions-list');
+
+                if (searchTerm.length < 2) {
+                    suggestionsContainer.classList.add('hidden');
+                    return;
+                }
+
+                const keywords = new Set();
+
+                documentsData.forEach(doc => {
+                    const titleWords = doc.title.split(/\s+/);
+                    titleWords.forEach(word => {
+                        if (word.toLowerCase().includes(searchTerm)) {
+                            keywords.add(word);
+                        }
+                    });
+
+                    const authorWords = doc.author.split(/\s+/);
+                    authorWords.forEach(word => {
+                        if (word.toLowerCase().includes(searchTerm)) {
+                            keywords.add(word);
+                        }
+                    });
+
+                    const descriptionWords = doc.description.split(/\s+/);
+                    descriptionWords.forEach(word => {
+                        if (word.length > 2 && word.toLowerCase().includes(searchTerm)) {
+                            keywords.add(word);
+                        }
+                    });
+
+                    if (doc.title.toLowerCase().includes(searchTerm)) {
+                        keywords.add(doc.title);
+                    }
+                    if (doc.author.toLowerCase().includes(searchTerm)) {
+                        keywords.add(doc.author);
+                    }
                 });
 
-                suggestionsContainer.classList.remove('hidden');
-            } else {
-                suggestionsContainer.classList.add('hidden');
-            }
-        });
+                suggestionsList.innerHTML = '';
 
-        document.addEventListener('click', function(e) {
-            const searchContainer = document.querySelector('.relative');
-            const suggestionsContainer = document.getElementById('suggestions-container');
+                const suggestions = Array.from(keywords).slice(0, 10);
 
-            if (!searchContainer.contains(e.target)) {
-                suggestionsContainer.classList.add('hidden');
-            }
-        });
+                if (suggestions.length > 0) {
+                    suggestions.forEach(keyword => {
+                        const li = document.createElement('li');
+                        li.className = 'px-4 py-2 hover:bg-gray-100 cursor-pointer';
 
-        categoryFilter.addEventListener('change', function() {
-            currentPage = 1;
-            updateDocumentsDisplay();
-        });
+                        const highlightedKeyword = keyword.replace(
+                            new RegExp(`(${searchTerm})`, 'gi'),
+                            '<span class="bg-yellow-200">$1</span>'
+                        );
 
-        sortOption.addEventListener('change', function() {
-            updateDocumentsDisplay();
-        });
+                        li.innerHTML = highlightedKeyword;
 
-        const prevPageBtn = document.getElementById('prev-page');
-        const nextPageBtn = document.getElementById('next-page');
-        const pageNumbers = document.getElementById('page-numbers');
+                        li.addEventListener('click', function () {
+                            searchInput.value = keyword;
+                            suggestionsContainer.classList.add('hidden');
+                            currentPage = 1;
+                            updateDocumentsDisplay();
+                        });
 
-        let currentPage = 1;
-        const recordsPerPage = 6;
+                        suggestionsList.appendChild(li);
+                    });
 
-        prevPageBtn.addEventListener('click', function() {
-            if (currentPage > 1) {
-                currentPage--;
+                    suggestionsContainer.classList.remove('hidden');
+                } else {
+                    suggestionsContainer.classList.add('hidden');
+                }
+            });
+
+            document.addEventListener('click', function (e) {
+                const searchContainer = document.querySelector('.relative');
+                const suggestionsContainer = document.getElementById('suggestions-container');
+
+                if (!searchContainer.contains(e.target)) {
+                    suggestionsContainer.classList.add('hidden');
+                }
+            });
+
+            categoryFilter.addEventListener('change', function () {
+                currentPage = 1;
                 updateDocumentsDisplay();
-            }
-        });
+            });
 
-        nextPageBtn.addEventListener('click', function() {
-            const documents = getFilteredDocuments();
-            const totalPages = Math.ceil(documents.length / recordsPerPage);
-
-            if (currentPage < totalPages) {
-                currentPage++;
+            sortOption.addEventListener('change', function () {
                 updateDocumentsDisplay();
-            }
-        });
+            });
 
-        updateDocumentsDisplay();
-        updateAdminElements();
+            const prevPageBtn = document.getElementById('prev-page');
+            const nextPageBtn = document.getElementById('next-page');
+            const pageNumbers = document.getElementById('page-numbers');
 
-        function updateDocumentsDisplay() {
-            const documentsContainer = document.getElementById('documents-container');
-            const documents = getFilteredDocuments();
+            let currentPage = 1;
+            const recordsPerPage = 6;
 
-            const startIndex = (currentPage - 1) * recordsPerPage;
-            const endIndex = startIndex + recordsPerPage;
-            const paginatedDocuments = documents.slice(startIndex, endIndex);
+            prevPageBtn.addEventListener('click', function () {
+                if (currentPage > 1) {
+                    currentPage--;
+                    updateDocumentsDisplay();
+                }
+            });
 
-            document.getElementById('showing-records').textContent = paginatedDocuments.length;
-            document.getElementById('total-records').textContent = documents.length;
+            nextPageBtn.addEventListener('click', function () {
+                const documents = getFilteredDocuments();
+                const totalPages = Math.ceil(documents.length / recordsPerPage);
 
-            prevPageBtn.disabled = currentPage === 1;
-            nextPageBtn.disabled = endIndex >= documents.length;
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    updateDocumentsDisplay();
+                }
+            });
 
-            updatePageNumbers(documents.length);
+            updateDocumentsDisplay();
+            updateAdminElements();
 
-            documentsContainer.innerHTML = '';
+            function updateDocumentsDisplay() {
+                const documentsContainer = document.getElementById('documents-container');
+                const documents = getFilteredDocuments();
 
-            if (paginatedDocuments.length === 0) {
-                documentsContainer.innerHTML = `
+                const startIndex = (currentPage - 1) * recordsPerPage;
+                const endIndex = startIndex + recordsPerPage;
+                const paginatedDocuments = documents.slice(startIndex, endIndex);
+
+                document.getElementById('showing-records').textContent = paginatedDocuments.length;
+                document.getElementById('total-records').textContent = documents.length;
+
+                prevPageBtn.disabled = currentPage === 1;
+                nextPageBtn.disabled = endIndex >= documents.length;
+
+                updatePageNumbers(documents.length);
+
+                documentsContainer.innerHTML = '';
+
+                if (paginatedDocuments.length === 0) {
+                    documentsContainer.innerHTML = `
                         <div class="col-span-full text-center py-12">
                             <div class="text-6xl text-gray-300 mb-4">
                                 <i class="fa fa-search"></i>
@@ -717,42 +761,42 @@
                             <p class="text-gray-400">请尝试调整搜索条件</p>
                         </div>
                     `;
-            } else {
-                paginatedDocuments.forEach(doc => {
-                    const card = document.createElement('div');
-                    card.className = 'bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300';
+                } else {
+                    paginatedDocuments.forEach(doc => {
+                        const card = document.createElement('div');
+                        card.className = 'bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300';
 
-                    const date = new Date(doc.uploadDate);
-                    const formattedDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+                        const date = new Date(doc.uploadDate);
+                        const formattedDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 
-                    let categoryClass = '';
-                    switch (doc.category) {
-                        case '法律':
-                            categoryClass = 'bg-blue-100 text-blue-800';
-                            break;
-                        case '历史':
-                            categoryClass = 'bg-amber-100 text-amber-800';
-                            break;
-                        case '经济':
-                            categoryClass = 'bg-green-100 text-green-800';
-                            break;
-                        case '文化':
-                            categoryClass = 'bg-purple-100 text-purple-800';
-                            break;
-                        case '政治':
-                            categoryClass = 'bg-red-100 text-red-800';
-                            break;
-                        case '科技':
-                            categoryClass = 'bg-cyan-100 text-cyan-800';
-                            break;
-                        case '教育':
-                            categoryClass = 'bg-indigo-100 text-indigo-800';
-                            break;
-                        default:
-                            categoryClass = 'bg-gray-100 text-gray-800';
-                    }
+                        let categoryClass = '';
+                        switch (doc.category) {
+                            case '法律':
+                                categoryClass = 'bg-blue-100 text-blue-800';
+                                break;
+                            case '历史':
+                                categoryClass = 'bg-amber-100 text-amber-800';
+                                break;
+                            case '经济':
+                                categoryClass = 'bg-green-100 text-green-800';
+                                break;
+                            case '文化':
+                                categoryClass = 'bg-purple-100 text-purple-800';
+                                break;
+                            case '政治':
+                                categoryClass = 'bg-red-100 text-red-800';
+                                break;
+                            case '科技':
+                                categoryClass = 'bg-cyan-100 text-cyan-800';
+                                break;
+                            case '教育':
+                                categoryClass = 'bg-indigo-100 text-indigo-800';
+                                break;
+                            default:
+                                categoryClass = 'bg-gray-100 text-gray-800';
+                        }
 
-                    card.innerHTML = `
+                        card.innerHTML = `
                             <div class="p-6">
                                 <div class="flex justify-between items-start mb-4">
                                     <h3 class="text-xl font-bold text-primary mb-2">${doc.title}</h3>
@@ -769,117 +813,117 @@
                             </div>
                         `;
 
-                    documentsContainer.appendChild(card);
+                        documentsContainer.appendChild(card);
 
-                    card.querySelector('.view-document-btn').addEventListener('click', function() {
-                        showDocumentDetails(doc.id);
+                        card.querySelector('.view-document-btn').addEventListener('click', function () {
+                            showDocumentDetails(doc.id);
+                        });
                     });
-                });
-            }
-        }
-
-        function updatePageNumbers(totalRecords) {
-            pageNumbers.innerHTML = '';
-
-            const totalPages = Math.ceil(totalRecords / recordsPerPage);
-            const maxVisiblePages = 5;
-
-            let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
-            let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-
-            if (endPage - startPage + 1 < maxVisiblePages) {
-                startPage = Math.max(1, endPage - maxVisiblePages + 1);
-            }
-
-            for (let i = startPage; i <= endPage; i++) {
-                const pageBtn = document.createElement('button');
-                pageBtn.className = `px-3 py-1 rounded-md ${i === currentPage ? 'bg-primary text-white' : 'bg-white text-gray-700 hover:bg-gray-50'}`;
-                pageBtn.textContent = i;
-
-                pageBtn.addEventListener('click', function() {
-                    currentPage = i;
-                    updateDocumentsDisplay();
-                });
-
-                pageNumbers.appendChild(pageBtn);
-            }
-        }
-
-        function getAbsoluteUrl(url) {
-            if (!url) return '';
-            try {
-                return new URL(url, window.location.href).href;
-            } catch (e) {
-                return url;
-            }
-        }
-
-        function getFileExtension(fileUrl) {
-            if (!fileUrl) return '.pdf';
-            try {
-                const u = new URL(fileUrl, window.location.href);
-                const nameParam = u.searchParams.get('id');
-                const doc = documentsData.find(d => d.id === nameParam);
-                if(doc && doc.name) {
-                    const parts = doc.name.split('.');
-                    if(parts.length > 1) return '.' + parts.pop().toLowerCase();
                 }
-            } catch(e) {}
-            return '.pdf';
-        }
+            }
 
-        function showDocumentDetails(docId) {
-            const doc = documentsData.find(d => d.id === docId);
+            function updatePageNumbers(totalRecords) {
+                pageNumbers.innerHTML = '';
 
-            if (doc) {
-                document.getElementById('document-modal-title').textContent = doc.title;
-                document.getElementById('document-detail-title').textContent = doc.title;
-                document.getElementById('document-detail-author').textContent = doc.author;
-                document.getElementById('document-detail-category').textContent = doc.category;
+                const totalPages = Math.ceil(totalRecords / recordsPerPage);
+                const maxVisiblePages = 5;
 
-                const date = new Date(doc.uploadDate);
-                const formattedDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+                let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+                let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
 
-                const downloadBtn = document.getElementById('download-document-btn');
-                const viewBtn = document.getElementById('view-document-btn');
+                if (endPage - startPage + 1 < maxVisiblePages) {
+                    startPage = Math.max(1, endPage - maxVisiblePages + 1);
+                }
 
-                const absUrl = getAbsoluteUrl(doc.fileUrl);
-                const extension = getFileExtension(doc.fileUrl);
+                for (let i = startPage; i <= endPage; i++) {
+                    const pageBtn = document.createElement('button');
+                    pageBtn.className = `px-3 py-1 rounded-md ${i === currentPage ? 'bg-primary text-white' : 'bg-white text-gray-700 hover:bg-gray-50'}`;
+                    pageBtn.textContent = i;
 
-                downloadBtn.onclick = function() {
-                    if (doc.fileUrl && doc.fileUrl !== '#') {
-                        const link = document.createElement('a');
-                        link.href = absUrl;
-                        link.download = doc.name || 'document';
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-                    } else {
-                        alert('该文献暂不提供下载');
+                    pageBtn.addEventListener('click', function () {
+                        currentPage = i;
+                        updateDocumentsDisplay();
+                    });
+
+                    pageNumbers.appendChild(pageBtn);
+                }
+            }
+
+            function getAbsoluteUrl(url) {
+                if (!url) return '';
+                try {
+                    return new URL(url, window.location.href).href;
+                } catch (e) {
+                    return url;
+                }
+            }
+
+            function getFileExtension(fileUrl) {
+                if (!fileUrl) return '.pdf';
+                try {
+                    const u = new URL(fileUrl, window.location.href);
+                    const nameParam = u.searchParams.get('id');
+                    const doc = documentsData.find(d => d.id === nameParam);
+                    if (doc && doc.name) {
+                        const parts = doc.name.split('.');
+                        if (parts.length > 1) return '.' + parts.pop().toLowerCase();
                     }
-                };
+                } catch (e) { }
+                return '.pdf';
+            }
 
-                viewBtn.onclick = async function() {
-                    if (doc.fileUrl && doc.fileUrl !== '#') {
-                        try {
-                            if (['.txt', '.md'].includes(extension)) {
-                                let textContent = '';
-                                const textResponse = await fetch(absUrl);
-                                if (!textResponse.ok) {
-                                    throw new Error('fetch_failed');
-                                }
-                                textContent = await textResponse.text();
+            function showDocumentDetails(docId) {
+                const doc = documentsData.find(d => d.id === docId);
 
-                                const safeText = textContent
-                                    .replace(/&/g, "&amp;")
-                                    .replace(/</g, "&lt;")
-                                    .replace(/>/g, "&gt;")
-                                    .replace(/"/g, "&quot;")
-                                    .replace(/'/g, "&#039;");
+                if (doc) {
+                    document.getElementById('document-modal-title').textContent = doc.title;
+                    document.getElementById('document-detail-title').textContent = doc.title;
+                    document.getElementById('document-detail-author').textContent = doc.author;
+                    document.getElementById('document-detail-category').textContent = doc.category;
 
-                                const newWindow = window.open('', '_blank');
-                                if (newWindow) {
-                                    newWindow.document.write(`
+                    const date = new Date(doc.uploadDate);
+                    const formattedDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+
+                    const downloadBtn = document.getElementById('download-document-btn');
+                    const viewBtn = document.getElementById('view-document-btn');
+
+                    const absUrl = getAbsoluteUrl(doc.fileUrl);
+                    const extension = getFileExtension(doc.fileUrl);
+
+                    downloadBtn.onclick = function () {
+                        if (doc.fileUrl && doc.fileUrl !== '#') {
+                            const link = document.createElement('a');
+                            link.href = absUrl;
+                            link.download = doc.name || 'document';
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                        } else {
+                            alert('该文献暂不提供下载');
+                        }
+                    };
+
+                    viewBtn.onclick = async function () {
+                        if (doc.fileUrl && doc.fileUrl !== '#') {
+                            try {
+                                if (['.txt', '.md'].includes(extension)) {
+                                    let textContent = '';
+                                    const textResponse = await fetch(absUrl);
+                                    if (!textResponse.ok) {
+                                        throw new Error('fetch_failed');
+                                    }
+                                    textContent = await textResponse.text();
+
+                                    const safeText = textContent
+                                        .replace(/&/g, "&amp;")
+                                        .replace(/</g, "&lt;")
+                                        .replace(/>/g, "&gt;")
+                                        .replace(/"/g, "&quot;")
+                                        .replace(/'/g, "&#039;");
+
+                                    const newWindow = window.open('', '_blank');
+                                    if (newWindow) {
+                                        newWindow.document.write(`
                                             <html>
                                             <head>
                                                 <title>${doc.title}</title>
@@ -890,122 +934,123 @@
                                             <body>${safeText}</body>
                                             </html>
                                         `);
+                                    }
+                                } else if (['.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx'].includes(extension)) {
+                                    window.open(`https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(absUrl)}`, '_blank');
+                                } else {
+                                    window.open(absUrl, '_blank');
                                 }
-                            } else if (['.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx'].includes(extension)) {
-                                window.open(`https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(absUrl)}`, '_blank');
-                            } else {
-                                window.open(absUrl, '_blank');
+                            } catch (error) {
+                                alert('在线阅读失败，请尝试下载');
                             }
-                        } catch (error) {
-                            alert('在线阅读失败，请尝试下载');
+                        } else {
+                            alert('该文献暂不提供在线阅读');
                         }
-                    } else {
-                        alert('该文献暂不提供在线阅读');
-                    }
-                };
-                document.getElementById('document-detail-date').textContent = formattedDate;
+                    };
+                    document.getElementById('document-detail-date').textContent = formattedDate;
 
-                document.getElementById('document-detail-uploader').textContent = doc.uploaderName;
-                document.getElementById('document-detail-description').textContent = doc.description;
+                    document.getElementById('document-detail-uploader').textContent = doc.uploaderName;
+                    document.getElementById('document-detail-description').textContent = doc.description;
 
-                documentModal.classList.remove('hidden');
-            }
-        }
-
-        function getFilteredDocuments() {
-            const searchTerm = searchInput.value.toLowerCase();
-            const category = categoryFilter.value;
-            const sort = sortOption.value;
-
-            let documents = documentsData;
-
-            if (!isCurrentUserAdmin()) {
-                documents = documents.filter(doc => doc.approved);
+                    documentModal.classList.remove('hidden');
+                }
             }
 
-            if (searchTerm) {
-                documents = documents.filter(doc =>
-                    doc.title.toLowerCase().includes(searchTerm) ||
-                    doc.author.toLowerCase().includes(searchTerm) ||
-                    doc.description.toLowerCase().includes(searchTerm)
-                );
+            function getFilteredDocuments() {
+                const searchTerm = searchInput.value.toLowerCase();
+                const category = categoryFilter.value;
+                const sort = sortOption.value;
+
+                let documents = documentsData;
+
+                if (!isCurrentUserAdmin()) {
+                    documents = documents.filter(doc => doc.approved);
+                }
+
+                if (searchTerm) {
+                    documents = documents.filter(doc =>
+                        doc.title.toLowerCase().includes(searchTerm) ||
+                        doc.author.toLowerCase().includes(searchTerm) ||
+                        doc.description.toLowerCase().includes(searchTerm)
+                    );
+                }
+
+                if (category !== 'all') {
+                    documents = documents.filter(doc => doc.category === category);
+                }
+
+                switch (sort) {
+                    case 'date-desc':
+                        documents.sort((a, b) => new Date(b.uploadDate) - new Date(a.uploadDate));
+                        break;
+                    case 'date-asc':
+                        documents.sort((a, b) => new Date(a.uploadDate) - new Date(b.uploadDate));
+                        break;
+                    case 'title-asc':
+                        documents.sort((a, b) => a.title.localeCompare(b.title));
+                        break;
+                    case 'title-desc':
+                        documents.sort((a, b) => b.title.localeCompare(a.title));
+                        break;
+                    case 'author-asc':
+                        documents.sort((a, b) => a.author.localeCompare(b.author));
+                        break;
+                    case 'author-desc':
+                        documents.sort((a, b) => b.author.localeCompare(a.author));
+                        break;
+                }
+
+                return documents;
             }
 
-            if (category !== 'all') {
-                documents = documents.filter(doc => doc.category === category);
-            }
+            function updateAdminElements() {
+                const adminElements = document.querySelectorAll('.admin-only');
 
-            switch (sort) {
-                case 'date-desc':
-                    documents.sort((a, b) => new Date(b.uploadDate) - new Date(a.uploadDate));
-                    break;
-                case 'date-asc':
-                    documents.sort((a, b) => new Date(a.uploadDate) - new Date(b.uploadDate));
-                    break;
-                case 'title-asc':
-                    documents.sort((a, b) => a.title.localeCompare(b.title));
-                    break;
-                case 'title-desc':
-                    documents.sort((a, b) => b.title.localeCompare(a.title));
-                    break;
-                case 'author-asc':
-                    documents.sort((a, b) => a.author.localeCompare(b.author));
-                    break;
-                case 'author-desc':
-                    documents.sort((a, b) => b.author.localeCompare(a.author));
-                    break;
-            }
-
-            return documents;
-        }
-
-        function updateAdminElements() {
-            const adminElements = document.querySelectorAll('.admin-only');
-
-            if (isCurrentUserAdmin()) {
-                adminElements.forEach(el => el.classList.remove('hidden'));
-            } else {
-                adminElements.forEach(el => el.classList.add('hidden'));
-            }
-        }
-
-        function isCurrentUserAdmin() {
-            const currentUser = JSON.parse(sessionStorage.getItem('currentUser'));
-            return currentUser && currentUser.role === 'admin';
-        }
-
-        async function checkLoginStatus() {
-            try {
-                const response = await fetch('auth/getCurrentUser.php');
-                const result = await response.json();
-
-                if (!result.success || !result.user) {
-                    window.location.href = 'index.html';
+                if (isCurrentUserAdmin()) {
+                    adminElements.forEach(el => el.classList.remove('hidden'));
                 } else {
-                    const currentUser = result.user;
-                    sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
-                    document.getElementById('welcome-user').classList.remove('hidden');
-                    document.getElementById('current-username').textContent = currentUser.username;
+                    adminElements.forEach(el => el.classList.add('hidden'));
                 }
-            } catch (error) {
-                window.location.href = 'index.html';
             }
-        }
 
-        async function loadDocuments() {
-            try {
-                const response = await fetch('library/getDocuments.php');
-                const result = await response.json();
+            function isCurrentUserAdmin() {
+                const currentUser = JSON.parse(sessionStorage.getItem('currentUser'));
+                return currentUser && currentUser.role === 'admin';
+            }
 
-                if (result.success && Array.isArray(result.documents)) {
-                    documentsData = result.documents;
-                    updateDocumentsDisplay();
+            async function checkLoginStatus() {
+                try {
+                    const response = await fetch('auth/getCurrentUser.php');
+                    const result = await response.json();
+
+                    if (!result.success || !result.user) {
+                        window.location.href = 'index.html';
+                    } else {
+                        const currentUser = result.user;
+                        sessionStorage.setItem('currentUser', JSON.stringify(currentUser));
+                        document.getElementById('welcome-user').classList.remove('hidden');
+                        document.getElementById('current-username').textContent = currentUser.username;
+                    }
+                } catch (error) {
+                    window.location.href = 'index.html';
                 }
-            } catch (error) {
-                console.error(error);
             }
-        }
-    });
-</script>
+
+            async function loadDocuments() {
+                try {
+                    const response = await fetch('library/getDocuments.php');
+                    const result = await response.json();
+
+                    if (result.success && Array.isArray(result.documents)) {
+                        documentsData = result.documents;
+                        updateDocumentsDisplay();
+                    }
+                } catch (error) {
+                    console.error(error);
+                }
+            }
+        });
+    </script>
 </body>
+
 </html>

@@ -100,7 +100,20 @@ if ($realFromCardNumber === $realToCardNumber) {
     jsonError('不能向同一张卡转账');
 }
 $senderCard['balance'] -= $totalDeduction;
-$recipientCard['balance'] += $amount;
+
+// 处理收款方余额
+if (($recipientCard['cardType'] ?? 'debit') === 'credit') {
+    // 信用卡：余额最多恢复到 0，超出部分不允许
+    $newBalance = $recipientCard['balance'] + $amount;
+    if ($newBalance > 0) {
+        $currentDebt = abs(min(0, $recipientCard['balance']));
+        jsonError('转账金额超出信用卡欠款额度，当前欠款: ' . $currentDebt . '，请减少转账金额或使用还款功能');
+    }
+    $recipientCard['balance'] = $newBalance;
+} else {
+    // 借记卡：正常增加余额
+    $recipientCard['balance'] += $amount;
+}
 $db->set($senderKey, json_encode($senderAccount));
 if ($senderId !== $recipientId) {
     $db->set($recipientKey, json_encode($recipientAccount));
